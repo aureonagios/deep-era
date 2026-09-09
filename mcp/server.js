@@ -13,7 +13,7 @@ const TOOLS = [
   { name: "plan_task", description: "Plan first, show it to the user. Blind work is forbidden.", inputSchema: { type: "object", properties: { goal: { type: "string" }, steps: { type: "array", items: { type: "string" } } }, required: ["goal"] } },
   { name: "log_step", description: "Log every important step to the transparency log.", inputSchema: { type: "object", properties: { message: { type: "string" } }, required: ["message"] } },
   { name: "recall", description: "Project memory: recall past chats/decisions/fixes. MANDATORY at task start — forget nothing, budget-capped.", inputSchema: { type: "object", properties: { query: { type: "string" } }, required: ["query"] } },
-  { name: "remember", description: "Project memory: save what matters (kind=chat|decision|fix|error|note). MANDATORY at task end.", inputSchema: { type: "object", properties: { kind: { type: "string" }, text: { type: "string" } }, required: ["text"] } },
+  { name: "remember", description: "Project memory: save what matters (kind=chat|decision|fix|error|note). Set global=true for a lesson EVERY project recalls. MANDATORY at task end.", inputSchema: { type: "object", properties: { kind: { type: "string" }, text: { type: "string" }, global: { type: "boolean" } }, required: ["text"] } },
   { name: "get_context", description: "Token saver: never read the whole codebase. Query and get only relevant files + imports.", inputSchema: { type: "object", properties: { query: { type: "string" }, limit: { type: "number" } }, required: ["query"] } },
   { name: "verify_work", description: "Terminal truth: run syntax (all files) + build + tests.", inputSchema: { type: "object", properties: {} } },
   { name: "security_check", description: "Scan for secrets / dangerous code / dependency leaks.", inputSchema: { type: "object", properties: {} } },
@@ -44,7 +44,7 @@ async function runMcp() {
       const { id, method, params } = msg;
       try {
         if (method === "initialize") {
-          reply(id, { protocolVersion: "2024-11-05", capabilities: { tools: {} }, serverInfo: { name: "deep-era", version: "0.23.0" } });
+          reply(id, { protocolVersion: "2024-11-05", capabilities: { tools: {} }, serverInfo: { name: "deep-era", version: "0.25.0" } });
         } else if (method === "notifications/initialized") {
         } else if (method === "tools/list") {
           reply(id, { tools: TOOLS });
@@ -63,8 +63,14 @@ async function runMcp() {
             logSpend(cwd, "recall", r.chars);
             reply(id, { content: [{ type: "text", text: r.entries.length ? JSON.stringify(r, null, 2).slice(0, 6000) : "Memory empty — first task. remember at the end is mandatory." }] });
           } else if (name === "remember") {
-            const e = remember(cwd, args.kind || "note", args.text || "");
-            reply(id, { content: [{ type: "text", text: `Remembered [${e.kind}]: ${e.text.slice(0, 200)}` }] });
+            if (args.global) {
+              const { rememberGlobal } = require("../src/memory");
+              const e = rememberGlobal(args.text || "");
+              reply(id, { content: [{ type: "text", text: `Global lesson saved — every project will recall it.` }] });
+            } else {
+              const e = remember(cwd, args.kind || "note", args.text || "");
+              reply(id, { content: [{ type: "text", text: `Remembered [${e.kind}]: ${e.text.slice(0, 200)}` }] });
+            }
           } else if (name === "get_context") {
             let map = readJson(cwd, "map.json", null);
             if (!map) map = buildMap(cwd);

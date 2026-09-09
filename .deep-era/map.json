@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-09-09T17:04:35.307Z",
+  "generatedAt": "2026-09-09T18:40:54.142Z",
   "stack": {
     "kind": "node",
     "run": null,
@@ -8,7 +8,7 @@
     "test": "npm test"
   },
   "counts": {
-    "total": 48,
+    "total": 49,
     "truncated": false
   },
   "files": [
@@ -85,7 +85,7 @@
     {
       "file": "bin/cli.js",
       "role": "code-js",
-      "size": 14120,
+      "size": 14691,
       "imports": [
         "src/init.js",
         "src/doctor.js",
@@ -105,8 +105,8 @@
         "src/snapshot.js",
         "src/demo.js",
         "src/stacks.js",
-        "src/global.js",
-        "src/ci.js"
+        "src/projects.js",
+        "src/global.js"
       ],
       "importedBy": []
     },
@@ -120,7 +120,7 @@
     {
       "file": "ERROR-REPORT.md",
       "role": "doc",
-      "size": 4141,
+      "size": 4327,
       "imports": [],
       "importedBy": []
     },
@@ -134,7 +134,7 @@
     {
       "file": "mcp/server.js",
       "role": "code-js",
-      "size": 8590,
+      "size": 8992,
       "imports": [
         "src/map.js",
         "src/verify.js",
@@ -160,7 +160,7 @@
     {
       "file": "README.md",
       "role": "doc",
-      "size": 7174,
+      "size": 7302,
       "imports": [],
       "importedBy": []
     },
@@ -170,7 +170,6 @@
       "size": 1020,
       "imports": [],
       "importedBy": [
-        "bin/cli.js",
         "tests/run.js"
       ]
     },
@@ -338,13 +337,22 @@
     {
       "file": "src/memory.js",
       "role": "code-js",
-      "size": 6467,
+      "size": 7902,
       "imports": [],
       "importedBy": [
         "bin/cli.js",
         "mcp/server.js",
         "tests/perf.js",
         "tests/run.js"
+      ]
+    },
+    {
+      "file": "src/projects.js",
+      "role": "code-js",
+      "size": 1722,
+      "imports": [],
+      "importedBy": [
+        "bin/cli.js"
       ]
     },
     {
@@ -449,7 +457,7 @@
     {
       "file": "src/verify.js",
       "role": "code-js",
-      "size": 6519,
+      "size": 6621,
       "imports": [],
       "importedBy": [
         "bin/cli.js",
@@ -521,7 +529,7 @@
     {
       "file": "tests/run.js",
       "role": "code-js",
-      "size": 20270,
+      "size": 21679,
       "imports": [
         "src/map.js",
         "src/security.js",

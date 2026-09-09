@@ -73,8 +73,9 @@ function verifyProject(cwd, map) {
     if (scripts.build && !selftest) results.push(runCmd(cwd, "npm run build --silent"));
     if (scripts.lint && !selftest) results.push(runCmd(cwd, "npm run lint --silent"));
     if (scripts.test && !selftest) {
-      let t = runCmd(cwd, "npm test --silent");
-      if (!t.ok && /ETIMEDOUT|timed out/i.test(t.output)) t = runCmd(cwd, "npm test --silent"); // one retry: transient timeouts only
+      // Full suites need room: 90s default kills ~2min suites mid-run (flaky FAIL).
+      let t = runCmd(cwd, "npm test --silent", 240000);
+      if (!t.ok && /ETIMEDOUT|timed out/i.test(t.output)) t = runCmd(cwd, "npm test --silent", 240000); // one retry: transient timeouts only
       results.push(t);
     }
     else if (selftest) results.push({ cmd: "npm test", ok: true, output: "selftest mode — recursion guard (syntax already checked)" });

@@ -7,6 +7,13 @@ function memFile(cwd) {
   return path.join(cwd, ".deep-era", "logs", "memory.jsonl");
 }
 
+// Global lessons: ~/.deep-era/lessons.jsonl — learn once in ANY project,
+// recalled in EVERY project. Per-project memory stays local; lessons travel.
+function lessonsFile(homeDir) {
+  const home = homeDir || require("os").homedir();
+  return path.join(home, ".deep-era", "lessons.jsonl");
+}
+
 function remember(cwd, kind, text) {
   const clean = (text || "").toString().slice(0, 2000).trim();
   if (!clean) throw new Error("empty memory");
@@ -50,6 +57,25 @@ function compact(cwd) {
 function readAll(cwd, maxEntries = 500) {
   try {
     const lines = fs.readFileSync(memFile(cwd), "utf8").split("\n").filter(Boolean);
+    return lines.slice(-maxEntries).map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean);
+  } catch { return []; }
+}
+
+function rememberGlobal(text, homeDir) {
+  const clean = (text || "").toString().slice(0, 2000).trim();
+  if (!clean) throw new Error("empty memory");
+  const entry = { at: new Date().toISOString(), kind: "lesson", text: clean, weight: 4 };
+  const lf = lessonsFile(homeDir);
+  fs.mkdirSync(path.dirname(lf), { recursive: true });
+  const existing = readLessons(homeDir);
+  if (existing.some((e) => e.text === clean)) return { ...entry, duplicate: true };
+  fs.appendFileSync(lf, JSON.stringify(entry) + "\n");
+  return entry;
+}
+
+function readLessons(homeDir, maxEntries = 100) {
+  try {
+    const lines = fs.readFileSync(lessonsFile(homeDir), "utf8").split("\n").filter(Boolean);
     return lines.slice(-maxEntries).map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean);
   } catch { return []; }
 }
@@ -108,23 +134,26 @@ function expandDistributional(all, q) {
 
 // recall: decisions ALWAYS included (locks must hold), rest TF-IDF ranked, total <= budget chars.
 // Rare query words (e.g. "webhook") outrank common ones (e.g. "fix") — relevance without embeddings.
-function recall(cwd, query, budget = 4000) {
+function recall(cwd, query, budget = 4000, homeDir) {
   const all = readAll(cwd);
+  const lessons = readLessons(homeDir).map((e) => ({ ...e, global: true }));
   const decisions = all.filter((e) => e.kind === "decision").slice(-10);
   const q0 = (query || "").toLowerCase().split(/[^a-z0-9_./-]+/).filter(Boolean);
   const q = expandDistributional(all, expandQuery(q0));
+  // Lessons join the pool (marked global) — scored by the same TF-IDF.
+  const pool = all.concat(lessons);
   // Document frequency over memory texts for IDF
   const df = {};
-  const toksOf = all.map((e) => {
+  const toksOf = pool.map((e) => {
     const set = new Set(((e.text || "").toLowerCase().match(/[a-z0-9_./-]{3,}/g) || []));
     for (const t of set) df[t] = (df[t] || 0) + 1;
     return set;
   });
-  const N = all.length || 1;
+  const N = pool.length || 1;
   const idf = (t) => Math.log((N + 1) / ((df[t] || 0) + 1)) + 1;
-  const rest = all.filter((e) => e.kind !== "decision");
+  const rest = pool.filter((e) => e.kind !== "decision");
   const scored = rest.map((e) => {
-    const idx = all.indexOf(e);
+    const idx = pool.indexOf(e);
     const t = toksOf[idx];
     const raw = (e.text || "").toLowerCase();
     let s = (e.weight || 1) * 0.5;
@@ -141,7 +170,8 @@ function recall(cwd, query, budget = 4000) {
   const out = [];
   let used = 0;
   for (const e of [...decisions, ...base]) {
-    const line = `[${e.at.slice(0, 16)}|${e.kind}] ${e.text}`;
+    const tag = e.global ? "|global" : "";
+    const line = `[${e.at.slice(0, 16)}|${e.kind}${tag}] ${e.text}`;
     if (used + line.length > budget) break;
     if (out.some((o) => o.text === e.text && o.kind === e.kind)) continue;
     out.push(e);
@@ -150,4 +180,4 @@ function recall(cwd, query, budget = 4000) {
   return { entries: out, chars: used, total: all.length };
 }
 
-module.exports = { remember, recall, readAll };
+module.exports = { remember, recall, readAll, rememberGlobal, readLessons };

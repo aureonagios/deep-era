@@ -9,7 +9,7 @@ const targetDir = process.argv[3] && !process.argv[3].startsWith("-") ? path.res
 async function main() {
   if (!cmd || cmd === "help" || cmd === "--help" || cmd === "-h") {
     console.log(`
-AI Deep Era v0.23.0 - give the blind AI developer eyes (no frontend, proof in your IDE)
+AI Deep Era v0.25.0 - give the blind AI developer eyes (no frontend, proof in your IDE)
 
 Usage:
   deep-era onboard             One shot: init + setup-ide + CI + skill
@@ -21,6 +21,8 @@ Usage:
   deep-era demo                Self-proof: catch planted bugs live
   deep-era recall <query>      Project memory: recall past chats/decisions
   deep-era remember <k> <txt>  Project memory: save (k=chat|decision|fix|error|note)
+  deep-era remember --global <txt>  Lesson for ALL projects (recalled everywhere)
+  deep-era projects [dir]      All deep-era projects + health, one screen
   deep-era context <query>     Token saver: show only relevant files
   deep-era fix                 SAFE auto-fix (snapshot+gitignore+map) — never touches logic
   deep-era setup-ide [dir]     MCP configs for 25+ clients (.deep-era/ide/)
@@ -180,7 +182,19 @@ Usage:
     console.log(renderPack(map.stack.kind));
     return;
   }
-  if (cmd === "remember") {    const { remember } = require("../src/memory");
+  if (cmd === "projects") {
+    const { runProjects } = require("../src/projects");
+    runProjects(targetDir);
+    return;
+  }
+  if (cmd === "remember") {
+    if (process.argv[3] === "--global") {
+      const { rememberGlobal } = require("../src/memory");
+      const e = rememberGlobal(process.argv.slice(4).join(" "));
+      console.log(`[deep-era] lesson saved globally (every project will recall it)`);
+      return;
+    }
+    const { remember } = require("../src/memory");
     const kind = process.argv[3] || "note";
     const text = process.argv.slice(4).join(" ");
     if (!text) { console.error("Usage: deep-era remember <chat|decision|fix|error|note> <text>"); process.exit(1); }

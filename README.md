@@ -1,8 +1,8 @@
-# AI Deep Era v0.23.0 — give the blind AI developer eyes
+# AI Deep Era v0.25.0 — give the blind AI developer eyes
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/Node-%3E%3D18-blue.svg)](package.json)
-[![Tests](https://img.shields.io/badge/Tests-51%20passing-brightgreen.svg)](tests/run.js)
+[![Tests](https://img.shields.io/badge/Tests-55%20passing-brightgreen.svg)](tests/run.js)
 [![No deps](https://img.shields.io/badge/Dependencies-0-orange.svg)](package.json)
 [![MCP](https://img.shields.io/badge/MCP-10%20tools-purple.svg)](mcp/server.js)
 [![IDE](https://img.shields.io/badge/IDEs-25%2B-blueviolet.svg)](src/setupIde.js)
@@ -77,6 +77,8 @@ Changed (file+line) | Tests ran + result | Errors seen + fix | Guard findings | 
 | `heal` | end-to-end: snapshot + safe-fix + re-check |
 | `demo` | self-proof: catch planted bugs live |
 | `recall <q>` / `remember <k> <text>` | project memory — forget nothing |
+| `remember --global <text>` | lesson every project recalls |
+| `projects [dir]` | all deep-era projects + health, one screen |
 | `context <q>` | token saver: relevant files only |
 | `fix` | safe auto-fix (snapshots first) |
 | `snapshot` / `snapshots` / `diff <id>` / `restore <id>` | backup, browse, compare, rollback |
@@ -104,8 +106,8 @@ Changed (file+line) | Tests ran + result | Errors seen + fix | Guard findings | 
 ## Demo
 `DEMO.md` — 5-minute video script. Or run `deep-era demo` and watch 4 traps get caught.
 
-## Self-proof (v0.23.0, just ran)
-- `npm test` → 38 unit + 9 CLI + 6 MCP = **53 green**
+## Self-proof (v0.25.0, just ran)
+- `npm test` → 40 unit + 9 CLI + 6 MCP = **55 green**
 - `check` → verify 2/2, 0 security/guard/deps → PASS
 - `mcp tools/list` → 10 tools ok
 - `npm publish --dry-run` → 28 files, clean

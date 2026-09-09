@@ -403,6 +403,30 @@ ok("stdlib-not-hallucination", () => {
   assert(guardScan(tmp, map2.files).some((x) => x.rule === "broken-import"), "real ghost missed!");
 });
 
+ok("global-lesson-travels-projects", () => {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-home-"));
+  const { rememberGlobal, recall } = require("../src/memory");
+  rememberGlobal("never use rm -rf in scripts", home);
+  const projA = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-"));
+  const projB = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-"));
+  const ra = recall(projA, "scripts danger", 4000, home);
+  const rb = recall(projB, "scripts danger", 4000, home);
+  assert(ra.entries.some((e) => e.global), "lesson missing in project A!");
+  assert(rb.entries.some((e) => e.global), "lesson missing in project B!");
+});
+
+ok("projects-registry-lists-health", () => {
+  const { findProjects, projectStatus } = require("../src/projects");
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-"));
+  fs.mkdirSync(path.join(root, "proj1", ".deep-era"), { recursive: true });
+  fs.writeFileSync(path.join(root, "proj1", ".deep-era", "last-doctor.json"), JSON.stringify({ at: "2026-01-01", failed: 2 }));
+  fs.mkdirSync(path.join(root, "proj2", ".deep-era"), { recursive: true });
+  const found = findProjects(root);
+  assert(found.length === 2, `found ${found.length}, want 2!`);
+  assert(projectStatus(path.join(root, "proj1")).state === "FAIL", "FAIL missed!");
+  assert(projectStatus(path.join(root, "proj2")).state === "NEVER", "NEVER missed!");
+});
+
 ok("universal-stacks-detected", () => {
   const kinds = [
     [[{ file: "go.mod" }], "go"],
