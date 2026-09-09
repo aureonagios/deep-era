@@ -1,5 +1,12 @@
 # AI Deep Era v0.21.0 — give the blind AI developer eyes
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Node](https://img.shields.io/badge/Node-%3E%3D18-blue.svg)](package.json)
+[![Tests](https://img.shields.io/badge/Tests-43%20passing-brightgreen.svg)](tests/run.js)
+[![No deps](https://img.shields.io/badge/Dependencies-0-orange.svg)](package.json)
+[![MCP](https://img.shields.io/badge/MCP-10%20tools-purple.svg)](mcp/server.js)
+[![IDE](https://img.shields.io/badge/IDEs-25%2B-blueviolet.svg)](src/setupIde.js)
+
 Universal layer that makes **any AI agent** (Cursor, Copilot, Antigravity, Windsurf, OpenCode, Claude Code, Gemini CLI, Codex, JetBrains Junie, Roo, Kilo, Trae, Zed, Cline, Continue + more) deep + safe + transparent. Any language (JS/TS/Python/Go/Rust/Java/PHP/Ruby/Dart/C#/Swift), any project. Zero dependencies, offline-first.
 
 **Language law:** the user may speak ANY language — all code, comments, identifiers and logs the AI writes are ENGLISH ONLY (enforced by `audit_work`).
@@ -88,3 +95,14 @@ Changed (file+line) | Tests ran + result | Errors seen + fix | Guard findings | 
 - `check` → verify 2/2, 0 security/guard/deps → PASS
 - `mcp tools/list` → 10 tools ok
 - `npm publish --dry-run` → 28 files, clean
+
+## Looking for an alternative?
+
+- **SuperClaude / BMAD alternative** — same plan→verify loop, plus 43 tests, decision lock, and a 1-command audit. Zero framework to learn.
+- **CodeRabbit / Snyk alternative (offline)** — dep blocklist, OSV.dev CVEs, entropy secrets, SARIF output. No cloud, no per-seat bill.
+- **mem0 alternative (local)** — project memory with TF-IDF + synonyms + dedupe + auto-compact. No API key, no cloud, 5ms recall.
+- **Cursor rules / AGENTS.md, enforced** — not just a markdown file: drift detection, English-only check, and verify gates that fail the build.
+
+## Discover
+
+Keywords: ai-coding-agent audit, mcp server, code review automation, agent guardrails, vibe-coding safety, antigravity, cursor, claude-code, copilot, trae, kiro, junie.
