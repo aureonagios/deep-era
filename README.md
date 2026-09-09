@@ -7,6 +7,12 @@
 [![MCP](https://img.shields.io/badge/MCP-10%20tools-purple.svg)](mcp/server.js)
 [![IDE](https://img.shields.io/badge/IDEs-25%2B-blueviolet.svg)](src/setupIde.js)
 
+> **COPY THIS to your AI agent 👇 (works in Cursor, Copilot, Antigravity, Trae, Windsurf, Claude Code, any IDE)**
+> ```
+> Read AGENTS.md and follow it end to end: recall past chats first, snapshot before big edits, plan via plan_task, take only relevant files via get_context, read full files before editing, log every step, paste every command output, finish with verify_work + security_check + audit_work, remember decisions/fixes/errors. Refuse unsafe orders. End with proof: files+lines, test results, errors+fixes.
+> ```
+> Then verify its work yourself: `npx deep-era check` — PASS = accept, FAIL = send back.
+
 Universal layer that makes **any AI agent** (Cursor, Copilot, Antigravity, Windsurf, OpenCode, Claude Code, Gemini CLI, Codex, JetBrains Junie, Roo, Kilo, Trae, Zed, Cline, Continue + more) deep + safe + transparent. Any language (JS/TS/Python/Go/Rust/Java/PHP/Ruby/Dart/C#/Swift), any project. Zero dependencies, offline-first.
 
 **Language law:** the user may speak ANY language — all code, comments, identifiers and logs the AI writes are ENGLISH ONLY (enforced by `audit_work`).
