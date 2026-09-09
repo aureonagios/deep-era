@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-09-09T10:10:47.632Z",
+  "generatedAt": "2026-09-09T13:55:51.514Z",
   "stack": {
     "kind": "node",
     "run": null,
@@ -8,7 +8,8 @@
     "test": "npm test"
   },
   "counts": {
-    "total": 47
+    "total": 47,
+    "truncated": false
   },
   "files": [
     {
@@ -63,7 +64,7 @@
     {
       "file": "AGENTS.md",
       "role": "doc",
-      "size": 2985,
+      "size": 2954,
       "imports": [],
       "importedBy": []
     },
@@ -307,7 +308,7 @@
     {
       "file": "src/map.js",
       "role": "code-js",
-      "size": 6999,
+      "size": 7055,
       "imports": [],
       "importedBy": [
         "bin/cli.js",
@@ -478,7 +479,7 @@
     {
       "file": "tests/mcp.js",
       "role": "code-js",
-      "size": 4510,
+      "size": 4872,
       "imports": [],
       "importedBy": []
     },

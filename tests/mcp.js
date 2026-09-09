@@ -6,6 +6,8 @@ const path = require("path");
 const { spawn } = require("child_process");
 
 const CLI = path.join(__dirname, "..", "bin", "cli.js");
+const fs = require("fs");
+const os = require("os");
 let pass = 0;
 const pending = [];
 function ok(name, fn) {
@@ -15,6 +17,13 @@ function ok(name, fn) {
       pending.push(r.then(() => { pass++; console.log(`PASS ${name}`); }).catch((e) => { console.error(`FAIL ${name}: ${e.message}`); process.exitCode = 1; }));
     } else { pass++; console.log(`PASS ${name}`); }
   } catch (e) { console.error(`FAIL ${name}: ${e.message}`); process.exitCode = 1; }
+}
+
+function sandbox() {
+  // NEVER run state-mutating tools in the real repo — tests polluted it once (14 junk snapshots).
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-mcp-"));
+  fs.writeFileSync(path.join(tmp, "handler.js"), "module.exports = async function handler(req) {\n  return { ok: true };\n};\n");
+  return tmp;
 }
 
 function session(cwd) {
@@ -46,7 +55,7 @@ function session(cwd) {
 }
 
 ok("mcp-initialize-and-list", async () => {
-  const s = session(process.cwd());
+  const s = session(sandbox());
   const init = await s.send("initialize", {});
   assert(init.result.serverInfo.name === "deep-era", "wrong server");
   const list = await s.send("tools/list", {});
@@ -55,7 +64,7 @@ ok("mcp-initialize-and-list", async () => {
 });
 
 ok("mcp-memory-roundtrip", async () => {
-  const s = session(process.cwd());
+  const s = session(sandbox());
   await s.send("initialize", {});
   const w = await s.send("tools/call", { name: "remember", arguments: { kind: "note", text: "mcp wire test note" } });
   assert(w.result.content[0].text.includes("Remembered"), "remember broke on wire");
@@ -65,19 +74,19 @@ ok("mcp-memory-roundtrip", async () => {
 });
 
 ok("mcp-plan-log-context", async () => {
-  const s = session(process.cwd());
+  const s = session(sandbox());
   await s.send("initialize", {});
   const p = await s.send("tools/call", { name: "plan_task", arguments: { goal: "wire goal", steps: ["a"] } });
   assert(p.result.content[0].text.includes("wire goal"), "plan broke");
   const l = await s.send("tools/call", { name: "log_step", arguments: { message: "wire step" } });
   assert(l.result.content[0].text.includes("Logged"), "log broke");
-  const c = await s.send("tools/call", { name: "get_context", arguments: { query: "mcp server" } });
-  assert(c.result.content[0].text.includes("mcp/server.js"), "context broke");
+  const c = await s.send("tools/call", { name: "get_context", arguments: { query: "handler" } });
+  assert(c.result.content[0].text.includes("handler.js"), "context broke");
   s.stop();
 });
 
 ok("mcp-verify-security-audit", async () => {
-  const s = session(process.cwd());
+  const s = session(sandbox());
   await s.send("initialize", {});
   for (const tool of ["verify_work", "security_check", "audit_work"]) {
     const r = await s.send("tools/call", { name: tool, arguments: {} });
@@ -87,7 +96,7 @@ ok("mcp-verify-security-audit", async () => {
 });
 
 ok("mcp-snapshot-safefix", async () => {
-  const s = session(process.cwd());
+  const s = session(sandbox());
   await s.send("initialize", {});
   const snap = await s.send("tools/call", { name: "snapshot", arguments: { action: "create", label: "mcp-test" } });
   assert(snap.result.content[0].text.includes("Snapshot"), "snapshot broke");
@@ -97,7 +106,7 @@ ok("mcp-snapshot-safefix", async () => {
 });
 
 ok("mcp-unknown-tool-errors", async () => {
-  const s = session(process.cwd());
+  const s = session(sandbox());
   await s.send("initialize", {});
   const r = await s.send("tools/call", { name: "nope", arguments: {} });
   assert(r.error && /unknown tool/.test(r.error.message), "unknown tool not rejected");

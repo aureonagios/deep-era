@@ -13,7 +13,7 @@ function scan(cwd, dir = "", out = []) {
     return out;
   }
   for (const e of entries) {
-    if (out.length >= MAX_FILES) break;
+    if (out.length >= MAX_FILES) { out.truncated = true; break; }
     if (e.name.startsWith(".") && e.name !== ".env.example") {
       if (![".env.example"].includes(e.name) && e.isDirectory()) {
         if (SKIP.has(e.name)) continue;
@@ -153,7 +153,7 @@ function buildMap(cwd) {
     version: 2,
     generatedAt: new Date().toISOString(),
     stack,
-    counts: { total: files.length },
+    counts: { total: files.length, truncated: !!files.truncated },
     files: files.slice(0, MAX_FILES),
   };
 }
