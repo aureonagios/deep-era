@@ -1,8 +1,8 @@
-# AI Deep Era v0.25.0 — give the blind AI developer eyes
+# AI Deep Era v0.26.0 — give the blind AI developer eyes
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/Node-%3E%3D18-blue.svg)](package.json)
-[![Tests](https://img.shields.io/badge/Tests-55%20passing-brightgreen.svg)](tests/run.js)
+[![Tests](https://img.shields.io/badge/Tests-57%20passing-brightgreen.svg)](tests/run.js)
 [![No deps](https://img.shields.io/badge/Dependencies-0-orange.svg)](package.json)
 [![MCP](https://img.shields.io/badge/MCP-10%20tools-purple.svg)](mcp/server.js)
 [![IDE](https://img.shields.io/badge/IDEs-25%2B-blueviolet.svg)](src/setupIde.js)
@@ -106,8 +106,8 @@ Changed (file+line) | Tests ran + result | Errors seen + fix | Guard findings | 
 ## Demo
 `DEMO.md` — 5-minute video script. Or run `deep-era demo` and watch 4 traps get caught.
 
-## Self-proof (v0.25.0, just ran)
-- `npm test` → 40 unit + 9 CLI + 6 MCP = **55 green**
+## Self-proof (v0.26.0, just ran)
+- `npm test` → 42 unit + 9 CLI + 6 MCP = **57 green**
 - `check` → verify 2/2, 0 security/guard/deps → PASS
 - `mcp tools/list` → 10 tools ok
 - `npm publish --dry-run` → 28 files, clean

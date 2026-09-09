@@ -87,6 +87,20 @@ function readOsvCache(cwd) {
   } catch { return {}; }
 }
 
+// First fixed version across affected ranges — turns a CVE report into an upgrade order.
+function fixedIn(vuln) {
+  try {
+    for (const a of (vuln.affected || [])) {
+      for (const r of (a.ranges || [])) {
+        for (const e of (r.events || [])) {
+          if (e.fixed) return e.fixed;
+        }
+      }
+    }
+  } catch {}
+  return null;
+}
+
 function auditOsv(cwd) {
   let pkg = {};
   try { pkg = JSON.parse(fs.readFileSync(path.join(cwd, "package.json"), "utf8")); } catch { return []; }
@@ -113,10 +127,13 @@ function auditOsv(cwd) {
           const j = JSON.parse(body);
           const store = readOsvCache(cwd);
           (j.results || []).forEach((r, i) => {
-            const vulns = (r.vulns || []).slice(0, 3).map((v) => ({
-              file: "package.json", rule: "osv-cve", sev: "high",
-              msg: `${fresh[i][0]}@${fresh[i][1]}: ${v.id} ${(v.summary || "").slice(0, 100)}`,
-            }));
+            const vulns = (r.vulns || []).slice(0, 3).map((v) => {
+              const fixed = fixedIn(v);
+              return {
+                file: "package.json", rule: "osv-cve", sev: "high",
+                msg: `${fresh[i][0]}@${fresh[i][1]}: ${v.id} ${(v.summary || "").slice(0, 80)}${fixed ? ` — upgrade to >=${fixed}` : ""}`,
+              };
+            });
             store[fresh[i][2]] = { vulns };
             results.push(...vulns);
           });
@@ -135,4 +152,4 @@ function auditOsv(cwd) {
   });
 }
 
-module.exports = { auditDeps, auditOsv };
+module.exports = { auditDeps, auditOsv, fixedIn };

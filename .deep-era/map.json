@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-09-09T18:40:54.142Z",
+  "generatedAt": "2026-09-09T19:29:19.972Z",
   "stack": {
     "kind": "node",
     "run": null,
@@ -120,7 +120,7 @@
     {
       "file": "ERROR-REPORT.md",
       "role": "doc",
-      "size": 4327,
+      "size": 4237,
       "imports": [],
       "importedBy": []
     },
@@ -204,7 +204,7 @@
     {
       "file": "src/deps.js",
       "role": "code-js",
-      "size": 6359,
+      "size": 6860,
       "imports": [],
       "importedBy": [
         "bin/cli.js",
@@ -337,7 +337,7 @@
     {
       "file": "src/memory.js",
       "role": "code-js",
-      "size": 7902,
+      "size": 8099,
       "imports": [],
       "importedBy": [
         "bin/cli.js",
@@ -529,7 +529,7 @@
     {
       "file": "tests/run.js",
       "role": "code-js",
-      "size": 21679,
+      "size": 22383,
       "imports": [
         "src/map.js",
         "src/security.js",

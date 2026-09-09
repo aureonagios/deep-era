@@ -161,6 +161,10 @@ function recall(cwd, query, budget = 4000, homeDir) {
       if (t.has(tok)) s += 2 * idf(tok);
       else if (raw.includes(tok)) s += 0.5; // stemming fallback, weak vote
     }
+    // Phrase bonus: "rate limit" as a concept outranks scattered "rate" + "limit".
+    for (let i = 0; i + 1 < q0.length; i++) {
+      if (raw.includes(q0[i] + " " + q0[i + 1])) s += 3;
+    }
     return { e, s };
   });
   scored.sort((a, b) => b.s - a.s || (a.e.at < b.e.at ? 1 : -1));

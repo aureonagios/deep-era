@@ -1,6 +1,6 @@
 # ERROR-REPORT.md (AI Deep Era Doctor)
 
-Generated: 2026-09-09T18:42:15.596Z
+Generated: 2026-09-09T19:30:37.822Z
 Stack: node | Files: 49
 
 ## 1. Terminal / build truth
@@ -17,7 +17,7 @@ PASS context-saves-tokens
 PASS verify-deep-all-files
 PASS snapshot-create-restore
 PASS init-creates-agents-md
-[deep-era] init ok -> C:\Users\Mustafa\AppData\Local\Temp\deep-era-PbwPZa
+[deep-era] init ok -> C:\Users\Mustafa\AppData\Local\Temp\deep-era-BgX2VY
   - AGENTS.md (universal rules, 50+ IDEs)
   - .deep-era/map.json (2 files, stack=unknown)
   - .deep-era/RULES.md + logs/
@@ -44,8 +44,8 @@ PASS graph-from-real-imports
 [deep-era] timeline (1 events):
   2026-01-01T00:00 [step] init ok: 2 files
 PASS timeline-reads-logs
-[deep-era demo] planted 4 traps in C:\Users\Mustafa\AppData\Local\Temp\deep-era-demo-CFUudZ (SQL injection, new Function, hijacked dep, dummy stats)
-[deep-era demo] caught 5 critical/high in 2230ms:
+[deep-era demo] planted 4 traps in C:\Users\Mustafa\AppData\Local\Temp\deep-era-demo-2hBC5O (SQL injection, new Function, hijacked dep, dummy stats)
+[deep-era demo] caught 5 critical/high in 1859ms:
   ! [high] app.js: Possible SQL injection (string concat) (sql-concat)
   ! [high] app.js: new Function(string) — code from string, injection risk (new-function)
   ! [critical] app.js: String-concatenated SQL — parameterized queries are mandatory. (sql-injection)
@@ -83,7 +83,7 @@ None. Clean.
 - BENCH.md (doc, 1641b)
 - bin/cli.js (code-js, 14691b)
 - DEMO.md (doc, 1451b)
-- ERROR-REPORT.md (doc, 4327b)
+- ERROR-REPORT.md (doc, 4237b)
 - LICENSE (other, 73b)
 - mcp/server.js (code-js, 8992b)
 - package.json (config, 650b)
@@ -91,7 +91,7 @@ None. Clean.
 - src/ci.js (code-js, 1020b)
 - src/context.js (code-js, 2100b)
 - src/demo.js (code-js, 2506b)
-- src/deps.js (code-js, 6359b)
+- src/deps.js (code-js, 6860b)
 - src/doctor.js (code-js, 4232b)
 - src/fix.js (code-js, 1701b)
 - src/global.js (code-js, 3199b)
@@ -100,7 +100,7 @@ None. Clean.
 - src/init.js (code-js, 4049b)
 - src/logger.js (code-js, 886b)
 - src/map.js (code-js, 7055b)
-- src/memory.js (code-js, 7902b)
+- src/memory.js (code-js, 8099b)
 - src/projects.js (code-js, 1722b)
 - src/pyast.js (code-js, 3007b)
 - src/sarif.js (code-js, 1279b)
@@ -119,11 +119,10 @@ None. Clean.
 - tests/mcp.js (code-js, 4872b)
 - tests/perf-result.json (config, 710b)
 - tests/perf.js (code-js, 4468b)
-- tests/run.js (code-js, 21679b)
+- tests/run.js (code-js, 22383b)
 
 ## 4. Fix order for the AI
 All clean. Nothing to fix.
 
 ## 5. Progress vs last run
-Fixed since last run (1): npm test --silent@
-Newly broken (0): —
+First audited run — baseline locked.

@@ -427,6 +427,21 @@ ok("projects-registry-lists-health", () => {
   assert(projectStatus(path.join(root, "proj2")).state === "NEVER", "NEVER missed!");
 });
 
+ok("recall-phrase-beats-scatter", () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-"));
+  remember(tmp, "chat", "rate limit hit on deploy pipeline again");
+  remember(tmp, "chat", "limited rate of progress this week ok");
+  const r = recall(tmp, "rate limit");
+  assert(r.entries[0].text.includes("rate limit hit"), "phrase not ranked first!");
+});
+
+ok("osv-fixed-version-parsed", () => {
+  const { fixedIn } = require("../src/deps");
+  const fake = { affected: [{ ranges: [{ events: [{ introduced: "1.0.0" }, { fixed: "1.2.3" }] }] }] };
+  assert(fixedIn(fake) === "1.2.3", "fixed version missed!");
+  assert(fixedIn({}) === null, "empty vuln should be null!");
+});
+
 ok("universal-stacks-detected", () => {
   const kinds = [
     [[{ file: "go.mod" }], "go"],
