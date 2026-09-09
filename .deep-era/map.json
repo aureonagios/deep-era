@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-09-09T10:04:56.187Z",
+  "generatedAt": "2026-09-09T10:10:47.632Z",
   "stack": {
     "kind": "node",
     "run": null,
@@ -119,7 +119,7 @@
     {
       "file": "ERROR-REPORT.md",
       "role": "doc",
-      "size": 3919,
+      "size": 4141,
       "imports": [],
       "importedBy": []
     },
@@ -450,7 +450,7 @@
     {
       "file": "tests/cli.js",
       "role": "code-js",
-      "size": 3743,
+      "size": 4595,
       "imports": [],
       "importedBy": []
     },

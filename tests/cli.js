@@ -78,6 +78,27 @@ ok("cli-perf-smoke", () => {
   assert(out.includes("map") && out.includes("ms"), "perf broke");
 });
 
+ok("cli-fix-doctor-sarif", () => {
+  const tmp = sandbox();
+  cli(tmp, ["init"]);
+  assert(cli(tmp, ["fix"]).includes("fix done"), "fix broke");
+  cli(tmp, ["doctor", "--sarif"]);
+  assert(fs.existsSync(path.join(tmp, ".deep-era", "report.sarif")), "no sarif");
+});
+
+ok("cli-watch-detects-change", async () => {
+  const tmp = sandbox();
+  const child = require("child_process").spawn(process.execPath, [CLI, "watch"], { cwd: tmp });
+  let out = "";
+  child.stdout.setEncoding("utf8");
+  child.stdout.on("data", (c) => { out += c; });
+  await new Promise((r) => setTimeout(r, 1500));
+  fs.writeFileSync(path.join(tmp, "a.js"), "console.log(2);\n");
+  await new Promise((r) => setTimeout(r, 4000));
+  child.kill();
+  assert(out.includes("watching") && out.includes("change: a.js"), `watch missed change: ${out.slice(0, 200)}`);
+});
+
 ok("cli-check-json", () => {
   const tmp = sandbox();
   cli(tmp, ["init"]);
