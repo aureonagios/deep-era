@@ -1,0 +1,88 @@
+// CLI integration tests — every command runs for real in a sandbox.
+// This suite would have caught the snapshot-label bug before any human did.
+process.env.DEEP_ERA_SELFTEST = "1";
+const assert = require("assert");
+const fs = require("fs");
+const path = require("path");
+const os = require("os");
+const { execFileSync } = require("child_process");
+
+const CLI = path.join(__dirname, "..", "bin", "cli.js");
+let pass = 0;
+function ok(name, fn) {
+  try {
+    const r = fn();
+    if (r && typeof r.then === "function") {
+      pending.push(r.then(() => { pass++; console.log(`PASS ${name}`); }).catch((e) => { console.error(`FAIL ${name}: ${e.message}`); process.exitCode = 1; }));
+    } else { pass++; console.log(`PASS ${name}`); }
+  } catch (e) { console.error(`FAIL ${name}: ${e.message}`); process.exitCode = 1; }
+}
+const pending = [];
+
+function sandbox(files) {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-cli-"));
+  for (const [name, content] of Object.entries(files || { "a.js": "console.log(1);\n" })) {
+    fs.mkdirSync(path.join(tmp, path.dirname(name)), { recursive: true });
+    fs.writeFileSync(path.join(tmp, name), content);
+  }
+  return tmp;
+}
+function cli(tmp, args) {
+  return execFileSync(process.execPath, [CLI, ...args], { cwd: tmp, timeout: 120000 }).toString();
+}
+
+ok("cli-init-check-rules-costs", () => {
+  const tmp = sandbox();
+  assert(cli(tmp, ["init"]).includes("init ok"), "init broke");
+  assert(cli(tmp, ["check"]).includes("RESULT: PASS"), "check broke");
+  assert(cli(tmp, ["rules"]).includes("Stack pack"), "rules broke");
+  assert(cli(tmp, ["costs"]).includes("AI spend"), "costs broke");
+});
+
+ok("cli-remember-recall-roundtrip", () => {
+  const tmp = sandbox();
+  cli(tmp, ["init"]);
+  assert(cli(tmp, ["remember", "decision", "ship on friday"]).includes("remembered"), "remember broke");
+  assert(cli(tmp, ["recall", "ship"]).includes("friday"), "recall broke");
+});
+
+ok("cli-snapshot-diff-restore", () => {
+  const tmp = sandbox();
+  cli(tmp, ["init"]);
+  const out = cli(tmp, ["snapshot", "wow"]);
+  assert(out.includes("-wow"), `label lost: ${out}`); // regression: label used to become dirname
+  assert(out.includes("(2 files)"), `wrong count: ${out}`); // a.js + AGENTS.md from init
+  const id = out.match(/snapshot (\S+)/)[1];
+  assert(cli(tmp, ["snapshots"]).includes(id), "snapshots list broke");
+  fs.writeFileSync(path.join(tmp, "a.js"), "console.log(2);\n");
+  assert(cli(tmp, ["diff", id]).includes("~"), "diff missed modification");
+  cli(tmp, ["restore", id]);
+  assert(fs.readFileSync(path.join(tmp, "a.js"), "utf8").includes("console.log(1)"), "restore broke");
+});
+
+ok("cli-graph-timeline-skill-ci", () => {
+  const tmp = sandbox({ "a.js": "require('./b');\n", "b.js": "module.exports = 1;\n" });
+  cli(tmp, ["init"]);
+  cli(tmp, ["graph"]);
+  assert(fs.existsSync(path.join(tmp, "ARCHITECTURE.md")), "no graph file");
+  assert(cli(tmp, ["timeline"]).includes("timeline"), "timeline broke");
+  cli(tmp, ["skill"]);
+  assert(fs.existsSync(path.join(tmp, ".deep-era", "skill", "SKILL.md")), "no skill");
+  cli(tmp, ["ci"]);
+  assert(fs.existsSync(path.join(tmp, ".github", "workflows", "deep-era.yml")), "no CI file");
+});
+
+ok("cli-perf-smoke", () => {
+  const tmp = sandbox();
+  const out = cli(tmp, ["perf"]);
+  assert(out.includes("map") && out.includes("ms"), "perf broke");
+});
+
+ok("cli-check-json", () => {
+  const tmp = sandbox();
+  cli(tmp, ["init"]);
+  const j = JSON.parse(cli(tmp, ["check", "--json"]));
+  assert(j.result === "PASS" && typeof j.verifyPass === "number", "json shape wrong");
+});
+
+Promise.all(pending).then(() => console.log(`\n${pass} CLI tests passed`));

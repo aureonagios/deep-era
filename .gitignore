@@ -1,0 +1,7 @@
+.env
+node_modules/
+.deep-era/snapshots/
+.deep-era/logs/
+.deep-era/ide/
+*.tgz
+tests/perf-result.json

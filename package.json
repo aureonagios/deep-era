@@ -1,0 +1,26 @@
+{
+  "name": "deep-era",
+  "version": "0.21.0",
+  "description": "AI Deep Era - universal layer that gives any AI agent eyes: map, terminal truth, verify, security proof",
+  "type": "commonjs",
+  "main": "./src/map.js",
+  "bin": {
+    "deep-era": "bin/cli.js"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "mcp/",
+    "AGENTS.md",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": ["ai", "mcp", "coding-agent", "verify", "security", "cursor", "antigravity", "opencode"],
+  "scripts": {
+    "test": "node tests/run.js && node tests/cli.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}

@@ -1,0 +1,4 @@
+node_modules/
+.deep-era/snapshots/
+*.tgz
+.env

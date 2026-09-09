@@ -1,0 +1,498 @@
+{
+  "version": 2,
+  "generatedAt": "2026-09-09T09:13:55.715Z",
+  "stack": {
+    "kind": "node",
+    "run": null,
+    "build": null,
+    "test": "npm test"
+  },
+  "counts": {
+    "total": 42
+  },
+  "files": [
+    {
+      "file": ".github/workflows/deep-era.yml",
+      "role": "config",
+      "size": 268,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": ".gitignore",
+      "role": "other",
+      "size": 40,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": ".npmignore",
+      "role": "other",
+      "size": 46,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": "AGENTS.md",
+      "role": "doc",
+      "size": 2954,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": "ARCHITECTURE.md",
+      "role": "doc",
+      "size": 2177,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": "BENCH.md",
+      "role": "doc",
+      "size": 1601,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": "bin/cli.js",
+      "role": "code-js",
+      "size": 13647,
+      "imports": [
+        "src/init.js",
+        "src/doctor.js",
+        "src/map.js",
+        "src/verify.js",
+        "src/security.js",
+        "src/guard.js",
+        "src/deps.js",
+        "src/logger.js",
+        "src/spend.js",
+        "src/fix.js",
+        "src/setupIde.js",
+        "src/context.js",
+        "src/memory.js",
+        "src/graph.js",
+        "src/timeline.js",
+        "src/snapshot.js",
+        "src/demo.js",
+        "src/stacks.js",
+        "src/ci.js",
+        "src/skill.js"
+      ],
+      "importedBy": []
+    },
+    {
+      "file": "DEMO.md",
+      "role": "doc",
+      "size": 1411,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": "ERROR-REPORT.md",
+      "role": "doc",
+      "size": 4023,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": "LICENSE",
+      "role": "other",
+      "size": 72,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": "mcp/server.js",
+      "role": "code-js",
+      "size": 8466,
+      "imports": [
+        "src/map.js",
+        "src/verify.js",
+        "src/security.js",
+        "src/guard.js",
+        "src/context.js",
+        "src/snapshot.js",
+        "src/memory.js",
+        "src/logger.js",
+        "src/spend.js",
+        "src/fix.js",
+        "src/deps.js"
+      ],
+      "importedBy": []
+    },
+    {
+      "file": "package.json",
+      "role": "config",
+      "size": 603,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": "README.md",
+      "role": "doc",
+      "size": 2675,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": "src/ci.js",
+      "role": "code-js",
+      "size": 989,
+      "imports": [],
+      "importedBy": [
+        "bin/cli.js",
+        "tests/run.js"
+      ]
+    },
+    {
+      "file": "src/context.js",
+      "role": "code-js",
+      "size": 2044,
+      "imports": [],
+      "importedBy": [
+        "bin/cli.js",
+        "mcp/server.js",
+        "tests/perf.js",
+        "tests/run.js"
+      ]
+    },
+    {
+      "file": "src/demo.js",
+      "role": "code-js",
+      "size": 2459,
+      "imports": [
+        "src/map.js",
+        "src/verify.js",
+        "src/security.js",
+        "src/guard.js",
+        "src/deps.js"
+      ],
+      "importedBy": [
+        "bin/cli.js",
+        "tests/run.js"
+      ]
+    },
+    {
+      "file": "src/deps.js",
+      "role": "code-js",
+      "size": 6221,
+      "imports": [],
+      "importedBy": [
+        "bin/cli.js",
+        "mcp/server.js",
+        "src/demo.js",
+        "src/doctor.js",
+        "tests/run.js"
+      ]
+    },
+    {
+      "file": "src/doctor.js",
+      "role": "code-js",
+      "size": 4164,
+      "imports": [
+        "src/map.js",
+        "src/verify.js",
+        "src/security.js",
+        "src/guard.js",
+        "src/deps.js",
+        "src/logger.js",
+        "src/sarif.js"
+      ],
+      "importedBy": [
+        "bin/cli.js"
+      ]
+    },
+    {
+      "file": "src/fix.js",
+      "role": "code-js",
+      "size": 1655,
+      "imports": [
+        "src/map.js",
+        "src/logger.js",
+        "src/snapshot.js",
+        "src/init.js"
+      ],
+      "importedBy": [
+        "bin/cli.js",
+        "mcp/server.js",
+        "tests/run.js"
+      ]
+    },
+    {
+      "file": "src/graph.js",
+      "role": "code-js",
+      "size": 1996,
+      "imports": [
+        "src/map.js"
+      ],
+      "importedBy": [
+        "bin/cli.js",
+        "tests/run.js"
+      ]
+    },
+    {
+      "file": "src/guard.js",
+      "role": "code-js",
+      "size": 7563,
+      "imports": [
+        "src/map.js",
+        "src/init.js"
+      ],
+      "importedBy": [
+        "bin/cli.js",
+        "mcp/server.js",
+        "src/demo.js",
+        "src/doctor.js",
+        "tests/perf.js",
+        "tests/run.js"
+      ]
+    },
+    {
+      "file": "src/init.js",
+      "role": "code-js",
+      "size": 3992,
+      "imports": [
+        "src/map.js",
+        "src/stacks.js",
+        "src/logger.js"
+      ],
+      "importedBy": [
+        "bin/cli.js",
+        "src/fix.js",
+        "src/guard.js"
+      ]
+    },
+    {
+      "file": "src/logger.js",
+      "role": "code-js",
+      "size": 856,
+      "imports": [],
+      "importedBy": [
+        "bin/cli.js",
+        "mcp/server.js",
+        "src/doctor.js",
+        "src/fix.js",
+        "src/init.js"
+      ]
+    },
+    {
+      "file": "src/map.js",
+      "role": "code-js",
+      "size": 6838,
+      "imports": [],
+      "importedBy": [
+        "bin/cli.js",
+        "mcp/server.js",
+        "src/demo.js",
+        "src/doctor.js",
+        "src/fix.js",
+        "src/graph.js",
+        "src/guard.js",
+        "src/init.js",
+        "tests/perf.js",
+        "tests/run.js"
+      ]
+    },
+    {
+      "file": "src/memory.js",
+      "role": "code-js",
+      "size": 6314,
+      "imports": [],
+      "importedBy": [
+        "bin/cli.js",
+        "mcp/server.js",
+        "tests/perf.js",
+        "tests/run.js"
+      ]
+    },
+    {
+      "file": "src/pyast.js",
+      "role": "code-js",
+      "size": 2924,
+      "imports": [],
+      "importedBy": [
+        "src/security.js",
+        "tests/run.js"
+      ]
+    },
+    {
+      "file": "src/sarif.js",
+      "role": "code-js",
+      "size": 1239,
+      "imports": [],
+      "importedBy": [
+        "src/doctor.js",
+        "tests/run.js"
+      ]
+    },
+    {
+      "file": "src/security.js",
+      "role": "code-js",
+      "size": 6106,
+      "imports": [
+        "src/pyast.js"
+      ],
+      "importedBy": [
+        "bin/cli.js",
+        "mcp/server.js",
+        "src/demo.js",
+        "src/doctor.js",
+        "tests/perf.js",
+        "tests/run.js"
+      ]
+    },
+    {
+      "file": "src/setupIde.js",
+      "role": "code-js",
+      "size": 8601,
+      "imports": [],
+      "importedBy": [
+        "bin/cli.js",
+        "tests/run.js"
+      ]
+    },
+    {
+      "file": "src/skill.js",
+      "role": "code-js",
+      "size": 2008,
+      "imports": [],
+      "importedBy": [
+        "bin/cli.js",
+        "tests/run.js"
+      ]
+    },
+    {
+      "file": "src/snapshot.js",
+      "role": "code-js",
+      "size": 4273,
+      "imports": [],
+      "importedBy": [
+        "bin/cli.js",
+        "mcp/server.js",
+        "src/fix.js",
+        "tests/run.js"
+      ]
+    },
+    {
+      "file": "src/spend.js",
+      "role": "code-js",
+      "size": 1335,
+      "imports": [],
+      "importedBy": [
+        "bin/cli.js",
+        "mcp/server.js"
+      ]
+    },
+    {
+      "file": "src/stacks.js",
+      "role": "code-js",
+      "size": 1495,
+      "imports": [],
+      "importedBy": [
+        "bin/cli.js",
+        "src/init.js",
+        "tests/run.js"
+      ]
+    },
+    {
+      "file": "src/timeline.js",
+      "role": "code-js",
+      "size": 1481,
+      "imports": [],
+      "importedBy": [
+        "bin/cli.js",
+        "tests/run.js"
+      ]
+    },
+    {
+      "file": "src/verify.js",
+      "role": "code-js",
+      "size": 6398,
+      "imports": [],
+      "importedBy": [
+        "bin/cli.js",
+        "mcp/server.js",
+        "src/demo.js",
+        "src/doctor.js",
+        "tests/perf.js",
+        "tests/run.js"
+      ]
+    },
+    {
+      "file": "tests/cli.js",
+      "role": "code-js",
+      "size": 3655,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": "tests/fixtures/bad-project/app.js",
+      "role": "code-js",
+      "size": 190,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": "tests/fixtures/bad-project/package.json",
+      "role": "config",
+      "size": 76,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": "tests/fixtures/bad-project/REPORT.md",
+      "role": "doc",
+      "size": 115,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": "tests/perf-result.json",
+      "role": "config",
+      "size": 710,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": "tests/perf.js",
+      "role": "code-js",
+      "size": 4386,
+      "imports": [
+        "src/map.js",
+        "src/guard.js",
+        "src/security.js",
+        "src/verify.js",
+        "src/context.js",
+        "src/memory.js"
+      ],
+      "importedBy": []
+    },
+    {
+      "file": "tests/run.js",
+      "role": "code-js",
+      "size": 18923,
+      "imports": [
+        "src/map.js",
+        "src/security.js",
+        "src/context.js",
+        "src/snapshot.js",
+        "src/verify.js",
+        "src/fix.js",
+        "src/guard.js",
+        "src/memory.js",
+        "src/stacks.js",
+        "src/deps.js",
+        "src/ci.js",
+        "src/sarif.js",
+        "src/pyast.js",
+        "src/setupIde.js",
+        "src/graph.js",
+        "src/timeline.js",
+        "src/demo.js",
+        "src/skill.js"
+      ],
+      "importedBy": []
+    }
+  ]
+}
