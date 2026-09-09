@@ -9,32 +9,33 @@ const targetDir = process.argv[3] && !process.argv[3].startsWith("-") ? path.res
 async function main() {
   if (!cmd || cmd === "help" || cmd === "--help" || cmd === "-h") {
     console.log(`
-AI Deep Era v0.22.0 - give the blind AI developer eyes (no frontend, proof in your IDE)
+AI Deep Era v0.23.0 - give the blind AI developer eyes (no frontend, proof in your IDE)
 
 Usage:
+  deep-era onboard             One shot: init + setup-ide + CI + skill
+  deep-era global              Machine setup: wire MCP into 6 IDEs + skill, once per PC
   deep-era init [dir]          Install into a project (map + AGENTS.md + rules)
   deep-era doctor [dir]        Full scan + tests + guard + deps + ERROR-REPORT.md
   deep-era check               1-COMMAND AUDIT: tests+security+guard+deps in 30s
+  deep-era heal                End-to-end: snapshot + safe-fix + re-check
+  deep-era demo                Self-proof: catch planted bugs live
   deep-era recall <query>      Project memory: recall past chats/decisions
   deep-era remember <k> <txt>  Project memory: save (k=chat|decision|fix|error|note)
-  deep-era rules               Show the checklist pack for this project's stack
+  deep-era context <query>     Token saver: show only relevant files
   deep-era fix                 SAFE auto-fix (snapshot+gitignore+map) — never touches logic
   deep-era setup-ide [dir]     MCP configs for 25+ clients (.deep-era/ide/)
-  deep-era context <query>     Token saver: show only relevant files
   deep-era snapshot [label]    Take a backup (restore if broken)
+  deep-era snapshots           List backups
+  deep-era diff <id>           What changed since snapshot <id>
   deep-era restore <id>        Restore a snapshot
   deep-era rules               Show the checklist pack for this project's stack
   deep-era graph               ARCHITECTURE.md from real imports (Mermaid)
   deep-era timeline            Project history from logs (one screen)
-  deep-era demo                Self-proof: catch planted bugs live
-  deep-era heal                End-to-end: snapshot + safe-fix + re-check
   deep-era costs               AI spend so far (tokens + $ estimate)
   deep-era skill               SKILL.md for the skills ecosystem
-  deep-era snapshots           List backups
-  deep-era diff <id>           What changed since snapshot <id>
-  deep-era watch               Re-run check on every file change
   deep-era ci                  Create GitHub Action gate (runs check on every PR)
-  deep-era perf [dir]          Measure engine speed on a project (ms table)
+  deep-era watch               Re-run check on every file change
+  deep-era perf [dir]          Engine speed table (ms)
   deep-era mcp                 MCP server (stdio) - 10 tools
 `);
     return;
@@ -185,6 +186,11 @@ Usage:
     if (!text) { console.error("Usage: deep-era remember <chat|decision|fix|error|note> <text>"); process.exit(1); }
     const e = remember(process.cwd(), kind, text);
     console.log(`[deep-era] remembered [${e.kind}]: ${e.text.slice(0, 160)}`);
+    return;
+  }
+  if (cmd === "global") {
+    const { runGlobal } = require("../src/global");
+    runGlobal();
     return;
   }
   if (cmd === "onboard") {

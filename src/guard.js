@@ -104,6 +104,24 @@ function guardScan(cwd, files) {
     }
   }
 
+  // Python stdlib top-level modules — importing these is never a hallucination.
+const PY_STDLIB = new Set(("os sys re json datetime time math random pathlib collections itertools functools typing argparse logging unittest hashlib hmac secrets string io csv sqlite3 threading multiprocessing queue socket http urllib email html xml subprocess shutil glob tempfile asyncio concurrent pdb traceback warnings weakref copy pickle struct array enum dataclasses statistics decimal fractions zoneinfo contextlib abc operator importlib inspect dis site builtins keyword tokenize ast").split(" "));
+
+// Declared third-party deps (requirements.txt + package.json) — also not hallucinations.
+function declaredDeps(cwd) {
+  const out = new Set();
+  try {
+    for (const line of fs.readFileSync(path.join(cwd, "requirements.txt"), "utf8").split("\n")) {
+      const m = line.trim().match(/^([A-Za-z0-9_.-]+)/);
+      if (m && !line.trim().startsWith("#")) out.add(m[1].toLowerCase().replace(/-/g, "_"));
+    }
+  } catch {}
+  try {
+    const pkg = JSON.parse(fs.readFileSync(path.join(cwd, "package.json"), "utf8"));
+    for (const n of Object.keys(Object.assign({}, pkg.dependencies, pkg.devDependencies))) out.add(n.toLowerCase());
+  } catch {}
+  return out;
+}
   // Generic dummy proof: "e.g." numbers + 9x% claim without verification output
   const docs = files.filter((f) => /\.(md|txt)$/.test(f.file)).slice(0, 60);
   for (const f of docs) {
@@ -124,16 +142,21 @@ function guardScan(cwd, files) {
 
   // Broken imports: AI imports a path that does not exist — caught before runtime.
   // Skips tests/: test files legitimately contain fake imports, mocks and fixtures.
+  // Skips stdlib + declared dependencies: `import os` is NOT a hallucination.
   try {
     const { parseImports } = require("./map");
     const names = new Set(files.map((f) => f.file));
+    const declared = declaredDeps(cwd);
     let n = 0;
     for (const f of codeFiles.slice(0, 120)) {
       if (f.file.startsWith("tests/fixtures/") || f.file.startsWith("tests/")) continue;
       for (const d of parseImports(cwd, f.file)) {
         const key = names.has(d) ? d : d.replace(/^\.\//, "");
         const withExt = [key, key + ".js", key + ".ts", key + ".py", key + "/index.js"];
-        if (!withExt.some((c) => names.has(c)) && n < 8) {
+        if (withExt.some((c) => names.has(c))) continue;
+        const first = key.split("/")[0].toLowerCase().replace(/-/g, "_");
+        if (PY_STDLIB.has(first) || declared.has(first) || declared.has(key)) continue;
+        if (n < 8) {
           n++;
           push("medium", "broken-import", f.file, `Imports "${d}" but no such file — hallucinated path? Fix the import.`);
         }

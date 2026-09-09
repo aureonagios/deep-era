@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-09-09T14:42:56.843Z",
+  "generatedAt": "2026-09-09T17:04:35.307Z",
   "stack": {
     "kind": "node",
     "run": null,
@@ -85,7 +85,7 @@
     {
       "file": "bin/cli.js",
       "role": "code-js",
-      "size": 13945,
+      "size": 14120,
       "imports": [
         "src/init.js",
         "src/doctor.js",
@@ -105,16 +105,9 @@
         "src/snapshot.js",
         "src/demo.js",
         "src/stacks.js",
-        "src/ci.js",
-        "src/skill.js"
+        "src/global.js",
+        "src/ci.js"
       ],
-      "importedBy": []
-    },
-    {
-      "file": "deep-era-0.22.0.tgz",
-      "role": "other",
-      "size": 37256,
-      "imports": [],
       "importedBy": []
     },
     {
@@ -167,7 +160,7 @@
     {
       "file": "README.md",
       "role": "doc",
-      "size": 7102,
+      "size": 7174,
       "imports": [],
       "importedBy": []
     },
@@ -256,6 +249,18 @@
       ]
     },
     {
+      "file": "src/global.js",
+      "role": "code-js",
+      "size": 3199,
+      "imports": [
+        "src/skill.js"
+      ],
+      "importedBy": [
+        "bin/cli.js",
+        "tests/cli.js"
+      ]
+    },
+    {
       "file": "src/graph.js",
       "role": "code-js",
       "size": 2035,
@@ -270,7 +275,7 @@
     {
       "file": "src/guard.js",
       "role": "code-js",
-      "size": 7781,
+      "size": 9357,
       "imports": [
         "src/map.js",
         "src/init.js"
@@ -391,10 +396,10 @@
     {
       "file": "src/skill.js",
       "role": "code-js",
-      "size": 2051,
+      "size": 2029,
       "imports": [],
       "importedBy": [
-        "bin/cli.js",
+        "src/global.js",
         "tests/run.js"
       ]
     },
@@ -458,8 +463,10 @@
     {
       "file": "tests/cli.js",
       "role": "code-js",
-      "size": 4595,
-      "imports": [],
+      "size": 5610,
+      "imports": [
+        "src/global.js"
+      ],
       "importedBy": []
     },
     {
@@ -514,7 +521,7 @@
     {
       "file": "tests/run.js",
       "role": "code-js",
-      "size": 19569,
+      "size": 20270,
       "imports": [
         "src/map.js",
         "src/security.js",

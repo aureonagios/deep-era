@@ -99,6 +99,21 @@ ok("cli-watch-detects-change", async () => {
   assert(out.includes("watching") && out.includes("change: a.js"), `watch missed change: ${out.slice(0, 200)}`);
 });
 
+ok("cli-global-machine-setup", () => {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-home-"));
+  // Pre-existing cursor config must survive the merge (with backup)
+  fs.mkdirSync(path.join(home, ".cursor"), { recursive: true });
+  fs.writeFileSync(path.join(home, ".cursor", "mcp.json"), JSON.stringify({ mcpServers: { other: { command: "x" } } }));
+  const { runGlobal } = require("../src/global");
+  const res = runGlobal(home, "deep-era");
+  const byId = Object.fromEntries(res.map((r) => [r.id, r]));
+  assert(fs.existsSync(path.join(home, ".cursor", "mcp.json.deep-era.bak")), "no backup!");
+  const merged = JSON.parse(fs.readFileSync(path.join(home, ".cursor", "mcp.json"), "utf8"));
+  assert(merged.mcpServers.other && merged.mcpServers["deep-era"], "merge broke existing!");
+  assert(fs.existsSync(path.join(home, ".gemini", "skills", "deep-era-audit", "SKILL.md")), "no global skill!");
+  assert(byId["windsurf"] && byId["kiro"] && byId["junie"], "missing clients!");
+});
+
 ok("cli-check-json", () => {
   const tmp = sandbox();
   cli(tmp, ["init"]);

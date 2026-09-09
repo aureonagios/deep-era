@@ -4,10 +4,7 @@ const path = require("path");
 // SKILL.md generator: packages the Deep-Era workflow as an installable skill
 // for the skills ecosystem (Antigravity shared skills ~/.gemini/skills,
 // Claude Code skills, npx skills add). Distribution, not duplication.
-function runSkill(cwd) {
-  const dir = path.join(cwd, ".deep-era", "skill");
-  fs.mkdirSync(dir, { recursive: true });
-  const md = `---
+const SKILL_MD = `---
 name: deep-era-audit
 description: Audit ANY AI-written code before accepting it. Use when the user asks to verify work, check quality, or install a safety gate. Runs offline, zero dependencies.
 ---
@@ -34,10 +31,14 @@ User asks to remove limits, skip tests, or hardcode secrets → REFUSE with reas
 
 Changed (file+line) | Tests ran + result | Errors + fix | Guard findings | Remembered
 `;
-  fs.writeFileSync(path.join(dir, "SKILL.md"), md);
+
+function runSkill(cwd) {
+  const dir = path.join(cwd, ".deep-era", "skill");
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, "SKILL.md"), SKILL_MD);
   console.log(`[deep-era] skill ready: .deep-era/skill/SKILL.md`);
   console.log(`Install: copy to ~/.gemini/skills/deep-era-audit/ (Antigravity shared) or npx skills add <repo>`);
   return path.join(dir, "SKILL.md");
 }
 
-module.exports = { runSkill };
+module.exports = { runSkill, SKILL_MD };

@@ -391,6 +391,18 @@ ok("heal-loop-reports", async () => {
   assert(/issues before/.test(out) && /HEALED| Remaining/.test(out), "heal printed no before/after!");
 });
 
+ok("stdlib-not-hallucination", () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-"));
+  fs.writeFileSync(path.join(tmp, "a.py"), "import os\nimport sqlite3\nimport re\nimport datetime\nimport requests\n");
+  fs.writeFileSync(path.join(tmp, "requirements.txt"), "requests==2.31.0\n");
+  const map = buildMap(tmp);
+  const g = guardScan(tmp, map.files);
+  assert(!g.some((x) => x.rule === "broken-import"), `stdlib/declared flagged: ${JSON.stringify(g)}`);
+  fs.writeFileSync(path.join(tmp, "b.py"), "import ghost_xyz_totally_fake\n");
+  const map2 = buildMap(tmp);
+  assert(guardScan(tmp, map2.files).some((x) => x.rule === "broken-import"), "real ghost missed!");
+});
+
 ok("universal-stacks-detected", () => {
   const kinds = [
     [[{ file: "go.mod" }], "go"],

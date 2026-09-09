@@ -1,4 +1,4 @@
-# AI Deep Era v0.22.0 — give the blind AI developer eyes
+# AI Deep Era v0.23.0 — give the blind AI developer eyes
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/Node-%3E%3D18-blue.svg)](package.json)
@@ -70,6 +70,7 @@ Changed (file+line) | Tests ran + result | Errors seen + fix | Guard findings | 
 | Command | Job |
 |---|---|
 | `onboard` | one shot: init + setup-ide + CI + skill |
+| `global` | machine setup: wire MCP into 6 IDEs + skill, once per PC |
 | `init` | map + AGENTS.md + rules (25+ IDEs) |
 | `check [--json]` | 1-command audit: verify+security+guard+deps |
 | `doctor [--sarif]` | full scan + ERROR-REPORT.md (+ SARIF) |
@@ -103,15 +104,15 @@ Changed (file+line) | Tests ran + result | Errors seen + fix | Guard findings | 
 ## Demo
 `DEMO.md` — 5-minute video script. Or run `deep-era demo` and watch 4 traps get caught.
 
-## Self-proof (v0.21.0, just ran)
-- `npm test` → 37 unit + 6 CLI + 6 MCP = **49 green**
+## Self-proof (v0.23.0, just ran)
+- `npm test` → 38 unit + 9 CLI + 6 MCP = **53 green**
 - `check` → verify 2/2, 0 security/guard/deps → PASS
 - `mcp tools/list` → 10 tools ok
 - `npm publish --dry-run` → 28 files, clean
 
 ## Looking for an alternative?
 
-- **SuperClaude / BMAD alternative** — same plan→verify loop, plus 49 tests, decision lock, and a 1-command audit. Zero framework to learn.
+- **SuperClaude / BMAD alternative** — same plan→verify loop, plus 53 tests, decision lock, and a 1-command audit. Zero framework to learn.
 - **CodeRabbit / Snyk alternative (offline)** — dep blocklist, OSV.dev CVEs, entropy secrets, SARIF output. No cloud, no per-seat bill.
 - **mem0 alternative (local)** — project memory with TF-IDF + synonyms + dedupe + auto-compact. No API key, no cloud, 5ms recall.
 - **Cursor rules / AGENTS.md, enforced** — not just a markdown file: drift detection, English-only check, and verify gates that fail the build.
