@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-09-09T09:13:55.715Z",
+  "generatedAt": "2026-09-09T09:47:02.663Z",
   "stack": {
     "kind": "node",
     "run": null,
@@ -14,49 +14,49 @@
     {
       "file": ".github/workflows/deep-era.yml",
       "role": "config",
-      "size": 268,
+      "size": 279,
       "imports": [],
       "importedBy": []
     },
     {
       "file": ".gitignore",
       "role": "other",
-      "size": 40,
+      "size": 107,
       "imports": [],
       "importedBy": []
     },
     {
       "file": ".npmignore",
       "role": "other",
-      "size": 46,
+      "size": 50,
       "imports": [],
       "importedBy": []
     },
     {
       "file": "AGENTS.md",
       "role": "doc",
-      "size": 2954,
+      "size": 2985,
       "imports": [],
       "importedBy": []
     },
     {
       "file": "ARCHITECTURE.md",
       "role": "doc",
-      "size": 2177,
+      "size": 2246,
       "imports": [],
       "importedBy": []
     },
     {
       "file": "BENCH.md",
       "role": "doc",
-      "size": 1601,
+      "size": 1641,
       "imports": [],
       "importedBy": []
     },
     {
       "file": "bin/cli.js",
       "role": "code-js",
-      "size": 13647,
+      "size": 13945,
       "imports": [
         "src/init.js",
         "src/doctor.js",
@@ -84,28 +84,28 @@
     {
       "file": "DEMO.md",
       "role": "doc",
-      "size": 1411,
+      "size": 1451,
       "imports": [],
       "importedBy": []
     },
     {
       "file": "ERROR-REPORT.md",
       "role": "doc",
-      "size": 4023,
+      "size": 4069,
       "imports": [],
       "importedBy": []
     },
     {
       "file": "LICENSE",
       "role": "other",
-      "size": 72,
+      "size": 73,
       "imports": [],
       "importedBy": []
     },
     {
       "file": "mcp/server.js",
       "role": "code-js",
-      "size": 8466,
+      "size": 8590,
       "imports": [
         "src/map.js",
         "src/verify.js",
@@ -124,21 +124,21 @@
     {
       "file": "package.json",
       "role": "config",
-      "size": 603,
+      "size": 629,
       "imports": [],
       "importedBy": []
     },
     {
       "file": "README.md",
       "role": "doc",
-      "size": 2675,
+      "size": 4677,
       "imports": [],
       "importedBy": []
     },
     {
       "file": "src/ci.js",
       "role": "code-js",
-      "size": 989,
+      "size": 1020,
       "imports": [],
       "importedBy": [
         "bin/cli.js",
@@ -148,7 +148,7 @@
     {
       "file": "src/context.js",
       "role": "code-js",
-      "size": 2044,
+      "size": 2100,
       "imports": [],
       "importedBy": [
         "bin/cli.js",
@@ -160,7 +160,7 @@
     {
       "file": "src/demo.js",
       "role": "code-js",
-      "size": 2459,
+      "size": 2506,
       "imports": [
         "src/map.js",
         "src/verify.js",
@@ -176,7 +176,7 @@
     {
       "file": "src/deps.js",
       "role": "code-js",
-      "size": 6221,
+      "size": 6359,
       "imports": [],
       "importedBy": [
         "bin/cli.js",
@@ -189,7 +189,7 @@
     {
       "file": "src/doctor.js",
       "role": "code-js",
-      "size": 4164,
+      "size": 4232,
       "imports": [
         "src/map.js",
         "src/verify.js",
@@ -206,7 +206,7 @@
     {
       "file": "src/fix.js",
       "role": "code-js",
-      "size": 1655,
+      "size": 1701,
       "imports": [
         "src/map.js",
         "src/logger.js",
@@ -222,7 +222,7 @@
     {
       "file": "src/graph.js",
       "role": "code-js",
-      "size": 1996,
+      "size": 2035,
       "imports": [
         "src/map.js"
       ],
@@ -234,7 +234,7 @@
     {
       "file": "src/guard.js",
       "role": "code-js",
-      "size": 7563,
+      "size": 7781,
       "imports": [
         "src/map.js",
         "src/init.js"
@@ -251,7 +251,7 @@
     {
       "file": "src/init.js",
       "role": "code-js",
-      "size": 3992,
+      "size": 4049,
       "imports": [
         "src/map.js",
         "src/stacks.js",
@@ -266,7 +266,7 @@
     {
       "file": "src/logger.js",
       "role": "code-js",
-      "size": 856,
+      "size": 886,
       "imports": [],
       "importedBy": [
         "bin/cli.js",
@@ -279,7 +279,7 @@
     {
       "file": "src/map.js",
       "role": "code-js",
-      "size": 6838,
+      "size": 6999,
       "imports": [],
       "importedBy": [
         "bin/cli.js",
@@ -297,7 +297,7 @@
     {
       "file": "src/memory.js",
       "role": "code-js",
-      "size": 6314,
+      "size": 6467,
       "imports": [],
       "importedBy": [
         "bin/cli.js",
@@ -309,7 +309,7 @@
     {
       "file": "src/pyast.js",
       "role": "code-js",
-      "size": 2924,
+      "size": 3007,
       "imports": [],
       "importedBy": [
         "src/security.js",
@@ -319,7 +319,7 @@
     {
       "file": "src/sarif.js",
       "role": "code-js",
-      "size": 1239,
+      "size": 1279,
       "imports": [],
       "importedBy": [
         "src/doctor.js",
@@ -329,7 +329,7 @@
     {
       "file": "src/security.js",
       "role": "code-js",
-      "size": 6106,
+      "size": 6220,
       "imports": [
         "src/pyast.js"
       ],
@@ -345,7 +345,7 @@
     {
       "file": "src/setupIde.js",
       "role": "code-js",
-      "size": 8601,
+      "size": 8662,
       "imports": [],
       "importedBy": [
         "bin/cli.js",
@@ -355,7 +355,7 @@
     {
       "file": "src/skill.js",
       "role": "code-js",
-      "size": 2008,
+      "size": 2051,
       "imports": [],
       "importedBy": [
         "bin/cli.js",
@@ -365,7 +365,7 @@
     {
       "file": "src/snapshot.js",
       "role": "code-js",
-      "size": 4273,
+      "size": 4395,
       "imports": [],
       "importedBy": [
         "bin/cli.js",
@@ -377,7 +377,7 @@
     {
       "file": "src/spend.js",
       "role": "code-js",
-      "size": 1335,
+      "size": 1372,
       "imports": [],
       "importedBy": [
         "bin/cli.js",
@@ -387,7 +387,7 @@
     {
       "file": "src/stacks.js",
       "role": "code-js",
-      "size": 1495,
+      "size": 1519,
       "imports": [],
       "importedBy": [
         "bin/cli.js",
@@ -398,7 +398,7 @@
     {
       "file": "src/timeline.js",
       "role": "code-js",
-      "size": 1481,
+      "size": 1515,
       "imports": [],
       "importedBy": [
         "bin/cli.js",
@@ -408,7 +408,7 @@
     {
       "file": "src/verify.js",
       "role": "code-js",
-      "size": 6398,
+      "size": 6519,
       "imports": [],
       "importedBy": [
         "bin/cli.js",
@@ -422,28 +422,28 @@
     {
       "file": "tests/cli.js",
       "role": "code-js",
-      "size": 3655,
+      "size": 3743,
       "imports": [],
       "importedBy": []
     },
     {
       "file": "tests/fixtures/bad-project/app.js",
       "role": "code-js",
-      "size": 190,
+      "size": 195,
       "imports": [],
       "importedBy": []
     },
     {
       "file": "tests/fixtures/bad-project/package.json",
       "role": "config",
-      "size": 76,
+      "size": 77,
       "imports": [],
       "importedBy": []
     },
     {
       "file": "tests/fixtures/bad-project/REPORT.md",
       "role": "doc",
-      "size": 115,
+      "size": 120,
       "imports": [],
       "importedBy": []
     },
@@ -457,7 +457,7 @@
     {
       "file": "tests/perf.js",
       "role": "code-js",
-      "size": 4386,
+      "size": 4468,
       "imports": [
         "src/map.js",
         "src/guard.js",
@@ -471,7 +471,7 @@
     {
       "file": "tests/run.js",
       "role": "code-js",
-      "size": 18923,
+      "size": 19569,
       "imports": [
         "src/map.js",
         "src/security.js",

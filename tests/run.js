@@ -367,6 +367,9 @@ ok("agents-sync-detects-drift", () => {
   const map = buildMap(tmp);
   const g = guardScan(tmp, map.files);
   assert(g.some((x) => x.rule === "agents-drift"), "rule drift missed!");
+  fs.writeFileSync(path.join(tmp, "AGENTS.md"), require("../src/init").AGENTS_MD.replace(/\n/g, "\r\n"));
+  const map2 = buildMap(tmp);
+  assert(!guardScan(tmp, map2.files).some((x) => x.rule === "agents-drift"), "CRLF false positive!");
 });
 
 ok("onboard-end-to-end", () => {

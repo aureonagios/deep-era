@@ -146,8 +146,9 @@ function guardScan(cwd, files) {
   try {
     if (files.some((f) => f.file === "AGENTS.md")) {
       const { AGENTS_MD } = require("./init");
+      const norm = (s) => s.replace(/\r\n?/g, "\n").trim();
       const actual = fs.readFileSync(path.join(cwd, "AGENTS.md"), "utf8");
-      if (actual.trim() !== AGENTS_MD.trim()) {
+      if (norm(actual) !== norm(AGENTS_MD)) {
         push("low", "agents-drift", "AGENTS.md", "Rules differ from the deep-era template — intentional? Otherwise re-run init.");
       }
     }
