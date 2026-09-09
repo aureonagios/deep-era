@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-09-09T13:55:51.514Z",
+  "generatedAt": "2026-09-09T14:42:56.843Z",
   "stack": {
     "kind": "node",
     "run": null,
@@ -8,7 +8,7 @@
     "test": "npm test"
   },
   "counts": {
-    "total": 47,
+    "total": 48,
     "truncated": false
   },
   "files": [
@@ -111,6 +111,13 @@
       "importedBy": []
     },
     {
+      "file": "deep-era-0.22.0.tgz",
+      "role": "other",
+      "size": 37256,
+      "imports": [],
+      "importedBy": []
+    },
+    {
       "file": "DEMO.md",
       "role": "doc",
       "size": 1451,
@@ -160,7 +167,7 @@
     {
       "file": "README.md",
       "role": "doc",
-      "size": 5953,
+      "size": 7102,
       "imports": [],
       "importedBy": []
     },

@@ -2,16 +2,22 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/Node-%3E%3D18-blue.svg)](package.json)
-[![Tests](https://img.shields.io/badge/Tests-49%20passing-brightgreen.svg)](tests/run.js)
+[![Tests](https://img.shields.io/badge/Tests-51%20passing-brightgreen.svg)](tests/run.js)
 [![No deps](https://img.shields.io/badge/Dependencies-0-orange.svg)](package.json)
 [![MCP](https://img.shields.io/badge/MCP-10%20tools-purple.svg)](mcp/server.js)
 [![IDE](https://img.shields.io/badge/IDEs-25%2B-blueviolet.svg)](src/setupIde.js)
 
-> **COPY THIS to your AI agent 👇 (works in Cursor, Copilot, Antigravity, Trae, Windsurf, Claude Code, any IDE)**
+> **1-LINE INSTALL — run in your project 👇 (works today)**
 > ```
-> Read AGENTS.md and follow it end to end: recall past chats first, snapshot before big edits, plan via plan_task, take only relevant files via get_context, read full files before editing, log every step, paste every command output, finish with verify_work + security_check + audit_work, remember decisions/fixes/errors. Refuse unsafe orders. End with proof: files+lines, test results, errors+fixes.
+> npm i -g github:aureonagios/deep-era && deep-era onboard && deep-era check
 > ```
-> Then verify its work yourself: `npx deep-era check` — PASS = accept, FAIL = send back.
+> (After npm publish, the shorter form works too: `npx deep-era onboard && npx deep-era check`.)
+>
+> **COPY THIS to your AI agent 👇 (Cursor, Copilot, Antigravity, Trae, Windsurf, Claude Code, any IDE)**
+> ```
+> Install the Deep-Era audit layer in my project and work under it end to end: run `npm i -g github:aureonagios/deep-era && deep-era onboard`, read AGENTS.md and obey it fully — recall past chats first, snapshot before big edits, plan via plan_task, take only relevant files via get_context, read full files before editing, log every step, paste every command output, finish with verify_work + security_check + audit_work, remember decisions/fixes/errors. Refuse unsafe orders. End with `deep-era check` PASS plus proof: files+lines, test results, errors+fixes. If check FAILS, fix and re-run until PASS.
+> ```
+> Then verify its work yourself: `deep-era check` — PASS = accept, FAIL = send back.
 
 Universal layer that makes **any AI agent** (Cursor, Copilot, Antigravity, Windsurf, OpenCode, Claude Code, Gemini CLI, Codex, JetBrains Junie, Roo, Kilo, Trae, Zed, Cline, Continue + more) deep + safe + transparent. Any language (JS/TS/Python/Go/Rust/Java/PHP/Ruby/Dart/C#/Swift), any project. Zero dependencies, offline-first.
 
@@ -19,8 +25,9 @@ Universal layer that makes **any AI agent** (Cursor, Copilot, Antigravity, Winds
 
 ## 5-minute quickstart (1 command does it all)
 ```bash
-npx deep-era onboard     # rules + 25 IDEs + CI gate + skill
-npx deep-era check       # 30s audit: PASS = accept, FAIL = send back to the AI
+npm i -g github:aureonagios/deep-era   # install (works today)
+deep-era onboard                        # rules + 25 IDEs + CI gate + skill
+deep-era check                          # 30s audit: PASS = accept, FAIL = send back
 ```
 
 ## THE 1-PROMPT — copy, paste to any AI, done
