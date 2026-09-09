@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-09-09T09:47:02.663Z",
+  "generatedAt": "2026-09-09T10:04:56.187Z",
   "stack": {
     "kind": "node",
     "run": null,
@@ -8,9 +8,37 @@
     "test": "npm test"
   },
   "counts": {
-    "total": 42
+    "total": 47
   },
   "files": [
+    {
+      "file": ".github/FUNDING.yml",
+      "role": "config",
+      "size": 20,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": ".github/ISSUE_TEMPLATE/bug_report.md",
+      "role": "doc",
+      "size": 336,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": ".github/ISSUE_TEMPLATE/feature_request.md",
+      "role": "doc",
+      "size": 291,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": ".github/PULL_REQUEST_TEMPLATE.md",
+      "role": "doc",
+      "size": 239,
+      "imports": [],
+      "importedBy": []
+    },
     {
       "file": ".github/workflows/deep-era.yml",
       "role": "config",
@@ -91,7 +119,7 @@
     {
       "file": "ERROR-REPORT.md",
       "role": "doc",
-      "size": 4069,
+      "size": 3919,
       "imports": [],
       "importedBy": []
     },
@@ -124,14 +152,14 @@
     {
       "file": "package.json",
       "role": "config",
-      "size": 629,
+      "size": 650,
       "imports": [],
       "importedBy": []
     },
     {
       "file": "README.md",
       "role": "doc",
-      "size": 4677,
+      "size": 5953,
       "imports": [],
       "importedBy": []
     },
@@ -444,6 +472,13 @@
       "file": "tests/fixtures/bad-project/REPORT.md",
       "role": "doc",
       "size": 120,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": "tests/mcp.js",
+      "role": "code-js",
+      "size": 4510,
       "imports": [],
       "importedBy": []
     },

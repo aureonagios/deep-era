@@ -17,7 +17,7 @@
   ],
   "keywords": ["ai", "mcp", "coding-agent", "verify", "security", "cursor", "antigravity", "opencode"],
   "scripts": {
-    "test": "node tests/run.js && node tests/cli.js"
+    "test": "node tests/run.js && node tests/cli.js && node tests/mcp.js"
   },
   "engines": {
     "node": ">=18"
