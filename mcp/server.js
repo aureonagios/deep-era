@@ -21,6 +21,7 @@ const TOOLS = [
   { name: "safe_fix", description: "SAFE auto-fix: gitignore guard + map refresh. Never touches code logic, snapshots first.", inputSchema: { type: "object", properties: {} } },
   { name: "audit_work", description: "GENERIC audit: dummy-proof + injection + missing tests + non-English code. Audit any AI work, any project.", inputSchema: { type: "object", properties: {} } },
   { name: "review_changes", description: "Scoped review: audit ONLY git-changed files. Judge the diff, not legacy code.", inputSchema: { type: "object", properties: {} } },
+  { name: "search_code", description: "Ranked code search: find files by name + content + import hubs. Returns top files with hit counts.", inputSchema: { type: "object", properties: { query: { type: "string" } }, required: ["query"] } },
 ];
 
 function reply(id, result) {
@@ -45,7 +46,7 @@ async function runMcp() {
       const { id, method, params } = msg;
       try {
         if (method === "initialize") {
-          reply(id, { protocolVersion: "2024-11-05", capabilities: { tools: {} }, serverInfo: { name: "deep-era", version: "0.27.0" } });
+          reply(id, { protocolVersion: "2024-11-05", capabilities: { tools: {} }, serverInfo: { name: "deep-era", version: "0.28.0" } });
         } else if (method === "notifications/initialized") {
         } else if (method === "tools/list") {
           reply(id, { tools: TOOLS });
@@ -135,6 +136,24 @@ async function runMcp() {
             const findings = [...guardScan(cwd, map.files), ...auditDeps(cwd), ...(await Promise.resolve(auditOsv(cwd)).catch(() => []))];
             logStep(cwd, `audit: ${findings.length} findings`);
             reply(id, { content: [{ type: "text", text: findings.length ? JSON.stringify(findings, null, 2).slice(0, 8000) : "Clean. No dummy proof, injection, missing tests, or non-English code." }] });
+          } else if (name === "search_code") {
+            let smap = readJson(cwd, "map.json", null);
+            if (!smap) smap = buildMap(cwd);
+            const { getRelevant: gr } = require("../src/context");
+            const srel = gr(cwd, smap, args.query || "", 12);
+            const fs2 = require("fs");
+            const path2 = require("path");
+            const stoks = (args.query || "").toLowerCase().split(/[^a-z0-9_./-]+/).filter((t) => t.length > 2);
+            const ranked = srel.map((f) => {
+              let hits = 0;
+              try {
+                const txt = fs2.readFileSync(path2.join(cwd, f.file), "utf8").slice(0, 20000).toLowerCase();
+                for (const t of stoks) if (txt.includes(t)) hits++;
+              } catch {}
+              return { file: f.file, hits, usedBy: (f.importedBy || []).length };
+            }).sort((a, b) => b.hits - a.hits);
+            logStep(cwd, `search: "${(args.query || "").slice(0, 60)}" -> ${ranked.length} files`);
+            reply(id, { content: [{ type: "text", text: JSON.stringify(ranked, null, 2).slice(0, 6000) }] });
           } else {
             errReply(id, `unknown tool: ${name}`);
           }

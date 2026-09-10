@@ -318,10 +318,13 @@ ok("recall-synonym-finds-bug", () => {
 ok("skill-md-valid", () => {
   const { runSkill } = require("../src/skill");
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-"));
-  const p = runSkill(tmp);
-  const md = fs.readFileSync(p, "utf8");
+  const out = runSkill(tmp);
+  assert(Array.isArray(out) && out.length === 3, "skill pack incomplete!");
+  const md = fs.readFileSync(path.join(tmp, ".deep-era", "skills", "deep-era-audit", "SKILL.md"), "utf8");
   assert(md.startsWith("---\nname: deep-era-audit"), "frontmatter broken!");
-  assert(md.includes("deep-era check") && md.includes("ENGLISH ONLY"), "workflow missing!");
+  assert(md.includes("verify_work") && md.includes("ENGLISH ONLY"), "workflow missing!");
+  const fix = fs.readFileSync(path.join(tmp, ".deep-era", "skills", "deep-era-fix", "SKILL.md"), "utf8");
+  assert(fix.includes("deep-era check"), "fix skill broken!");
 });
 
 ok("recall-distributional-links", () => {

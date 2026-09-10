@@ -130,6 +130,21 @@ ok("cli-review-scoped-diff", () => {
   assert(out.includes("evil.js") && out.includes("FAIL"), `review missed planted bug: ${out.slice(0, 300)}`);
 });
 
+ok("cli-search-ranked", () => {
+  const tmp = sandbox({ "auth.js": "function loginWithToken(user) { return token; }\n", "unrelated.js": "console.log('hi');\n" });
+  cli(tmp, ["init"]);
+  const out = cli(tmp, ["search", "login token"]);
+  assert(out.includes("auth.js") && out.indexOf("auth.js") < out.indexOf("unrelated.js"), `ranking wrong: ${out.slice(0, 300)}`);
+});
+
+ok("cli-skill-pack-three", () => {
+  const tmp = sandbox();
+  cli(tmp, ["skill"]);
+  for (const n of ["deep-era-audit", "deep-era-fix", "deep-era-review"]) {
+    assert(fs.existsSync(path.join(tmp, ".deep-era", "skills", n, "SKILL.md")), `${n} missing!`);
+  }
+});
+
 ok("cli-check-json", () => {
   const tmp = sandbox();
   cli(tmp, ["init"]);

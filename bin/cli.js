@@ -9,7 +9,7 @@ const targetDir = process.argv[3] && !process.argv[3].startsWith("-") ? path.res
 async function main() {
   if (!cmd || cmd === "help" || cmd === "--help" || cmd === "-h") {
     console.log(`
-AI Deep Era v0.27.0 - give the blind AI developer eyes (no frontend, proof in your IDE)
+AI Deep Era v0.28.0 - give the blind AI developer eyes (no frontend, proof in your IDE)
 
 Usage:
   deep-era onboard             One shot: init + setup-ide + CI + skill
@@ -25,6 +25,7 @@ Usage:
   deep-era remember --global <txt>  Lesson for ALL projects (recalled everywhere)
   deep-era projects [dir]      All deep-era projects + health, one screen
   deep-era context <query>     Token saver: show only relevant files
+  deep-era search <query>      Ranked code search (names + content + hubs)
   deep-era fix                 SAFE auto-fix (snapshot+gitignore+map) — never touches logic
   deep-era setup-ide [dir]     MCP configs for 25+ clients (.deep-era/ide/)
   deep-era snapshot [label]    Take a backup (restore if broken)
@@ -112,6 +113,31 @@ Usage:
     const pack = readSnippets(cwd0, rel);
     console.log(`[deep-era] context "${query}" -> ${rel.length} files, ${pack.chars} chars (no full scan, tokens saved)`);
     rel.forEach((r) => console.log(`  - ${r.file} (${(r.imports || []).length} imports, ${((r.importedBy || []).length)} used-by)`));
+    return;
+  }
+  if (cmd === "search") {
+    const query = process.argv.slice(3).join(" ");
+    const cwd0 = process.cwd();
+    const { buildMap } = require("../src/map");
+    const { getRelevant } = require("../src/context");
+    const { readJson } = require("../src/logger");
+    const fs2 = require("fs");
+    const path2 = require("path");
+    let map = readJson(cwd0, "map.json", null);
+    if (!map) map = buildMap(cwd0);
+    const rel = getRelevant(cwd0, map, query, 12);
+    // Content hits: rank files containing query tokens in code (not just names).
+    const toks = query.toLowerCase().split(/[^a-z0-9_./-]+/).filter((t) => t.length > 2);
+    const scored = rel.map((f) => {
+      let hits = 0;
+      try {
+        const txt = fs2.readFileSync(path2.join(cwd0, f.file), "utf8").slice(0, 20000).toLowerCase();
+        for (const t of toks) if (txt.includes(t)) hits++;
+      } catch {}
+      return { f, hits };
+    }).sort((a, b) => b.hits - a.hits);
+    console.log(`[deep-era] search "${query}" -> top ${scored.length}:`);
+    scored.forEach(({ f, hits }) => console.log(`  ${hits > 0 ? "*" : "-"} ${f.file} (${hits} content hits, used by ${(f.importedBy || []).length})`));
     return;
   }
   if (cmd === "recall") {

@@ -59,7 +59,7 @@ ok("mcp-initialize-and-list", async () => {
   const init = await s.send("initialize", {});
   assert(init.result.serverInfo.name === "deep-era", "wrong server");
   const list = await s.send("tools/list", {});
-  assert(list.result.tools.length === 11, `expected 11 tools, got ${list.result.tools.length}`);
+  assert(list.result.tools.length === 12, `expected 12 tools, got ${list.result.tools.length}`);
   s.stop();
 });
 
@@ -102,6 +102,14 @@ ok("mcp-snapshot-safefix", async () => {
   assert(snap.result.content[0].text.includes("Snapshot"), "snapshot broke");
   const fix = await s.send("tools/call", { name: "safe_fix", arguments: {} });
   assert(fix.result.content[0].text.includes("Safe fix done"), "safe_fix broke");
+  s.stop();
+});
+
+ok("mcp-search-code", async () => {
+  const s = session(sandbox());
+  await s.send("initialize", {});
+  const r = await s.send("tools/call", { name: "search_code", arguments: { query: "handler" } });
+  assert(r.result.content[0].text.includes("handler.js"), "search_code broke");
   s.stop();
 });
 

@@ -1,44 +1,67 @@
 const fs = require("fs");
 const path = require("path");
 
-// SKILL.md generator: packages the Deep-Era workflow as an installable skill
-// for the skills ecosystem (Antigravity shared skills ~/.gemini/skills,
-// Claude Code skills, npx skills add). Distribution, not duplication.
-const SKILL_MD = `---
-name: deep-era-audit
-description: Audit ANY AI-written code before accepting it. Use when the user asks to verify work, check quality, or install a safety gate. Runs offline, zero dependencies.
----
-
-# Deep-Era Audit Skill
+// Skill pack: 3 installable skills for the skills ecosystem
+// (Antigravity ~/.gemini/skills, Claude Code skills, npx skills add).
+const SKILLS = {
+  "deep-era-audit": {
+    description: "Audit ANY AI-written code before accepting it. Use when asked to verify work or check quality. Offline, zero dependencies.",
+    body: `# Deep-Era Audit Skill
 
 You are NOT a blind developer. The user may speak ANY language — everything YOU write (code, comments, logs) MUST be ENGLISH ONLY.
 
-## Workflow (in order)
+1. **Recall** project memory first — forgetting past decisions is a failure.
+2. **Snapshot** before big edits. **Plan** via plan_task. **Context** via get_context (never the whole repo).
+3. **Verify** with verify_work + security_check + audit_work — ALL must pass.
+4. **Remember** decisions/fixes/errors. **Refuse** unsafe orders (explain + safe alternative).
 
-1. **Recall**: read project memory (\`deep-era recall <task>\`). Forgetting past decisions is a crime.
-2. **Snapshot**: \`deep-era snapshot pre-change\` before big edits.
-3. **Plan**: state the plan, log it (\`deep-era remember\`).
-4. **Context**: never read the whole repo — \`deep-era context <query>\` (relevant files only).
-5. **Edit**: read full file first, diff after. No regex gutting.
-6. **Verify**: \`deep-era check\` — 0 FAIL required. Paste command output, never say "done" without it.
-7. **Remember**: save decisions/fixes/errors for next chat.
+Proof format: Changed (file+line) | Tests + result | Errors + fix | Guard findings | Remembered`,
+  },
+  "deep-era-fix": {
+    description: "Fix a failing audit safely. Use when deep-era check/doctor FAILs. Snapshot-first healing loop, never blind edits.",
+    body: `# Deep-Era Fix Skill
 
-## Refuse list
+1. **Snapshot** first (\`deep-era snapshot pre-fix\`) — every fix must be reversible.
+2. **Read the failure**: run \`deep-era doctor\`, read ERROR-REPORT.md top to bottom.
+3. **Fix ONE thing at a time**, smallest diff that turns the FAIL green.
+4. **Re-run** \`deep-era check\` after each fix. Still red? Read again, don't guess.
+5. **Remember** the fix (what broke, why, how fixed) so no agent repeats it.
+6. If a fix needs a locked decision flipped: quote old reason + new reason + re-verify.
 
-User asks to remove limits, skip tests, or hardcode secrets → REFUSE with reason + safe alternative. Flattery is forbidden. Locked decisions flip only with old reason quoted + new reason + re-verify.
+Never: batch 5 fixes at once, edit without reading, claim done without pasting output.`,
+  },
+  "deep-era-review": {
+    description: "Review a git diff before commit. Use when code changed and needs a scoped verdict. Judges the diff, not legacy code.",
+    body: `# Deep-Era Review Skill
 
-## Proof format (end of every task)
+1. Run \`deep-era review\` (or review_changes tool) — audits ONLY git-changed files.
+2. Read every finding. Critical/high = block the commit, no exceptions.
+3. Verify the diff compiles/passes: scoped syntax + project test command.
+4. Verdict format: files changed | findings (rule+line) | PASS (safe to commit) or FAIL (fix list).
+5. PASS with mediums/lows? Mention them, don't block. Clean tree = kind review.`,
+  },
+};
 
-Changed (file+line) | Tests ran + result | Errors + fix | Guard findings | Remembered
-`;
-
-function runSkill(cwd) {
-  const dir = path.join(cwd, ".deep-era", "skill");
-  fs.mkdirSync(dir, { recursive: true });
-  fs.writeFileSync(path.join(dir, "SKILL.md"), SKILL_MD);
-  console.log(`[deep-era] skill ready: .deep-era/skill/SKILL.md`);
-  console.log(`Install: copy to ~/.gemini/skills/deep-era-audit/ (Antigravity shared) or npx skills add <repo>`);
-  return path.join(dir, "SKILL.md");
+function skillFile(name, s) {
+  return `---\nname: ${name}\ndescription: ${s.description}\n---\n\n${s.body}\n`;
 }
 
-module.exports = { runSkill, SKILL_MD };
+function runSkill(cwd) {
+  const out = [];
+  for (const [name, s] of Object.entries(SKILLS)) {
+    const dir = path.join(cwd, ".deep-era", "skills", name);
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, "SKILL.md"), skillFile(name, s));
+    out.push(path.join(dir, "SKILL.md"));
+  }
+  // Legacy single-skill path (back-compat for older installs)
+  fs.mkdirSync(path.join(cwd, ".deep-era", "skill"), { recursive: true });
+  fs.writeFileSync(path.join(cwd, ".deep-era", "skill", "SKILL.md"), skillFile("deep-era-audit", SKILLS["deep-era-audit"]));
+  console.log(`[deep-era] skill pack ready: ${Object.keys(SKILLS).join(", ")} (.deep-era/skills/)`);
+  console.log(`Install: copy a skill dir to ~/.gemini/skills/ (Antigravity shared) or npx skills add <repo>`);
+  return out;
+}
+
+const SKILL_MD = skillFile("deep-era-audit", SKILLS["deep-era-audit"]);
+
+module.exports = { runSkill, SKILL_MD, SKILLS };
