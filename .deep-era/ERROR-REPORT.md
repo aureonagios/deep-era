@@ -1,6 +1,6 @@
 # ERROR-REPORT.md (AI Deep Era Doctor)
 
-Generated: 2026-09-10T17:19:05.915Z
+Generated: 2026-09-10T20:06:29.723Z
 Stack: node | Files: 57
 
 ## 1. Terminal / build truth
@@ -17,7 +17,7 @@ PASS context-saves-tokens
 PASS verify-deep-all-files
 PASS snapshot-create-restore
 PASS init-creates-agents-md
-[deep-era] init ok -> C:\Users\Mustafa\AppData\Local\Temp\deep-era-uYuPaZ
+[deep-era] init ok -> C:\Users\Mustafa\AppData\Local\Temp\deep-era-iPnIc3
   - AGENTS.md (universal rules, 25+ IDEs)
   - .deep-era/map.json (2 files, stack=unknown)
   - .deep-era/RULES.md + logs/
@@ -44,8 +44,8 @@ PASS graph-from-real-imports
 [deep-era] timeline (1 events):
   2026-01-01T00:00 [step] init ok: 2 files
 PASS timeline-reads-logs
-[deep-era demo] planted 4 traps in C:\Users\Mustafa\AppData\Local\Temp\deep-era-demo-W5pLiH (SQL injection, new Function, hijacked dep, dummy stats)
-[deep-era demo] caught 5 critical/high in 1693ms:
+[deep-era demo] planted 4 traps in C:\Users\Mustafa\AppData\Local\Temp\deep-era-demo-JPMppG (SQL injection, new Function, hijacked dep, dummy stats)
+[deep-era demo] caught 5 critical/high in 1699ms:
   ! [high] app.js: Possible SQL injection (string concat) (sql-concat)
   ! [high] app.js: new Function(string) — code from string, injection risk (new-function)
   ! [critical] app.js: String-concatenated SQL — parameterized queries are mandatory. (sql-injection)
@@ -81,13 +81,13 @@ None. Clean.
 - AGENTS.md (doc, 3377b)
 - ARCHITECTURE.md (doc, 2246b)
 - BENCH.md (doc, 1641b)
-- bin/cli.js (code-js, 17814b)
+- bin/cli.js (code-js, 18989b)
 - DEMO.md (doc, 1451b)
-- ERROR-REPORT.md (doc, 4274b)
+- ERROR-REPORT.md (doc, 4251b)
 - LICENSE (other, 73b)
 - mcp/server.js (code-js, 13270b)
 - package.json (config, 650b)
-- README.md (doc, 7552b)
+- README.md (doc, 7602b)
 - src/ci.js (code-js, 1020b)
 - src/context.js (code-js, 2100b)
 - src/cwe.js (code-js, 2019b)
@@ -110,13 +110,13 @@ None. Clean.
 - src/security.js (code-js, 6220b)
 - src/serve.js (code-js, 4432b)
 - src/setupIde.js (code-js, 8662b)
-- src/skill.js (code-js, 5076b)
+- src/skill.js (code-js, 5869b)
 - src/snapshot.js (code-js, 4395b)
 - src/spend.js (code-js, 1372b)
 - src/stacks.js (code-js, 1519b)
 - src/timeline.js (code-js, 1515b)
 - src/verify.js (code-js, 6621b)
-- tests/cli.js (code-js, 7963b)
+- tests/cli.js (code-js, 7979b)
 - tests/fixtures/bad-project/app.js (code-js, 195b)
 - tests/fixtures/bad-project/package.json (config, 77b)
 - tests/fixtures/bad-project/REPORT.md (doc, 120b)

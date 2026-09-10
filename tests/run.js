@@ -319,7 +319,7 @@ ok("skill-md-valid", () => {
   const { runSkill } = require("../src/skill");
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-"));
   const out = runSkill(tmp);
-  assert(Array.isArray(out) && out.length === 5, "skill pack incomplete!");
+  assert(Array.isArray(out) && out.length === 6, "skill pack incomplete!");
   const md = fs.readFileSync(path.join(tmp, ".deep-era", "skills", "deep-era-audit", "SKILL.md"), "utf8");
   assert(md.startsWith("---\nname: deep-era-audit"), "frontmatter broken!");
   assert(md.includes("verify_work") && md.includes("ENGLISH ONLY"), "workflow missing!");

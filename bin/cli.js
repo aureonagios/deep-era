@@ -9,7 +9,7 @@ const targetDir = process.argv[3] && !process.argv[3].startsWith("-") ? path.res
 async function main() {
   if (!cmd || cmd === "help" || cmd === "--help" || cmd === "-h") {
     console.log(`
-AI Deep Era v0.34.0 - give the blind AI developer eyes (no frontend, proof in your IDE)
+AI Deep Era v0.35.0 - give the blind AI developer eyes (no frontend, proof in your IDE)
 
 Usage:
   deep-era onboard             One shot: init + setup-ide + CI + skill
@@ -40,6 +40,7 @@ Usage:
   deep-era ci                  Create GitHub Action gate (runs check on every PR)
   deep-era watch               Re-run check on every file change
   deep-era perf [dir]          Engine speed table (ms)
+  deep-era update              Check npm registry for a newer deep-era (best-effort)
   deep-era serve               Run the project, probe it, observe, shut down
   deep-era fetch <url>         Fetch a docs URL to text (stdlib, capped)
   deep-era research <query>    Instant-answer research (best-effort, honest)
@@ -288,6 +289,27 @@ Usage:
   if (cmd === "serve") {
     const { runServe } = require("../src/serve");
     await runServe(process.cwd());
+    return;
+  }
+  if (cmd === "update") {
+    const https = require("https");
+    const { version } = require("../package.json");
+    console.log(`[deep-era] installed: ${version}. Checking registry...`);
+    const req = https.get("https://registry.npmjs.org/deep-era/latest", { timeout: 12000 }, (res) => {
+      let body = "";
+      res.on("data", (c) => { body += c; });
+      res.on("end", () => {
+        try {
+          const latest = JSON.parse(body).version;
+          if (latest === version) console.log(`[deep-era] up to date (${version}).`);
+          else console.log(`[deep-era] update available: ${version} -> ${latest}. Run: npm i -g deep-era@latest`);
+        } catch {
+          console.log(`[deep-era] registry unreadable (offline?) — staying on ${version}.`);
+        }
+      });
+    });
+    req.on("timeout", () => { req.destroy(); console.log(`[deep-era] registry timeout (offline?) — staying on ${version}.`); });
+    req.on("error", (e) => console.log(`[deep-era] registry unreachable (${e.code || "offline"}) — staying on ${version}.`));
     return;
   }
   if (cmd === "perf") {

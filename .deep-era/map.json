@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-09-10T17:17:40.860Z",
+  "generatedAt": "2026-09-10T20:05:04.011Z",
   "stack": {
     "kind": "node",
     "run": null,
@@ -85,7 +85,7 @@
     {
       "file": "bin/cli.js",
       "role": "code-js",
-      "size": 17814,
+      "size": 18989,
       "imports": [
         "src/init.js",
         "src/doctor.js",
@@ -120,7 +120,7 @@
     {
       "file": "ERROR-REPORT.md",
       "role": "doc",
-      "size": 4274,
+      "size": 4251,
       "imports": [],
       "importedBy": []
     },
@@ -162,7 +162,7 @@
     {
       "file": "README.md",
       "role": "doc",
-      "size": 7552,
+      "size": 7602,
       "imports": [],
       "importedBy": []
     },
@@ -452,7 +452,7 @@
     {
       "file": "src/skill.js",
       "role": "code-js",
-      "size": 5076,
+      "size": 5869,
       "imports": [],
       "importedBy": [
         "src/global.js",
@@ -520,7 +520,7 @@
     {
       "file": "tests/cli.js",
       "role": "code-js",
-      "size": 7963,
+      "size": 7979,
       "imports": [
         "src/global.js"
       ],

@@ -137,10 +137,10 @@ ok("cli-search-ranked", () => {
   assert(out.includes("auth.js") && out.indexOf("auth.js") < out.indexOf("unrelated.js"), `ranking wrong: ${out.slice(0, 300)}`);
 });
 
-ok("cli-skill-pack-three", () => {
+ok("cli-skill-pack-six", () => {
   const tmp = sandbox();
   cli(tmp, ["skill"]);
-  for (const n of ["deep-era-audit", "deep-era-fix", "deep-era-review", "deep-era-research", "deep-era-serve"]) {
+  for (const n of ["deep-era-audit", "deep-era-fix", "deep-era-review", "deep-era-research", "deep-era-serve", "deep-era-fleet"]) {
     assert(fs.existsSync(path.join(tmp, ".deep-era", "skills", n, "SKILL.md")), `${n} missing!`);
   }
 });
