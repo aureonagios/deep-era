@@ -12,7 +12,7 @@ Goal: prove karo andha AI vs Deep-Era AI ka farq, 5 minute me.
 npx deep-era init
 node bin/cli.js setup-ide   # Cursor/Copilot/Antigravity/Windsurf/OpenCode me MCP add
 ```
-Dikhao: `AGENTS.md` + `.deep-era/map.json` bana. Bolo: "Ab ye rules 50+ IDEs me auto-lagu."
+Dikhao: `AGENTS.md` + `.deep-era/map.json` bana. Bolo: "Ab ye rules 25+ IDEs me auto-lagu."
 
 ## Act 3 (2:30-4:00) — Wahi kaam, ab aankhon ke saath
 AI ko ye 1 prompt do:
