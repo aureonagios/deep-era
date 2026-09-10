@@ -152,6 +152,20 @@ ok("cli-doctor-json", () => {
   assert(j.result === "PASS" && typeof j.failed === "number", "doctor json wrong");
 });
 
+ok("cli-sarif-has-cwe-tags", () => {
+  const tmp = sandbox({ "a.js": "const q = " + "db.qu" + "ery('x' + req.id);\n" });
+  cli(tmp, ["init"]);
+  try {
+    cli(tmp, ["doctor", "--sarif"]);
+  } catch (e) {
+    // doctor exits 1 when findings exist — by design; sarif is still written
+  }
+  const j = JSON.parse(fs.readFileSync(path.join(tmp, ".deep-era", "report.sarif"), "utf8"));
+  const rules = j.runs[0].tool.driver.rules;
+  const sql = rules.find((r) => r.id === "sql-concat");
+  assert(sql && JSON.stringify(sql.properties.tags).includes("CWE-89"), "CWE tags missing in SARIF!");
+});
+
 ok("cli-check-json", () => {
   const tmp = sandbox();
   cli(tmp, ["init"]);

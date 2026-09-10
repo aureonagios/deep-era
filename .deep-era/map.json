@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-09-10T16:47:52.795Z",
+  "generatedAt": "2026-09-10T17:17:40.860Z",
   "stack": {
     "kind": "node",
     "run": null,
@@ -8,7 +8,7 @@
     "test": "npm test"
   },
   "counts": {
-    "total": 56,
+    "total": 57,
     "truncated": false
   },
   "files": [
@@ -188,6 +188,16 @@
       ]
     },
     {
+      "file": "src/cwe.js",
+      "role": "code-js",
+      "size": 2019,
+      "imports": [],
+      "importedBy": [
+        "src/doctor.js",
+        "src/sarif.js"
+      ]
+    },
+    {
       "file": "src/demo.js",
       "role": "code-js",
       "size": 2506,
@@ -219,13 +229,14 @@
     {
       "file": "src/doctor.js",
       "role": "code-js",
-      "size": 4602,
+      "size": 4703,
       "imports": [
         "src/map.js",
         "src/verify.js",
         "src/security.js",
         "src/guard.js",
         "src/deps.js",
+        "src/cwe.js",
         "src/logger.js",
         "src/sarif.js"
       ],
@@ -340,7 +351,7 @@
     {
       "file": "src/memory.js",
       "role": "code-js",
-      "size": 8099,
+      "size": 8820,
       "imports": [],
       "importedBy": [
         "bin/cli.js",
@@ -395,8 +406,10 @@
     {
       "file": "src/sarif.js",
       "role": "code-js",
-      "size": 1279,
-      "imports": [],
+      "size": 1450,
+      "imports": [
+        "src/cwe.js"
+      ],
       "importedBy": [
         "src/doctor.js",
         "tests/run.js"
@@ -507,7 +520,7 @@
     {
       "file": "tests/cli.js",
       "role": "code-js",
-      "size": 7358,
+      "size": 7963,
       "imports": [
         "src/global.js"
       ],
@@ -593,7 +606,7 @@
     {
       "file": "tests/run.js",
       "role": "code-js",
-      "size": 25378,
+      "size": 26058,
       "imports": [
         "src/map.js",
         "src/security.js",

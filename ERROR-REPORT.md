@@ -1,12 +1,12 @@
 # ERROR-REPORT.md (AI Deep Era Doctor)
 
-Generated: 2026-09-10T16:49:19.195Z
-Stack: node | Files: 56
+Generated: 2026-09-10T17:19:05.915Z
+Stack: node | Files: 57
 
 ## 1. Terminal / build truth
-### `syntax-check (33 files)` => PASS
+### `syntax-check (34 files)` => PASS
 ```
-all 33 JS pass (single-process)
+all 34 JS pass (single-process)
 ```
 
 ### `npm test --silent` => PASS
@@ -17,7 +17,7 @@ PASS context-saves-tokens
 PASS verify-deep-all-files
 PASS snapshot-create-restore
 PASS init-creates-agents-md
-[deep-era] init ok -> C:\Users\Mustafa\AppData\Local\Temp\deep-era-Dg4Y4L
+[deep-era] init ok -> C:\Users\Mustafa\AppData\Local\Temp\deep-era-uYuPaZ
   - AGENTS.md (universal rules, 25+ IDEs)
   - .deep-era/map.json (2 files, stack=unknown)
   - .deep-era/RULES.md + logs/
@@ -44,8 +44,8 @@ PASS graph-from-real-imports
 [deep-era] timeline (1 events):
   2026-01-01T00:00 [step] init ok: 2 files
 PASS timeline-reads-logs
-[deep-era demo] planted 4 traps in C:\Users\Mustafa\AppData\Local\Temp\deep-era-demo-jAtFVr (SQL injection, new Function, hijacked dep, dummy stats)
-[deep-era demo] caught 5 critical/high in 2218ms:
+[deep-era demo] planted 4 traps in C:\Users\Mustafa\AppData\Local\Temp\deep-era-demo-W5pLiH (SQL injection, new Function, hijacked dep, dummy stats)
+[deep-era demo] caught 5 critical/high in 1693ms:
   ! [high] app.js: Possible SQL injection (string concat) (sql-concat)
   ! [high] app.js: new Function(string) — code from string, injection risk (new-function)
   ! [critical] app.js: String-concatenated SQL — parameterized queries are mandatory. (sql-injection)
@@ -90,9 +90,10 @@ None. Clean.
 - README.md (doc, 7552b)
 - src/ci.js (code-js, 1020b)
 - src/context.js (code-js, 2100b)
+- src/cwe.js (code-js, 2019b)
 - src/demo.js (code-js, 2506b)
 - src/deps.js (code-js, 6860b)
-- src/doctor.js (code-js, 4602b)
+- src/doctor.js (code-js, 4703b)
 - src/fix.js (code-js, 1701b)
 - src/global.js (code-js, 3199b)
 - src/graph.js (code-js, 2035b)
@@ -100,12 +101,12 @@ None. Clean.
 - src/init.js (code-js, 4478b)
 - src/logger.js (code-js, 886b)
 - src/map.js (code-js, 7745b)
-- src/memory.js (code-js, 8099b)
+- src/memory.js (code-js, 8820b)
 - src/net.js (code-js, 3331b)
 - src/projects.js (code-js, 1722b)
 - src/pyast.js (code-js, 3007b)
 - src/review.js (code-js, 2473b)
-- src/sarif.js (code-js, 1279b)
+- src/sarif.js (code-js, 1450b)
 - src/security.js (code-js, 6220b)
 - src/serve.js (code-js, 4432b)
 - src/setupIde.js (code-js, 8662b)
@@ -115,12 +116,11 @@ None. Clean.
 - src/stacks.js (code-js, 1519b)
 - src/timeline.js (code-js, 1515b)
 - src/verify.js (code-js, 6621b)
-- tests/cli.js (code-js, 7358b)
+- tests/cli.js (code-js, 7963b)
 - tests/fixtures/bad-project/app.js (code-js, 195b)
 - tests/fixtures/bad-project/package.json (config, 77b)
 - tests/fixtures/bad-project/REPORT.md (doc, 120b)
 - tests/fixtures/serve-app/package.json (config, 43b)
-- tests/fixtures/serve-app/server.js (code-js, 401b)
 
 ## 4. Fix order for the AI
 All clean. Nothing to fix.

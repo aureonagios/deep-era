@@ -498,6 +498,21 @@ ok("deep-eraignore-tames-monorepo", () => {
   assert(map.counts.truncated === false, "truncated flag wrong!");
 });
 
+ok("recall-trigram-cousins", () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-"));
+  remember(tmp, "fix", "authentication middleware timing out under load");
+  remember(tmp, "chat", "unrelated lunch plans today");
+  const r = recall(tmp, "authenticating");
+  assert(r.entries[0].text.includes("authentication"), "trigram cousin missed!");
+});
+
+ok("cwe-tags-present", () => {
+  const { tag, tagSuffix } = require("../src/cwe");
+  assert(tag("sql-injection").cwe === "CWE-89", "CWE map wrong!");
+  assert(tagSuffix("nope") === "", "unknown rule should be empty!");
+  assert(tagSuffix("entropy-secret").includes("CWE-798"), "suffix wrong!");
+});
+
 ok("universal-stacks-detected", () => {
   const kinds = [
     [[{ file: "go.mod" }], "go"],

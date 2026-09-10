@@ -5,6 +5,7 @@ const { verifyProject } = require("./verify");
 const { securityScan } = require("./security");
 const { guardScan } = require("./guard");
 const { auditDeps, auditOsv } = require("./deps");
+const { tagSuffix } = require("./cwe");
 const { ensureDeepDir, writeJson, logStep } = require("./logger");
 
 async function runDoctor(cwd) {
@@ -37,11 +38,11 @@ async function runDoctor(cwd) {
     `## 1. Terminal / build truth\n` +
     (verify.length ? verify.map((v) => `### \`${v.cmd}\` => ${v.ok ? "PASS" : "FAIL"}\n\`\`\`\n${v.output.slice(0, 2000)}\n\`\`\`\n`).join("\n") : "No checks.\n") +
     `\n## 2. Security findings (${security.length})\n` +
-    (security.length ? security.map((s) => `- [${s.sev}] ${s.file}: ${s.msg} (${s.rule})`).join("\n") : "None. Clean.\n") +
+    (security.length ? security.map((s) => `- [${s.sev}] ${s.file}: ${s.msg} (${s.rule})${tagSuffix(s.rule)}`).join("\n") : "None. Clean.\n") +
     `\n\n## 2b. Guard / audit (${guard.length})\n` +
-    (guard.length ? guard.map((g) => `- [${g.sev}] ${g.file}: ${g.msg} (${g.rule})`).join("\n") : "None. Clean.\n") +
+    (guard.length ? guard.map((g) => `- [${g.sev}] ${g.file}: ${g.msg} (${g.rule})${tagSuffix(g.rule)}`).join("\n") : "None. Clean.\n") +
     `\n\n## 2c. Dependency audit (${deps.length})\n` +
-    (deps.length ? deps.map((g) => `- [${g.sev}] ${g.file}: ${g.msg} (${g.rule})`).join("\n") : "None. Clean.\n") +
+    (deps.length ? deps.map((g) => `- [${g.sev}] ${g.file}: ${g.msg} (${g.rule})${tagSuffix(g.rule)}`).join("\n") : "None. Clean.\n") +
     `\n\n## 3. File map (top 50)\n` +
     map.files.slice(0, 50).map((f) => `- ${f.file} (${f.role}, ${f.size}b)`).join("\n") +
     `\n\n## 4. Fix order for the AI\n` +

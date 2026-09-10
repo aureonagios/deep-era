@@ -110,6 +110,22 @@ function expandQuery(q) {
   return out;
 }
 
+// Trigram overlap: catches morphological variants TF-IDF misses
+// ("authenticating" ~ "authentication"). Classic pre-embedding IR, offline.
+function trigrams(s) {
+  const t = `  ${s} `.toLowerCase();
+  const out = new Set();
+  for (let i = 0; i + 3 <= t.length; i++) out.add(t.slice(i, i + 3));
+  return out;
+}
+
+function trigramScore(a, b) {
+  if (!a.size || !b.size) return 0;
+  let inter = 0;
+  for (const t of a) if (b.has(t)) inter++;
+  return inter / Math.max(a.size, b.size);
+}
+
 // Distributional expansion: words that OFTEN appear together in THIS project's
 // memory are related here (a tiny, local, honest slice of distributional semantics).
 // E.g. if "webhook" co-occurs with "discord" 3+ times, querying "discord" recalls webhooks.
@@ -152,6 +168,7 @@ function recall(cwd, query, budget = 4000, homeDir) {
   const N = pool.length || 1;
   const idf = (t) => Math.log((N + 1) / ((df[t] || 0) + 1)) + 1;
   const rest = pool.filter((e) => e.kind !== "decision");
+  const qTri = trigrams(q.join(" "));
   const scored = rest.map((e) => {
     const idx = pool.indexOf(e);
     const t = toksOf[idx];
@@ -165,6 +182,9 @@ function recall(cwd, query, budget = 4000, homeDir) {
     for (let i = 0; i + 1 < q0.length; i++) {
       if (raw.includes(q0[i] + " " + q0[i + 1])) s += 3;
     }
+    // Trigram bonus: morphological cousins (authenticating/authentication).
+    const tri = trigramScore(qTri, trigrams(raw.slice(0, 500)));
+    if (tri > 0.25) s += tri * 4;
     return { e, s };
   });
   scored.sort((a, b) => b.s - a.s || (a.e.at < b.e.at ? 1 : -1));

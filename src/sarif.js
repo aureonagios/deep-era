@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const { tag } = require("./cwe");
 
 // SARIF output: GitHub code-scanning / any SARIF viewer shows findings inline on PRs.
 // Enterprise trust without enterprise bloat.
@@ -16,7 +17,11 @@ function writeSarif(cwd, findings) {
   for (const f of findings) {
     if (!seen.has(f.rule)) {
       seen.add(f.rule);
-      rules.push({ id: f.rule, name: f.rule, shortDescription: { text: f.msg.slice(0, 120) } });
+      const t = tag(f.rule);
+      rules.push({
+        id: f.rule, name: f.rule, shortDescription: { text: f.msg.slice(0, 120) },
+        properties: t ? { tags: ["security", t.cwe, t.owasp] } : { tags: ["quality"] },
+      });
     }
   }
   const sarif = {
