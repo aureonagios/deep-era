@@ -145,6 +145,13 @@ ok("cli-skill-pack-three", () => {
   }
 });
 
+ok("cli-doctor-json", () => {
+  const tmp = sandbox();
+  cli(tmp, ["init"]);
+  const j = JSON.parse(cli(tmp, ["doctor", "--json"]).split("\n").filter((l) => l.startsWith("{")).join(""));
+  assert(j.result === "PASS" && typeof j.failed === "number", "doctor json wrong");
+});
+
 ok("cli-check-json", () => {
   const tmp = sandbox();
   cli(tmp, ["init"]);

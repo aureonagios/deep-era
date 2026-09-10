@@ -1,7 +1,7 @@
 # ERROR-REPORT.md (AI Deep Era Doctor)
 
-Generated: 2026-09-10T08:40:48.617Z
-Stack: node | Files: 54
+Generated: 2026-09-10T10:44:16.954Z
+Stack: node | Files: 56
 
 ## 1. Terminal / build truth
 ### `syntax-check (33 files)` => PASS
@@ -17,7 +17,7 @@ PASS context-saves-tokens
 PASS verify-deep-all-files
 PASS snapshot-create-restore
 PASS init-creates-agents-md
-[deep-era] init ok -> C:\Users\Mustafa\AppData\Local\Temp\deep-era-if2wPk
+[deep-era] init ok -> C:\Users\Mustafa\AppData\Local\Temp\deep-era-FG7nbP
   - AGENTS.md (universal rules, 50+ IDEs)
   - .deep-era/map.json (2 files, stack=unknown)
   - .deep-era/RULES.md + logs/
@@ -44,8 +44,8 @@ PASS graph-from-real-imports
 [deep-era] timeline (1 events):
   2026-01-01T00:00 [step] init ok: 2 files
 PASS timeline-reads-logs
-[deep-era demo] planted 4 traps in C:\Users\Mustafa\AppData\Local\Temp\deep-era-demo-gmvwor (SQL injection, new Function, hijacked dep, dummy stats)
-[deep-era demo] caught 5 critical/high in 1580ms:
+[deep-era demo] planted 4 traps in C:\Users\Mustafa\AppData\Local\Temp\deep-era-demo-vhXU3E (SQL injection, new Function, hijacked dep, dummy stats)
+[deep-era demo] caught 5 critical/high in 1743ms:
   ! [high] app.js: Possible SQL injection (string concat) (sql-concat)
   ! [high] app.js: new Function(string) — code from string, injection risk (new-function)
   ! [critical] app.js: String-concatenated SQL — parameterized queries are mandatory. (sql-injection)
@@ -78,12 +78,12 @@ None. Clean.
 - .github/workflows/deep-era.yml (config, 279b)
 - .gitignore (other, 107b)
 - .npmignore (other, 50b)
-- AGENTS.md (doc, 2954b)
+- AGENTS.md (doc, 3377b)
 - ARCHITECTURE.md (doc, 2246b)
 - BENCH.md (doc, 1641b)
 - bin/cli.js (code-js, 17743b)
 - DEMO.md (doc, 1451b)
-- ERROR-REPORT.md (doc, 4240b)
+- ERROR-REPORT.md (doc, 4274b)
 - LICENSE (other, 73b)
 - mcp/server.js (code-js, 13269b)
 - package.json (config, 650b)
@@ -92,12 +92,12 @@ None. Clean.
 - src/context.js (code-js, 2100b)
 - src/demo.js (code-js, 2506b)
 - src/deps.js (code-js, 6860b)
-- src/doctor.js (code-js, 4232b)
+- src/doctor.js (code-js, 4506b)
 - src/fix.js (code-js, 1701b)
 - src/global.js (code-js, 3199b)
 - src/graph.js (code-js, 2035b)
 - src/guard.js (code-js, 9357b)
-- src/init.js (code-js, 4049b)
+- src/init.js (code-js, 4478b)
 - src/logger.js (code-js, 886b)
 - src/map.js (code-js, 7055b)
 - src/memory.js (code-js, 8099b)
@@ -115,7 +115,7 @@ None. Clean.
 - src/stacks.js (code-js, 1519b)
 - src/timeline.js (code-js, 1515b)
 - src/verify.js (code-js, 6621b)
-- tests/cli.js (code-js, 7075b)
+- tests/cli.js (code-js, 7358b)
 - tests/fixtures/bad-project/app.js (code-js, 195b)
 - tests/fixtures/bad-project/package.json (config, 77b)
 - tests/fixtures/bad-project/REPORT.md (doc, 120b)

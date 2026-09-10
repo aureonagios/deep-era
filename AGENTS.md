@@ -18,6 +18,12 @@ LANGUAGE LAW: The user may speak ANY language. ALL code, comments, identifiers, 
 12. LEARN TO REFUSE: If the user is wrong (remove limits, skip tests, hardcode secrets) REFUSE + reason + safe alternative. Flattery is forbidden.
 13. SHOW PROOF: At the end report: what changed (file+line), what tests ran + result, what errors came + fix, what guard said, what you remembered.
 
+TERMINAL COMMANDS (same engine, human runs these — know what they prove):
+check (30s audit) | doctor (full scan + ERROR-REPORT) | heal (snapshot+fix+recheck) |
+review (git-diff scope) | demo (live self-proof) | serve (run app + probe endpoints) |
+recall/remember (memory) | snapshot/diff/restore (rollback) | costs (token spend) |
+graph/timeline (visibility) | search (ranked code search) | fetch/research (verify docs)
+
 FORBIDDEN (every project, every language):
 - "I don't remember" without calling recall
 - Brute-force reading the whole codebase without get_context

@@ -57,6 +57,9 @@ async function runDoctor(cwd) {
   console.log(`[deep-era] doctor done: ${failed.length} FAIL, ${security.length} security, ${guard.length} guard, ${deps.length} deps`);
   console.log(`  progress: ${fixed.length} fixed, ${broken.length} newly broken`);
   console.log(`  -> ERROR-REPORT.md`);
+  if (process.argv.includes("--json")) {
+    console.log(JSON.stringify({ result: failed.length || bad.length ? "FAIL" : "PASS", failed: failed.length, security: security.length, guard: guard.length, deps: deps.length, fixed: fixed.length, broken: broken.length }));
+  }
   if (process.argv.includes("--sarif")) {
     const { writeSarif } = require("./sarif");
     const sarifPath = writeSarif(cwd, allFindings);

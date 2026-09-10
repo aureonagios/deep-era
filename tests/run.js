@@ -469,8 +469,16 @@ ok("net-research-degrades-honestly", async () => {
   assert(typeof r.ok === "boolean" && (r.ok ? r.text.length > 0 : /URL|offline|unavailable|no instant/.test(r.error)), "dishonest shape!");
 });
 
-ok("serve-run-observe-probe", async () => {
+ok("serve-fail-spots-crash", async () => {
   const { runServe } = require("../src/serve");
+  const dir = path.join(__dirname, "fixtures", "serve-fail");
+  const r = await runServe(dir, 6000);
+  assert(r.ran, "serve refused to run!");
+  assert(r.errors.some((e) => /Cannot find module|MODULE_NOT_FOUND/.test(e)), `crash missed: ${JSON.stringify(r.errors)}`);
+  assert(r.probes.length === 0, "phantom probes!");
+});
+
+ok("serve-run-observe-probe", async () => {  const { runServe } = require("../src/serve");
   const dir = path.join(__dirname, "fixtures", "serve-app");
   const r = await runServe(dir, 8000);
   assert(r.ran, "serve refused to run!");

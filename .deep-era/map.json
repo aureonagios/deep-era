@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-09-10T08:39:22.190Z",
+  "generatedAt": "2026-09-10T10:42:51.767Z",
   "stack": {
     "kind": "node",
     "run": null,
@@ -8,7 +8,7 @@
     "test": "npm test"
   },
   "counts": {
-    "total": 54,
+    "total": 56,
     "truncated": false
   },
   "files": [
@@ -64,7 +64,7 @@
     {
       "file": "AGENTS.md",
       "role": "doc",
-      "size": 2954,
+      "size": 3377,
       "imports": [],
       "importedBy": []
     },
@@ -120,7 +120,7 @@
     {
       "file": "ERROR-REPORT.md",
       "role": "doc",
-      "size": 4240,
+      "size": 4274,
       "imports": [],
       "importedBy": []
     },
@@ -219,7 +219,7 @@
     {
       "file": "src/doctor.js",
       "role": "code-js",
-      "size": 4232,
+      "size": 4506,
       "imports": [
         "src/map.js",
         "src/verify.js",
@@ -293,7 +293,7 @@
     {
       "file": "src/init.js",
       "role": "code-js",
-      "size": 4049,
+      "size": 4478,
       "imports": [
         "src/map.js",
         "src/stacks.js",
@@ -507,7 +507,7 @@
     {
       "file": "tests/cli.js",
       "role": "code-js",
-      "size": 7075,
+      "size": 7358,
       "imports": [
         "src/global.js"
       ],
@@ -549,6 +549,20 @@
       "importedBy": []
     },
     {
+      "file": "tests/fixtures/serve-fail/package.json",
+      "role": "config",
+      "size": 48,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": "tests/fixtures/serve-fail/server.js",
+      "role": "code-js",
+      "size": 68,
+      "imports": [],
+      "importedBy": []
+    },
+    {
       "file": "tests/mcp.js",
       "role": "code-js",
       "size": 6205,
@@ -579,7 +593,7 @@
     {
       "file": "tests/run.js",
       "role": "code-js",
-      "size": 24301,
+      "size": 24723,
       "imports": [
         "src/map.js",
         "src/security.js",
