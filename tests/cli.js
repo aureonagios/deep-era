@@ -114,6 +114,22 @@ ok("cli-global-machine-setup", () => {
   assert(byId["windsurf"] && byId["kiro"] && byId["junie"], "missing clients!");
 });
 
+ok("cli-review-scoped-diff", () => {
+  const { execFileSync } = require("child_process");
+  const tmp = sandbox();
+  execFileSync("git", ["init", "-b", "main"], { cwd: tmp });
+  execFileSync("git", ["-c", "user.name=t", "-c", "user.email=t@t", "add", "-A"], { cwd: tmp });
+  execFileSync("git", ["-c", "user.name=t", "-c", "user.email=t@t", "commit", "-m", "base"], { cwd: tmp });
+  fs.writeFileSync(path.join(tmp, "evil.js"), "const q = " + "db.qu" + "ery('x' + req.id);\n");
+  let out = "";
+  try {
+    out = cli(tmp, ["review"]);
+  } catch (e) {
+    out = (e.stdout || "").toString(); // FAIL exits 1 by design — output still asserted
+  }
+  assert(out.includes("evil.js") && out.includes("FAIL"), `review missed planted bug: ${out.slice(0, 300)}`);
+});
+
 ok("cli-check-json", () => {
   const tmp = sandbox();
   cli(tmp, ["init"]);

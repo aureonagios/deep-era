@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-09-09T19:29:19.972Z",
+  "generatedAt": "2026-09-10T07:29:07.054Z",
   "stack": {
     "kind": "node",
     "run": null,
@@ -8,7 +8,7 @@
     "test": "npm test"
   },
   "counts": {
-    "total": 49,
+    "total": 50,
     "truncated": false
   },
   "files": [
@@ -85,7 +85,7 @@
     {
       "file": "bin/cli.js",
       "role": "code-js",
-      "size": 14691,
+      "size": 14894,
       "imports": [
         "src/init.js",
         "src/doctor.js",
@@ -103,10 +103,10 @@
         "src/graph.js",
         "src/timeline.js",
         "src/snapshot.js",
+        "src/review.js",
         "src/demo.js",
         "src/stacks.js",
-        "src/projects.js",
-        "src/global.js"
+        "src/projects.js"
       ],
       "importedBy": []
     },
@@ -120,7 +120,7 @@
     {
       "file": "ERROR-REPORT.md",
       "role": "doc",
-      "size": 4237,
+      "size": 4209,
       "imports": [],
       "importedBy": []
     },
@@ -134,7 +134,7 @@
     {
       "file": "mcp/server.js",
       "role": "code-js",
-      "size": 8992,
+      "size": 10571,
       "imports": [
         "src/map.js",
         "src/verify.js",
@@ -146,6 +146,7 @@
         "src/logger.js",
         "src/spend.js",
         "src/fix.js",
+        "src/review.js",
         "src/deps.js"
       ],
       "importedBy": []
@@ -160,7 +161,7 @@
     {
       "file": "README.md",
       "role": "doc",
-      "size": 7302,
+      "size": 7365,
       "imports": [],
       "importedBy": []
     },
@@ -255,7 +256,6 @@
         "src/skill.js"
       ],
       "importedBy": [
-        "bin/cli.js",
         "tests/cli.js"
       ]
     },
@@ -284,6 +284,7 @@
         "mcp/server.js",
         "src/demo.js",
         "src/doctor.js",
+        "src/review.js",
         "tests/perf.js",
         "tests/run.js"
       ]
@@ -330,6 +331,7 @@
         "src/graph.js",
         "src/guard.js",
         "src/init.js",
+        "src/review.js",
         "tests/perf.js",
         "tests/run.js"
       ]
@@ -366,6 +368,21 @@
       ]
     },
     {
+      "file": "src/review.js",
+      "role": "code-js",
+      "size": 2473,
+      "imports": [
+        "src/map.js",
+        "src/verify.js",
+        "src/security.js",
+        "src/guard.js"
+      ],
+      "importedBy": [
+        "bin/cli.js",
+        "mcp/server.js"
+      ]
+    },
+    {
       "file": "src/sarif.js",
       "role": "code-js",
       "size": 1279,
@@ -387,6 +404,7 @@
         "mcp/server.js",
         "src/demo.js",
         "src/doctor.js",
+        "src/review.js",
         "tests/perf.js",
         "tests/run.js"
       ]
@@ -464,6 +482,7 @@
         "mcp/server.js",
         "src/demo.js",
         "src/doctor.js",
+        "src/review.js",
         "tests/perf.js",
         "tests/run.js"
       ]
@@ -471,7 +490,7 @@
     {
       "file": "tests/cli.js",
       "role": "code-js",
-      "size": 5610,
+      "size": 6385,
       "imports": [
         "src/global.js"
       ],
@@ -501,7 +520,7 @@
     {
       "file": "tests/mcp.js",
       "role": "code-js",
-      "size": 4872,
+      "size": 5103,
       "imports": [],
       "importedBy": []
     },

@@ -9,7 +9,7 @@ const targetDir = process.argv[3] && !process.argv[3].startsWith("-") ? path.res
 async function main() {
   if (!cmd || cmd === "help" || cmd === "--help" || cmd === "-h") {
     console.log(`
-AI Deep Era v0.26.0 - give the blind AI developer eyes (no frontend, proof in your IDE)
+AI Deep Era v0.27.0 - give the blind AI developer eyes (no frontend, proof in your IDE)
 
 Usage:
   deep-era onboard             One shot: init + setup-ide + CI + skill
@@ -18,6 +18,7 @@ Usage:
   deep-era doctor [dir]        Full scan + tests + guard + deps + ERROR-REPORT.md
   deep-era check               1-COMMAND AUDIT: tests+security+guard+deps in 30s
   deep-era heal                End-to-end: snapshot + safe-fix + re-check
+  deep-era review              Audit ONLY changed files (git diff scope)
   deep-era demo                Self-proof: catch planted bugs live
   deep-era recall <query>      Project memory: recall past chats/decisions
   deep-era remember <k> <txt>  Project memory: save (k=chat|decision|fix|error|note)
@@ -167,6 +168,11 @@ Usage:
     await runDoctor(cwd0);
     const after = count(cwd0);
     console.log(`[deep-era] heal: ${before} → ${after} issues. ${after === 0 ? "HEALED." : "Remaining need code fixes (see ERROR-REPORT.md). Snapshot restores if needed: " + snap.id}`);
+    return;
+  }
+  if (cmd === "review") {
+    const { runReview } = require("../src/review");
+    runReview(process.cwd());
     return;
   }
   if (cmd === "demo") {

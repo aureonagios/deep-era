@@ -1,10 +1,10 @@
-# AI Deep Era v0.26.0 — give the blind AI developer eyes
+# AI Deep Era v0.27.0 — give the blind AI developer eyes
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/Node-%3E%3D18-blue.svg)](package.json)
-[![Tests](https://img.shields.io/badge/Tests-57%20passing-brightgreen.svg)](tests/run.js)
+[![Tests](https://img.shields.io/badge/Tests-58%20passing-brightgreen.svg)](tests/run.js)
 [![No deps](https://img.shields.io/badge/Dependencies-0-orange.svg)](package.json)
-[![MCP](https://img.shields.io/badge/MCP-10%20tools-purple.svg)](mcp/server.js)
+[![MCP](https://img.shields.io/badge/MCP-11%20tools-purple.svg)](mcp/server.js)
 [![IDE](https://img.shields.io/badge/IDEs-25%2B-blueviolet.svg)](src/setupIde.js)
 
 > **1-LINE INSTALL — run in your project 👇 (works today)**
@@ -75,6 +75,7 @@ Changed (file+line) | Tests ran + result | Errors seen + fix | Guard findings | 
 | `check [--json]` | 1-command audit: verify+security+guard+deps |
 | `doctor [--sarif]` | full scan + ERROR-REPORT.md (+ SARIF) |
 | `heal` | end-to-end: snapshot + safe-fix + re-check |
+| `review` | audit ONLY git-changed files |
 | `demo` | self-proof: catch planted bugs live |
 | `recall <q>` / `remember <k> <text>` | project memory — forget nothing |
 | `remember --global <text>` | lesson every project recalls |
@@ -101,13 +102,13 @@ Changed (file+line) | Tests ran + result | Errors seen + fix | Guard findings | 
   }
 }
 ```
-10 tools: `plan_task`, `log_step`, `recall`, `remember`, `get_context`, `verify_work`, `security_check`, `snapshot`, `safe_fix`, `audit_work`. Per-client files: `setup-ide` → `.deep-era/ide/SETUP.md`.
+10 tools: `plan_task`, `log_step`, `recall`, `remember`, `get_context`, `verify_work`, `security_check`, `snapshot`, `safe_fix`, `audit_work`, `review_changes`. Per-client files: `setup-ide` → `.deep-era/ide/SETUP.md`.
 
 ## Demo
 `DEMO.md` — 5-minute video script. Or run `deep-era demo` and watch 4 traps get caught.
 
-## Self-proof (v0.26.0, just ran)
-- `npm test` → 42 unit + 9 CLI + 6 MCP = **57 green**
+## Self-proof (v0.27.0, just ran)
+- `npm test` → 42 unit + 10 CLI + 6 MCP = **58 green**
 - `check` → verify 2/2, 0 security/guard/deps → PASS
 - `mcp tools/list` → 10 tools ok
 - `npm publish --dry-run` → 28 files, clean

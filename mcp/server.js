@@ -20,6 +20,7 @@ const TOOLS = [
   { name: "snapshot", description: "Backup first, restore on breakage. action=create|restore, id required for restore.", inputSchema: { type: "object", properties: { action: { type: "string" }, id: { type: "string" }, label: { type: "string" } } } },
   { name: "safe_fix", description: "SAFE auto-fix: gitignore guard + map refresh. Never touches code logic, snapshots first.", inputSchema: { type: "object", properties: {} } },
   { name: "audit_work", description: "GENERIC audit: dummy-proof + injection + missing tests + non-English code. Audit any AI work, any project.", inputSchema: { type: "object", properties: {} } },
+  { name: "review_changes", description: "Scoped review: audit ONLY git-changed files. Judge the diff, not legacy code.", inputSchema: { type: "object", properties: {} } },
 ];
 
 function reply(id, result) {
@@ -44,7 +45,7 @@ async function runMcp() {
       const { id, method, params } = msg;
       try {
         if (method === "initialize") {
-          reply(id, { protocolVersion: "2024-11-05", capabilities: { tools: {} }, serverInfo: { name: "deep-era", version: "0.26.0" } });
+          reply(id, { protocolVersion: "2024-11-05", capabilities: { tools: {} }, serverInfo: { name: "deep-era", version: "0.27.0" } });
         } else if (method === "notifications/initialized") {
         } else if (method === "tools/list") {
           reply(id, { tools: TOOLS });
@@ -107,6 +108,26 @@ async function runMcp() {
             const { safeFix } = require("../src/fix");
             const actions = await safeFix(cwd);
             reply(id, { content: [{ type: "text", text: `Safe fix done:\n- ${actions.join("\n- ")}` }] });
+          } else if (name === "review_changes") {
+            const { buildMap: bm2 } = require("../src/map");
+            const { verifyProject: vp2 } = require("../src/verify");
+            const { securityScan: ss2 } = require("../src/security");
+            const { guardScan: gs2 } = require("../src/guard");
+            const { changedFiles } = require("../src/review");
+            const changed = changedFiles(cwd);
+            if (changed === null) {
+              reply(id, { content: [{ type: "text", text: "Not a git repo — use verify_work + security_check + audit_work instead." }] });
+            } else if (!changed.length) {
+              reply(id, { content: [{ type: "text", text: "Working tree clean — nothing to review." }] });
+            } else {
+              let map2 = readJson(cwd, "map.json", null);
+              if (!map2) map2 = bm2(cwd);
+              const names2 = new Set(changed);
+              const res = vp2(cwd, { ...map2, files: map2.files.filter((f) => names2.has(f.file)) });
+              const findings = [...ss2(cwd, map2.files), ...gs2(cwd, map2.files)].filter((x) => names2.has(x.file));
+              logStep(cwd, `review: ${changed.length} files, ${findings.length} findings`);
+              reply(id, { content: [{ type: "text", text: JSON.stringify({ changed, verify: res, findings }, null, 2).slice(0, 8000) }] });
+            }
           } else if (name === "audit_work") {
             let map = readJson(cwd, "map.json", null);
             if (!map) map = buildMap(cwd);

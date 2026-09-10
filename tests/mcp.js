@@ -59,7 +59,7 @@ ok("mcp-initialize-and-list", async () => {
   const init = await s.send("initialize", {});
   assert(init.result.serverInfo.name === "deep-era", "wrong server");
   const list = await s.send("tools/list", {});
-  assert(list.result.tools.length === 10, `expected 10 tools, got ${list.result.tools.length}`);
+  assert(list.result.tools.length === 11, `expected 11 tools, got ${list.result.tools.length}`);
   s.stop();
 });
 
@@ -114,3 +114,9 @@ ok("mcp-unknown-tool-errors", async () => {
 });
 
 Promise.all(pending).then(() => console.log(`\n${pass} MCP tests passed`));
+
+// Safety net: a failed assert must never hang the suite on a stray child process.
+setTimeout(() => {
+  console.log("(force exit — stray MCP server processes killed)");
+  process.exit(process.exitCode || 0);
+}, 120000).unref();
