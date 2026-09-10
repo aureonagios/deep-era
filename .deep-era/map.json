@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-09-10T16:34:11.066Z",
+  "generatedAt": "2026-09-10T16:47:52.795Z",
   "stack": {
     "kind": "node",
     "run": null,
@@ -275,7 +275,7 @@
     {
       "file": "src/guard.js",
       "role": "code-js",
-      "size": 9357,
+      "size": 9526,
       "imports": [
         "src/map.js",
         "src/init.js"

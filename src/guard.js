@@ -51,11 +51,14 @@ function duplicationScan(cwd, files) {
   if (eligible.length > code.length) {
     out.push({ sev: "low", rule: "dup-sampled", file: "(scan)", msg: `Dup-scan sampled ${code.length}/${eligible.length} files — huge repos are sampled, not fully scanned.` });
   }
+  let windows = 0; // second bound: total hashed windows (near-identical files are pathological)
+  const WINDOW_CAP = 20000;
   for (const f of code) {
     let txt = "";
     try { txt = fs.readFileSync(path.join(cwd, f.file), "utf8"); } catch { continue; }
     const lines = txt.split("\n").map(normLine);
     for (let i = 0; i + 6 <= lines.length; i++) {
+      if (++windows > WINDOW_CAP) break;
       const win = lines.slice(i, i + 6);
       if (win.some(isNoise)) continue;
       const key = win.join("\n");
