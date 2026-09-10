@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-09-10T08:03:52.986Z",
+  "generatedAt": "2026-09-10T08:39:22.190Z",
   "stack": {
     "kind": "node",
     "run": null,
@@ -8,7 +8,7 @@
     "test": "npm test"
   },
   "counts": {
-    "total": 51,
+    "total": 54,
     "truncated": false
   },
   "files": [
@@ -85,7 +85,7 @@
     {
       "file": "bin/cli.js",
       "role": "code-js",
-      "size": 17534,
+      "size": 17743,
       "imports": [
         "src/init.js",
         "src/doctor.js",
@@ -120,7 +120,7 @@
     {
       "file": "ERROR-REPORT.md",
       "role": "doc",
-      "size": 4243,
+      "size": 4240,
       "imports": [],
       "importedBy": []
     },
@@ -162,7 +162,7 @@
     {
       "file": "README.md",
       "role": "doc",
-      "size": 7484,
+      "size": 7552,
       "imports": [],
       "importedBy": []
     },
@@ -420,6 +420,13 @@
       ]
     },
     {
+      "file": "src/serve.js",
+      "role": "code-js",
+      "size": 4432,
+      "imports": [],
+      "importedBy": []
+    },
+    {
       "file": "src/setupIde.js",
       "role": "code-js",
       "size": 8662,
@@ -432,7 +439,7 @@
     {
       "file": "src/skill.js",
       "role": "code-js",
-      "size": 4269,
+      "size": 5076,
       "imports": [],
       "importedBy": [
         "src/global.js",
@@ -500,7 +507,7 @@
     {
       "file": "tests/cli.js",
       "role": "code-js",
-      "size": 7057,
+      "size": 7075,
       "imports": [
         "src/global.js"
       ],
@@ -524,6 +531,20 @@
       "file": "tests/fixtures/bad-project/REPORT.md",
       "role": "doc",
       "size": 120,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": "tests/fixtures/serve-app/package.json",
+      "role": "config",
+      "size": 43,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": "tests/fixtures/serve-app/server.js",
+      "role": "code-js",
+      "size": 401,
       "imports": [],
       "importedBy": []
     },
@@ -558,7 +579,7 @@
     {
       "file": "tests/run.js",
       "role": "code-js",
-      "size": 23896,
+      "size": 24301,
       "imports": [
         "src/map.js",
         "src/security.js",

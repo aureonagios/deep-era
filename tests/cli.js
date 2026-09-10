@@ -140,7 +140,7 @@ ok("cli-search-ranked", () => {
 ok("cli-skill-pack-three", () => {
   const tmp = sandbox();
   cli(tmp, ["skill"]);
-  for (const n of ["deep-era-audit", "deep-era-fix", "deep-era-review", "deep-era-research"]) {
+  for (const n of ["deep-era-audit", "deep-era-fix", "deep-era-review", "deep-era-research", "deep-era-serve"]) {
     assert(fs.existsSync(path.join(tmp, ".deep-era", "skills", n, "SKILL.md")), `${n} missing!`);
   }
 });

@@ -319,7 +319,7 @@ ok("skill-md-valid", () => {
   const { runSkill } = require("../src/skill");
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-"));
   const out = runSkill(tmp);
-  assert(Array.isArray(out) && out.length === 4, "skill pack incomplete!");
+  assert(Array.isArray(out) && out.length === 5, "skill pack incomplete!");
   const md = fs.readFileSync(path.join(tmp, ".deep-era", "skills", "deep-era-audit", "SKILL.md"), "utf8");
   assert(md.startsWith("---\nname: deep-era-audit"), "frontmatter broken!");
   assert(md.includes("verify_work") && md.includes("ENGLISH ONLY"), "workflow missing!");
@@ -467,6 +467,15 @@ ok("net-research-degrades-honestly", async () => {
   const { instantAnswer } = require("../src/net");
   const r = await instantAnswer("test query unlikely to matter");
   assert(typeof r.ok === "boolean" && (r.ok ? r.text.length > 0 : /URL|offline|unavailable|no instant/.test(r.error)), "dishonest shape!");
+});
+
+ok("serve-run-observe-probe", async () => {
+  const { runServe } = require("../src/serve");
+  const dir = path.join(__dirname, "fixtures", "serve-app");
+  const r = await runServe(dir, 8000);
+  assert(r.ran, "serve refused to run!");
+  assert(r.probes.some((p) => p.status === 200), `no 200 probe: ${JSON.stringify(r.probes)}`);
+  assert(r.errors.length === 0, `false errors: ${r.errors}`);
 });
 
 ok("universal-stacks-detected", () => {

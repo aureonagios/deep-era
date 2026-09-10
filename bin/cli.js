@@ -9,7 +9,7 @@ const targetDir = process.argv[3] && !process.argv[3].startsWith("-") ? path.res
 async function main() {
   if (!cmd || cmd === "help" || cmd === "--help" || cmd === "-h") {
     console.log(`
-AI Deep Era v0.29.0 - give the blind AI developer eyes (no frontend, proof in your IDE)
+AI Deep Era v0.30.0 - give the blind AI developer eyes (no frontend, proof in your IDE)
 
 Usage:
   deep-era onboard             One shot: init + setup-ide + CI + skill
@@ -40,6 +40,7 @@ Usage:
   deep-era ci                  Create GitHub Action gate (runs check on every PR)
   deep-era watch               Re-run check on every file change
   deep-era perf [dir]          Engine speed table (ms)
+  deep-era serve               Run the project, probe it, observe, shut down
   deep-era fetch <url>         Fetch a docs URL to text (stdlib, capped)
   deep-era research <query>    Instant-answer research (best-effort, honest)
   deep-era mcp                 MCP server (stdio) - 10 tools
@@ -282,6 +283,11 @@ Usage:
     const r = await instantAnswer(q);
     if (!r.ok) { console.log(`[deep-era] research: ${r.error}`); return; }
     console.log(`[deep-era] research (${r.source}):\n${r.text}`);
+    return;
+  }
+  if (cmd === "serve") {
+    const { runServe } = require("../src/serve");
+    await runServe(process.cwd());
     return;
   }
   if (cmd === "perf") {
