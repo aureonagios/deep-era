@@ -9,7 +9,7 @@ const targetDir = process.argv[3] && !process.argv[3].startsWith("-") ? path.res
 async function main() {
   if (!cmd || cmd === "help" || cmd === "--help" || cmd === "-h") {
     console.log(`
-AI Deep Era v0.28.0 - give the blind AI developer eyes (no frontend, proof in your IDE)
+AI Deep Era v0.29.0 - give the blind AI developer eyes (no frontend, proof in your IDE)
 
 Usage:
   deep-era onboard             One shot: init + setup-ide + CI + skill
@@ -40,6 +40,8 @@ Usage:
   deep-era ci                  Create GitHub Action gate (runs check on every PR)
   deep-era watch               Re-run check on every file change
   deep-era perf [dir]          Engine speed table (ms)
+  deep-era fetch <url>         Fetch a docs URL to text (stdlib, capped)
+  deep-era research <query>    Instant-answer research (best-effort, honest)
   deep-era mcp                 MCP server (stdio) - 10 tools
 `);
     return;
@@ -256,6 +258,30 @@ Usage:
   if (cmd === "ci") {
     const { runCi } = require("../src/ci");
     runCi(process.cwd());
+    return;
+  }
+  if (cmd === "fetch") {
+    const url = process.argv[3];
+    if (!url) { console.error("Usage: deep-era fetch <url>"); process.exit(1); }
+    const { fetchText } = require("../src/net");
+    const fs3 = require("fs");
+    const path3 = require("path");
+    const r = await fetchText(url);
+    if (!r.ok) { console.log(`[deep-era] fetch failed: ${r.error}`); process.exitCode = 1; return; }
+    const dir = path3.join(process.cwd(), ".deep-era", "research");
+    fs3.mkdirSync(dir, { recursive: true });
+    const slug = url.replace(/[^a-z0-9]+/gi, "-").slice(0, 60) + ".md";
+    fs3.writeFileSync(path3.join(dir, slug), `# Fetched: ${url}\n\n${r.text}\n`);
+    console.log(`[deep-era] fetched ${r.text.length} chars -> .deep-era/research/${slug}`);
+    return;
+  }
+  if (cmd === "research") {
+    const q = process.argv.slice(3).join(" ");
+    if (!q) { console.error("Usage: deep-era research <query>"); process.exit(1); }
+    const { instantAnswer } = require("../src/net");
+    const r = await instantAnswer(q);
+    if (!r.ok) { console.log(`[deep-era] research: ${r.error}`); return; }
+    console.log(`[deep-era] research (${r.source}):\n${r.text}`);
     return;
   }
   if (cmd === "perf") {

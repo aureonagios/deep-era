@@ -22,6 +22,8 @@ const TOOLS = [
   { name: "audit_work", description: "GENERIC audit: dummy-proof + injection + missing tests + non-English code. Audit any AI work, any project.", inputSchema: { type: "object", properties: {} } },
   { name: "review_changes", description: "Scoped review: audit ONLY git-changed files. Judge the diff, not legacy code.", inputSchema: { type: "object", properties: {} } },
   { name: "search_code", description: "Ranked code search: find files by name + content + import hubs. Returns top files with hit counts.", inputSchema: { type: "object", properties: { query: { type: "string" } }, required: ["query"] } },
+  { name: "fetch_url", description: "Fetch a docs/API URL to capped text (stdlib, offline-safe). Use to verify APIs against official docs — never invent them.", inputSchema: { type: "object", properties: { url: { type: "string" } }, required: ["url"] } },
+  { name: "research_topic", description: "Best-effort instant-answer research (no key). Degrades honestly offline — then ask user for a docs URL.", inputSchema: { type: "object", properties: { query: { type: "string" } }, required: ["query"] } },
 ];
 
 function reply(id, result) {
@@ -46,7 +48,7 @@ async function runMcp() {
       const { id, method, params } = msg;
       try {
         if (method === "initialize") {
-          reply(id, { protocolVersion: "2024-11-05", capabilities: { tools: {} }, serverInfo: { name: "deep-era", version: "0.28.0" } });
+          reply(id, { protocolVersion: "2024-11-05", capabilities: { tools: {} }, serverInfo: { name: "deep-era", version: "0.29.0" } });
         } else if (method === "notifications/initialized") {
         } else if (method === "tools/list") {
           reply(id, { tools: TOOLS });
@@ -154,6 +156,16 @@ async function runMcp() {
             }).sort((a, b) => b.hits - a.hits);
             logStep(cwd, `search: "${(args.query || "").slice(0, 60)}" -> ${ranked.length} files`);
             reply(id, { content: [{ type: "text", text: JSON.stringify(ranked, null, 2).slice(0, 6000) }] });
+          } else if (name === "fetch_url") {
+            const { fetchText } = require("../src/net");
+            const r = await fetchText(args.url || "");
+            logStep(cwd, `fetch: ${(args.url || "").slice(0, 80)} -> ${r.ok ? r.text.length + " chars" : "FAILED " + r.error}`);
+            reply(id, { content: [{ type: "text", text: r.ok ? r.text.slice(0, 6000) : `Fetch failed honestly: ${r.error}` }] });
+          } else if (name === "research_topic") {
+            const { instantAnswer } = require("../src/net");
+            const r = await instantAnswer(args.query || "");
+            logStep(cwd, `research: "${(args.query || "").slice(0, 60)}" -> ${r.ok ? "answered" : r.error}`);
+            reply(id, { content: [{ type: "text", text: r.ok ? `${r.text}\n\n(Source: ${r.source})` : r.error }] });
           } else {
             errReply(id, `unknown tool: ${name}`);
           }

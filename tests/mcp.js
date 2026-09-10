@@ -59,7 +59,7 @@ ok("mcp-initialize-and-list", async () => {
   const init = await s.send("initialize", {});
   assert(init.result.serverInfo.name === "deep-era", "wrong server");
   const list = await s.send("tools/list", {});
-  assert(list.result.tools.length === 12, `expected 12 tools, got ${list.result.tools.length}`);
+  assert(list.result.tools.length === 14, `expected 14 tools, got ${list.result.tools.length}`);
   s.stop();
 });
 
@@ -111,6 +111,24 @@ ok("mcp-search-code", async () => {
   const r = await s.send("tools/call", { name: "search_code", arguments: { query: "handler" } });
   assert(r.result.content[0].text.includes("handler.js"), "search_code broke");
   s.stop();
+});
+
+ok("mcp-fetch-research", async () => {
+  const http = require("http");
+  const srv = http.createServer((req, res) => {
+    res.writeHead(200, { "Content-Type": "text/html" });
+    res.end("<html><body><h1>Wire Docs</h1></body></html>");
+  });
+  await new Promise((r) => srv.listen(0, r));
+  const port = srv.address().port;
+  const s = session(sandbox());
+  await s.send("initialize", {});
+  const f = await s.send("tools/call", { name: "fetch_url", arguments: { url: `http://127.0.0.1:${port}/x` } });
+  assert(f.result.content[0].text.includes("Wire Docs"), "fetch_url broke on wire");
+  const bad = await s.send("tools/call", { name: "fetch_url", arguments: { url: "gopher://x" } });
+  assert(bad.result.content[0].text.includes("honestly"), "fetch failure dishonest");
+  s.stop();
+  srv.close();
 });
 
 ok("mcp-unknown-tool-errors", async () => {

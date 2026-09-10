@@ -1,10 +1,10 @@
-# AI Deep Era v0.28.0 — give the blind AI developer eyes
+# AI Deep Era v0.29.0 — give the blind AI developer eyes
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/Node-%3E%3D18-blue.svg)](package.json)
-[![Tests](https://img.shields.io/badge/Tests-61%20passing-brightgreen.svg)](tests/run.js)
+[![Tests](https://img.shields.io/badge/Tests-64%20passing-brightgreen.svg)](tests/run.js)
 [![No deps](https://img.shields.io/badge/Dependencies-0-orange.svg)](package.json)
-[![MCP](https://img.shields.io/badge/MCP-12%20tools-purple.svg)](mcp/server.js)
+[![MCP](https://img.shields.io/badge/MCP-14%20tools-purple.svg)](mcp/server.js)
 [![IDE](https://img.shields.io/badge/IDEs-25%2B-blueviolet.svg)](src/setupIde.js)
 
 > **1-LINE INSTALL — run in your project 👇 (works today)**
@@ -89,7 +89,7 @@ Changed (file+line) | Tests ran + result | Errors seen + fix | Guard findings | 
 | `rules` | checklist pack for this stack |
 | `graph` | ARCHITECTURE.md from real imports (Mermaid) |
 | `timeline` | project history from logs (one screen) |
-| `skill` | SKILL pack: audit + fix + review (skills ecosystem) |
+| `skill` | SKILL pack: audit + fix + review + research |
 | `ci` | GitHub Action gate (check on every PR) |
 | `perf [dir]` | engine speed table (ms) |
 | `setup-ide` | MCP configs for 25+ clients |
@@ -103,16 +103,16 @@ Changed (file+line) | Tests ran + result | Errors seen + fix | Guard findings | 
   }
 }
 ```
-10 tools: `plan_task`, `log_step`, `recall`, `remember`, `get_context`, `verify_work`, `security_check`, `snapshot`, `safe_fix`, `audit_work`, `review_changes`. Per-client files: `setup-ide` → `.deep-era/ide/SETUP.md`.
+14 tools: `plan_task`, `log_step`, `recall`, `remember`, `get_context`, `verify_work`, `security_check`, `snapshot`, `safe_fix`, `audit_work`, `review_changes`, `search_code`, `fetch_url`, `research_topic`. Per-client files: `setup-ide` → `.deep-era/ide/SETUP.md`.
 
 ## Demo
 `DEMO.md` — 5-minute video script. Or run `deep-era demo` and watch 4 traps get caught.
 
-## Self-proof (v0.28.0, just ran)
-- `npm test` → 42 unit + 12 CLI + 7 MCP = **61 green**
+## Self-proof (v0.29.0, just ran)
+- `npm test` → 44 unit + 12 CLI + 8 MCP = **64 green**
 - `check` → verify 2/2, 0 security/guard/deps → PASS
-- `mcp tools/list` → 10 tools ok
-- `npm publish --dry-run` → 28 files, clean
+- `mcp tools/list` → 14 tools ok
+- `npm publish --dry-run` → 31 files, clean
 
 ## Looking for an alternative?
 

@@ -31,7 +31,7 @@ FORBIDDEN (every project, every language):
 These rules are identical for Cursor, Copilot, Antigravity, Windsurf, OpenCode, Claude Code. No frontend needed.
 
 Stack: node
-Files: 50
+Files: 51
 
 ## Stack pack: node
 - [ ] No console.log secrets

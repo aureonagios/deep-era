@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-09-10T07:48:30.116Z",
+  "generatedAt": "2026-09-10T08:03:52.986Z",
   "stack": {
     "kind": "node",
     "run": null,
@@ -8,7 +8,7 @@
     "test": "npm test"
   },
   "counts": {
-    "total": 50,
+    "total": 51,
     "truncated": false
   },
   "files": [
@@ -85,7 +85,7 @@
     {
       "file": "bin/cli.js",
       "role": "code-js",
-      "size": 16185,
+      "size": 17534,
       "imports": [
         "src/init.js",
         "src/doctor.js",
@@ -134,7 +134,7 @@
     {
       "file": "mcp/server.js",
       "role": "code-js",
-      "size": 11935,
+      "size": 13269,
       "imports": [
         "src/map.js",
         "src/verify.js",
@@ -147,7 +147,8 @@
         "src/spend.js",
         "src/fix.js",
         "src/review.js",
-        "src/deps.js"
+        "src/deps.js",
+        "src/net.js"
       ],
       "importedBy": []
     },
@@ -161,7 +162,7 @@
     {
       "file": "README.md",
       "role": "doc",
-      "size": 7446,
+      "size": 7484,
       "imports": [],
       "importedBy": []
     },
@@ -349,6 +350,15 @@
       ]
     },
     {
+      "file": "src/net.js",
+      "role": "code-js",
+      "size": 3331,
+      "imports": [],
+      "importedBy": [
+        "mcp/server.js"
+      ]
+    },
+    {
       "file": "src/projects.js",
       "role": "code-js",
       "size": 1722,
@@ -422,7 +432,7 @@
     {
       "file": "src/skill.js",
       "role": "code-js",
-      "size": 3452,
+      "size": 4269,
       "imports": [],
       "importedBy": [
         "src/global.js",
@@ -490,7 +500,7 @@
     {
       "file": "tests/cli.js",
       "role": "code-js",
-      "size": 7036,
+      "size": 7057,
       "imports": [
         "src/global.js"
       ],
@@ -520,7 +530,7 @@
     {
       "file": "tests/mcp.js",
       "role": "code-js",
-      "size": 5400,
+      "size": 6205,
       "imports": [],
       "importedBy": []
     },
@@ -548,7 +558,7 @@
     {
       "file": "tests/run.js",
       "role": "code-js",
-      "size": 22696,
+      "size": 23896,
       "imports": [
         "src/map.js",
         "src/security.js",

@@ -319,7 +319,7 @@ ok("skill-md-valid", () => {
   const { runSkill } = require("../src/skill");
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-"));
   const out = runSkill(tmp);
-  assert(Array.isArray(out) && out.length === 3, "skill pack incomplete!");
+  assert(Array.isArray(out) && out.length === 4, "skill pack incomplete!");
   const md = fs.readFileSync(path.join(tmp, ".deep-era", "skills", "deep-era-audit", "SKILL.md"), "utf8");
   assert(md.startsWith("---\nname: deep-era-audit"), "frontmatter broken!");
   assert(md.includes("verify_work") && md.includes("ENGLISH ONLY"), "workflow missing!");
@@ -443,6 +443,30 @@ ok("osv-fixed-version-parsed", () => {
   const fake = { affected: [{ ranges: [{ events: [{ introduced: "1.0.0" }, { fixed: "1.2.3" }] }] }] };
   assert(fixedIn(fake) === "1.2.3", "fixed version missed!");
   assert(fixedIn({}) === null, "empty vuln should be null!");
+});
+
+ok("net-fetch-local-server", async () => {
+  const http = require("http");
+  const { fetchText } = require("../src/net");
+  const srv = http.createServer((req, res) => {
+    res.writeHead(200, { "Content-Type": "text/html" });
+    res.end("<html><head><title>T</title><style>.x{}</style></head><body><h1>Hello Docs</h1><script>evil()</script><p>Version 2.0 API</p></body></html>");
+  });
+  await new Promise((r) => srv.listen(0, r));
+  const port = srv.address().port;
+  const r = await fetchText(`http://127.0.0.1:${port}/docs`);
+  srv.close();
+  assert(r.ok, `fetch failed: ${r.error}`);
+  assert(r.text.includes("Hello Docs") && r.text.includes("Version 2.0"), "content lost!");
+  assert(!r.text.includes("evil()") && !r.text.includes(".x{}"), "script/style leaked!");
+  const bad = await fetchText("gopher://x");
+  assert(!bad.ok, "non-http accepted!");
+});
+
+ok("net-research-degrades-honestly", async () => {
+  const { instantAnswer } = require("../src/net");
+  const r = await instantAnswer("test query unlikely to matter");
+  assert(typeof r.ok === "boolean" && (r.ok ? r.text.length > 0 : /URL|offline|unavailable|no instant/.test(r.error)), "dishonest shape!");
 });
 
 ok("universal-stacks-detected", () => {
