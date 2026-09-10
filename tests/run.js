@@ -486,6 +486,18 @@ ok("serve-run-observe-probe", async () => {  const { runServe } = require("../sr
   assert(r.errors.length === 0, `false errors: ${r.errors}`);
 });
 
+ok("deep-eraignore-tames-monorepo", () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-"));
+  fs.mkdirSync(path.join(tmp, "generated"), { recursive: true });
+  fs.writeFileSync(path.join(tmp, "generated", "big.js"), "x".repeat(100));
+  fs.writeFileSync(path.join(tmp, "app.js"), "console.log(1);\n");
+  fs.writeFileSync(path.join(tmp, ".deep-eraignore"), "generated/\n");
+  const map = buildMap(tmp);
+  assert(map.files.some((f) => f.file === "app.js"), "app lost!");
+  assert(!map.files.some((f) => f.file.startsWith("generated")), "ignore failed!");
+  assert(map.counts.truncated === false, "truncated flag wrong!");
+});
+
 ok("universal-stacks-detected", () => {
   const kinds = [
     [[{ file: "go.mod" }], "go"],

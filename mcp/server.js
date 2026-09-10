@@ -1,4 +1,4 @@
-// MCP server v0.6 — 10 tools, zero deps. Works with any MCP-capable IDE/agent.
+// MCP server v0.32 — 14 tools, zero deps. Works with any MCP-capable IDE/agent.
 // RULE: user may speak any language. All code, comments, logs and replies: ENGLISH ONLY.
 const { buildMap } = require("../src/map");
 const { verifyProject } = require("../src/verify");
@@ -48,7 +48,7 @@ async function runMcp() {
       const { id, method, params } = msg;
       try {
         if (method === "initialize") {
-          reply(id, { protocolVersion: "2024-11-05", capabilities: { tools: {} }, serverInfo: { name: "deep-era", version: "0.31.0" } });
+          reply(id, { protocolVersion: "2024-11-05", capabilities: { tools: {} }, serverInfo: { name: "deep-era", version: "0.32.0" } });
         } else if (method === "notifications/initialized") {
         } else if (method === "tools/list") {
           reply(id, { tools: TOOLS });

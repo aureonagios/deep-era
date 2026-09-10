@@ -54,7 +54,7 @@ async function runInit(cwd) {
   );
   logStep(cwd, `init ok: ${map.counts.total} files, stack=${map.stack.kind}`);
   console.log(`[deep-era] init ok -> ${cwd}`);
-  console.log(`  - AGENTS.md (universal rules, 50+ IDEs)`);
+  console.log(`  - AGENTS.md (universal rules, 25+ IDEs)`);
   console.log(`  - .deep-era/map.json (${map.counts.total} files, stack=${map.stack.kind})`);
   console.log(`  - .deep-era/RULES.md + logs/`);
   console.log(`Next: deep-era doctor  (full health check)`);

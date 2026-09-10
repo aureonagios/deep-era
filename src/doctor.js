@@ -33,7 +33,7 @@ async function runDoctor(cwd) {
     ? `\n## 5. Progress vs last run\nFixed since last run (${fixed.length}): ${fixed.slice(0, 10).join(", ") || "—"}\nNewly broken (${broken.length}): ${broken.slice(0, 10).join(", ") || "—"}\n`
     : `\n## 5. Progress vs last run\nFirst audited run — baseline locked.\n`;
   const report = `# ERROR-REPORT.md (AI Deep Era Doctor)\n\n` +
-    `Generated: ${new Date().toISOString()}\nStack: ${map.stack.kind} | Files: ${map.counts.total}\n\n` +
+    `Generated: ${new Date().toISOString()}\nStack: ${map.stack.kind} | Files: ${map.counts.total}${map.counts.truncated ? " (TRUNCATED at 2000 — add .deep-eraignore for generated dirs)" : ""}\n\n` +
     `## 1. Terminal / build truth\n` +
     (verify.length ? verify.map((v) => `### \`${v.cmd}\` => ${v.ok ? "PASS" : "FAIL"}\n\`\`\`\n${v.output.slice(0, 2000)}\n\`\`\`\n`).join("\n") : "No checks.\n") +
     `\n## 2. Security findings (${security.length})\n` +

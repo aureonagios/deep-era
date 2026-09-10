@@ -2,9 +2,24 @@ const fs = require("fs");
 const path = require("path");
 
 const SKIP = new Set(["node_modules", ".git", ".deep-era", "dist", "build", ".next", "__pycache__", ".venv", "venv"]);
-const MAX_FILES = 500;
+const MAX_FILES = 2000;
 
-function scan(cwd, dir = "", out = []) {
+// .deep-eraignore: one prefix per line (e.g. `legacy/`, `generated/`, `big.csv`).
+// Big monorepos stay fast because YOU choose what matters — stated in the map.
+function loadIgnore(cwd) {
+  try {
+    return fs.readFileSync(path.join(cwd, ".deep-eraignore"), "utf8")
+      .split("\n").map((l) => l.trim()).filter((l) => l && !l.startsWith("#"));
+  } catch { return []; }
+}
+
+function isIgnored(rel, rules) {
+  const r = rel.replace(/\\/g, "/");
+  return rules.some((rule) => r === rule || r.startsWith(rule.endsWith("/") ? rule : rule + "/"));
+}
+
+function scan(cwd, dir = "", out = [], rules = null) {
+  if (rules === null && dir === "") rules = loadIgnore(cwd);
   const full = path.join(cwd, dir);
   let entries = [];
   try {
@@ -21,8 +36,9 @@ function scan(cwd, dir = "", out = []) {
     }
     if (SKIP.has(e.name)) continue;
     const rel = path.join(dir, e.name);
+    if (isIgnored(rel, rules)) continue;
     if (e.isDirectory()) {
-      scan(cwd, rel, out);
+      scan(cwd, rel, out, rules);
     } else {
       const ext = path.extname(e.name).toLowerCase();
       let role = "other";

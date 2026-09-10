@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-09-10T10:42:51.767Z",
+  "generatedAt": "2026-09-10T16:34:11.066Z",
   "stack": {
     "kind": "node",
     "run": null,
@@ -85,7 +85,7 @@
     {
       "file": "bin/cli.js",
       "role": "code-js",
-      "size": 17743,
+      "size": 17814,
       "imports": [
         "src/init.js",
         "src/doctor.js",
@@ -134,7 +134,7 @@
     {
       "file": "mcp/server.js",
       "role": "code-js",
-      "size": 13269,
+      "size": 13270,
       "imports": [
         "src/map.js",
         "src/verify.js",
@@ -219,7 +219,7 @@
     {
       "file": "src/doctor.js",
       "role": "code-js",
-      "size": 4506,
+      "size": 4602,
       "imports": [
         "src/map.js",
         "src/verify.js",
@@ -321,7 +321,7 @@
     {
       "file": "src/map.js",
       "role": "code-js",
-      "size": 7055,
+      "size": 7745,
       "imports": [],
       "importedBy": [
         "bin/cli.js",
@@ -593,7 +593,7 @@
     {
       "file": "tests/run.js",
       "role": "code-js",
-      "size": 24723,
+      "size": 25378,
       "imports": [
         "src/map.js",
         "src/security.js",

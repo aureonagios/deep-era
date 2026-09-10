@@ -9,7 +9,7 @@ const targetDir = process.argv[3] && !process.argv[3].startsWith("-") ? path.res
 async function main() {
   if (!cmd || cmd === "help" || cmd === "--help" || cmd === "-h") {
     console.log(`
-AI Deep Era v0.31.0 - give the blind AI developer eyes (no frontend, proof in your IDE)
+AI Deep Era v0.32.0 - give the blind AI developer eyes (no frontend, proof in your IDE)
 
 Usage:
   deep-era onboard             One shot: init + setup-ide + CI + skill
@@ -43,7 +43,7 @@ Usage:
   deep-era serve               Run the project, probe it, observe, shut down
   deep-era fetch <url>         Fetch a docs URL to text (stdlib, capped)
   deep-era research <query>    Instant-answer research (best-effort, honest)
-  deep-era mcp                 MCP server (stdio) - 10 tools
+  deep-era mcp                 MCP server (stdio) - 14 tools
 `);
     return;
   }
@@ -79,7 +79,7 @@ Usage:
       if (vf || bad) process.exitCode = 1;
       return;
     }
-    console.log(`[deep-era check] verify: ${v.length - vf}/${v.length} pass | security: ${s.length} | guard: ${g.length} | deps: ${d.length}`);
+    console.log(`[deep-era check] verify: ${v.length - vf}/${v.length} pass | security: ${s.length} | guard: ${g.length} | deps: ${d.length}${map.counts.truncated ? " | map TRUNCATED (see .deep-eraignore)" : ""}`);
     try {
       const { spendReport } = require("../src/spend");
       const sp = spendReport(cwd0);

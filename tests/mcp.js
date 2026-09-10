@@ -1,5 +1,5 @@
 // MCP protocol tests — spawn the real server over stdio, speak JSON-RPC,
-// call ALL 10 tools. If the wire format breaks, this suite screams.
+// call ALL 14 tools. If the wire format breaks, this suite screams.
 process.env.DEEP_ERA_SELFTEST = "1";
 const assert = require("assert");
 const path = require("path");
