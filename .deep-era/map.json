@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-09-11T12:21:42.298Z",
+  "generatedAt": "2026-09-11T13:11:40.713Z",
   "stack": {
     "kind": "node",
     "run": null,
@@ -8,7 +8,7 @@
     "test": "npm test"
   },
   "counts": {
-    "total": 59,
+    "total": 60,
     "truncated": false
   },
   "files": [
@@ -85,7 +85,7 @@
     {
       "file": "bin/cli.js",
       "role": "code-js",
-      "size": 20231,
+      "size": 20444,
       "imports": [
         "src/init.js",
         "src/doctor.js",
@@ -120,7 +120,7 @@
     {
       "file": "ERROR-REPORT.md",
       "role": "doc",
-      "size": 4204,
+      "size": 4205,
       "imports": [],
       "importedBy": []
     },
@@ -164,7 +164,7 @@
     {
       "file": "README.md",
       "role": "doc",
-      "size": 7702,
+      "size": 7766,
       "imports": [],
       "importedBy": []
     },
@@ -172,6 +172,13 @@
       "file": "SECURITY.md",
       "role": "doc",
       "size": 1305,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": "src/browser.js",
+      "role": "code-js",
+      "size": 1970,
       "imports": [],
       "importedBy": []
     },
@@ -471,7 +478,7 @@
     {
       "file": "src/skill.js",
       "role": "code-js",
-      "size": 5869,
+      "size": 6679,
       "imports": [],
       "importedBy": [
         "src/global.js",
@@ -539,7 +546,7 @@
     {
       "file": "tests/cli.js",
       "role": "code-js",
-      "size": 10426,
+      "size": 10848,
       "imports": [
         "src/global.js",
         "src/deps.js"

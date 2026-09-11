@@ -1,8 +1,8 @@
-# AI Deep Era v0.38.0 — give the blind AI developer eyes
+# AI Deep Era v0.39.0 — give the blind AI developer eyes
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/Node-%3E%3D18-blue.svg)](package.json)
-[![Tests](https://img.shields.io/badge/Tests-81%20passing-brightgreen.svg)](tests/run.js)
+[![Tests](https://img.shields.io/badge/Tests-82%20passing-brightgreen.svg)](tests/run.js)
 [![No deps](https://img.shields.io/badge/Dependencies-0-orange.svg)](package.json)
 [![MCP](https://img.shields.io/badge/MCP-14%20tools-purple.svg)](mcp/server.js)
 [![IDE](https://img.shields.io/badge/IDEs-25%2B-blueviolet.svg)](src/setupIde.js)
@@ -94,6 +94,7 @@ Changed (file+line) | Tests ran + result | Errors seen + fix | Guard findings | 
 | `serve` | run the project, probe it, observe, shut down |
 | `ci` | GitHub Action gate (check on every PR) |
 | `perf [dir]` | engine speed table (ms) |
+| `browser` | Playwright MCP bridge for browser-driven verify |
 | `sbom` | CycloneDX SBOM of direct deps |
 | `update` | check registry for a newer release |
 | `setup-ide` | MCP configs for 25+ clients |
@@ -112,8 +113,8 @@ Changed (file+line) | Tests ran + result | Errors seen + fix | Guard findings | 
 ## Demo
 `DEMO.md` — 5-minute video script. Or run `deep-era demo` and watch 4 traps get caught.
 
-## Self-proof (v0.38.0, just ran)
-- `npm test` → 51 unit + 21 CLI + 9 MCP = **81 green**
+## Self-proof (v0.39.0, just ran)
+- `npm test` → 51 unit + 22 CLI + 9 MCP = **82 green**
 - `check` → verify 2/2, 0 security/guard/deps → PASS
 - `mcp tools/list` → 14 tools ok
 - `npm publish --dry-run` → 31 files, clean

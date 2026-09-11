@@ -64,8 +64,7 @@ If docs are unreachable: say so honestly, implement the smallest surface, and ma
 5. **Shut down**: serve kills the process. Never leave dev servers running.
 6. **Proof**: paste the probe status line (GET url -> 200) into the final report.`,
   },
-  "deep-era-fleet": {
-    description: "Work across MANY projects at once. Use when juggling repos — see fleet health, carry lessons, never mix memories.",
+  "deep-era-fleet": {    description: "Work across MANY projects at once. Use when juggling repos — see fleet health, carry lessons, never mix memories.",
     body: `# Deep-Era Fleet Skill
 
 One agent, many repos — without mixing them up:
@@ -75,6 +74,19 @@ One agent, many repos — without mixing them up:
 3. **Share lessons only**: \`deep-era remember --global <lesson>\` for truths that hold everywhere (they recall in every repo, tagged [global]).
 4. **Per repo, full loop**: onboard (once) → work → check → remember. Same discipline, every repo.
 5. **Report per repo**: proof blocks must name the repo. Mixed proof = rejected proof.`,
+  },
+  "deep-era-browse": {
+    description: "Verify in a REAL browser via Playwright MCP. Use after serve is green — drive pages, read console, screenshot proof.",
+    body: `# Deep-Era Browse Skill
+
+Seeing beats assuming — drive it like a user:
+
+1. **Wire once**: \`deep-era browser\`, merge the Playwright entry into your client's MCP config.
+2. **Serve first**: \`deep-era serve\` must be green (200 on probe) before opening any page.
+3. **Drive**: navigate to each changed route. Click the critical path (login, submit, pay).
+4. **Read console**: any console error = bug, even if the page "looks fine". Paste it into the fix.
+5. **Screenshot**: capture the critical path AFTER the fix. Screenshot + probe-200 = proof.
+6. **Close**: shut the browser and the dev server. Never leave processes running.`,
   },
 };
 

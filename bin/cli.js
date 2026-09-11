@@ -9,7 +9,7 @@ const targetDir = process.argv[3] && !process.argv[3].startsWith("-") ? path.res
 async function main() {
   if (!cmd || cmd === "help" || cmd === "--help" || cmd === "-h") {
     console.log(`
-AI Deep Era v0.38.0 - give the blind AI developer eyes (no frontend, proof in your IDE)
+AI Deep Era v0.39.0 - give the blind AI developer eyes (no frontend, proof in your IDE)
 
 Usage:
   deep-era onboard             One shot: init + setup-ide + CI + skill
@@ -41,6 +41,7 @@ Usage:
   deep-era ci                  Create GitHub Action gate (runs check on every PR)
   deep-era watch               Re-run check on every file change
   deep-era perf [dir]          Engine speed table (ms)
+  deep-era browser             Playwright MCP bridge for browser-driven verify
   deep-era sbom                CycloneDX SBOM of direct deps (.deep-era/sbom.json)
   deep-era update              Check npm registry for a newer deep-era (best-effort)
   deep-era serve               Run the project, probe it, observe, shut down
@@ -335,6 +336,11 @@ Usage:
   if (cmd === "sbom") {
     const { runSbom } = require("../src/sbom");
     runSbom(process.cwd());
+    return;
+  }
+  if (cmd === "browser") {
+    const { runBrowser } = require("../src/browser");
+    runBrowser(process.cwd());
     return;
   }
   if (cmd === "perf") {

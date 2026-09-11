@@ -147,7 +147,7 @@ ok("cli-search-ranked", () => {
 ok("cli-skill-pack-six", () => {
   const tmp = sandbox();
   cli(tmp, ["skill"]);
-  for (const n of ["deep-era-audit", "deep-era-fix", "deep-era-review", "deep-era-research", "deep-era-serve", "deep-era-fleet"]) {
+  for (const n of ["deep-era-audit", "deep-era-fix", "deep-era-review", "deep-era-research", "deep-era-serve", "deep-era-fleet", "deep-era-browse"]) {
     assert(fs.existsSync(path.join(tmp, ".deep-era", "skills", n, "SKILL.md")), `${n} missing!`);
   }
 });
@@ -213,6 +213,14 @@ ok("cli-demo-verdict", () => {
   const { execFileSync } = require("child_process");
   const out = execFileSync(process.execPath, [CLI, "demo"], { timeout: 120000 }).toString();
   assert(out.includes("CAUGHT") && out.includes("dep-blocklist"), "demo did not catch!");
+});
+
+ok("cli-browser-bridge", () => {
+  const tmp = sandbox();
+  cli(tmp, ["browser"]);
+  const j = JSON.parse(fs.readFileSync(path.join(tmp, ".deep-era", "browser", "playwright.json"), "utf8"));
+  assert(j.mcpServers.playwright.args.includes("@playwright/mcp@latest"), "playwright entry wrong!");
+  assert(fs.existsSync(path.join(tmp, ".deep-era", "browser", "BROWSER.md")), "no BROWSER.md!");
 });
 
 ok("cli-check-json", () => {
