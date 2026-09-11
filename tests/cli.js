@@ -86,6 +86,13 @@ ok("cli-fix-doctor-sarif", () => {
   assert(fs.existsSync(path.join(tmp, ".deep-era", "report.sarif")), "no sarif");
 });
 
+ok("cli-serve-fixture-probe", () => {
+  const { execFileSync } = require("child_process");
+  const app = path.join(__dirname, "fixtures", "serve-app");
+  const out = execFileSync(process.execPath, [CLI, "serve"], { cwd: app, timeout: 60000 }).toString();
+  assert(out.includes("200"), `serve probe failed: ${out.slice(0, 300)}`);
+});
+
 ok("cli-watch-detects-change", async () => {
   const tmp = sandbox();
   const child = require("child_process").spawn(process.execPath, [CLI, "watch"], { cwd: tmp });
@@ -193,6 +200,19 @@ ok("cli-license-offline-safe", async () => {
   const tmp = sandbox({ "package.json": JSON.stringify({ dependencies: { "leftpad": "1.3.0" } }) });
   const r = await auditLicenses(tmp); // network or silent skip — must never throw
   assert(Array.isArray(r), "licenses must resolve array!");
+});
+
+ok("cli-context-shows-files", () => {
+  const tmp = sandbox({ "auth.js": "function login(user) { return 1; }\n" });
+  cli(tmp, ["init"]);
+  const out = cli(tmp, ["context", "login"]);
+  assert(out.includes("auth.js"), `context missed: ${out.slice(0, 200)}`);
+});
+
+ok("cli-demo-verdict", () => {
+  const { execFileSync } = require("child_process");
+  const out = execFileSync(process.execPath, [CLI, "demo"], { timeout: 120000 }).toString();
+  assert(out.includes("CAUGHT") && out.includes("dep-blocklist"), "demo did not catch!");
 });
 
 ok("cli-check-json", () => {

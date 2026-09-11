@@ -131,6 +131,24 @@ ok("mcp-fetch-research", async () => {
   srv.close();
 });
 
+ok("mcp-remember-global-lesson", async () => {
+  const fs2 = require("fs");
+  const os2 = require("os");
+  const path2 = require("path");
+  const lf = path2.join(os2.homedir(), ".deep-era", "lessons.jsonl");
+  let before = null;
+  try { before = fs2.readFileSync(lf, "utf8"); } catch {}
+  const s = session(sandbox());
+  await s.send("initialize", {});
+  const r = await s.send("tools/call", { name: "remember", arguments: { text: "mcp global wire lesson", global: true } });
+  assert(r.result.content[0].text.includes("Global lesson"), "global remember broke");
+  s.stop();
+  try {
+    if (before === null) fs2.unlinkSync(lf);
+    else fs2.writeFileSync(lf, before);
+  } catch {}
+});
+
 ok("mcp-unknown-tool-errors", async () => {
   const s = session(sandbox());
   await s.send("initialize", {});
