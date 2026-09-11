@@ -513,6 +513,14 @@ ok("cwe-tags-present", () => {
   assert(tagSuffix("entropy-secret").includes("CWE-798"), "suffix wrong!");
 });
 
+ok("resolve-dep-no-fake-ext", () => {
+  const { resolveDep } = require("../src/map");
+  const names = new Set(["package.json", "src/a.js"]);
+  assert(resolveDep(names, "package.json") === "package.json", "json import broken!");
+  assert(resolveDep(names, "src/a") === "src/a.js", "ext guess broken!");
+  assert(resolveDep(names, "src/ghost") === null, "ghost resolved!");
+});
+
 ok("universal-stacks-detected", () => {
   const kinds = [
     [[{ file: "go.mod" }], "go"],

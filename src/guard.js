@@ -154,11 +154,10 @@ function declaredDeps(cwd) {
     for (const f of codeFiles.slice(0, 120)) {
       if (f.file.startsWith("tests/fixtures/") || f.file.startsWith("tests/")) continue;
       for (const d of parseImports(cwd, f.file)) {
-        const key = names.has(d) ? d : d.replace(/^\.\//, "");
-        const withExt = [key, key + ".js", key + ".ts", key + ".py", key + "/index.js"];
-        if (withExt.some((c) => names.has(c))) continue;
-        const first = key.split("/")[0].toLowerCase().replace(/-/g, "_");
-        if (PY_STDLIB.has(first) || declared.has(first) || declared.has(key)) continue;
+        const { resolveDep } = require("./map");
+        if (resolveDep(names, d)) continue;
+        const first = d.split("/")[0].toLowerCase().replace(/-/g, "_");
+        if (PY_STDLIB.has(first) || declared.has(first)) continue;
         if (n < 8) {
           n++;
           push("medium", "broken-import", f.file, `Imports "${d}" but no such file — hallucinated path? Fix the import.`);

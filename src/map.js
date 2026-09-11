@@ -111,15 +111,21 @@ function parseImports(cwd, rel) {
 }
 
 function normDep(rel, dep) {
+  // Raw normalized path only — NEVER guess extensions here.
+  // Callers try real variants (exact, +.js, +.ts, /index.js). Guessing here
+  // once turned ../package.json into package.json.js (real bug, caught live).
   const base = path.posix.dirname(rel.replace(/\\/g, "/"));
-  const joined = path.posix.normalize(path.posix.join(base, dep));
-  for (const ext of ["", ".js", ".ts", "/index.js", ".py"]) {
-    const cand = (joined + ext).replace(/^\.\//, "");
-    // Existence is checked by the caller; return a best guess here
-    if (!ext) continue;
-    return cand;
+  return path.posix.normalize(path.posix.join(base, dep)).replace(/^\.\//, "");
+}
+
+const FILE_EXTS = ["", ".js", ".ts", ".tsx", ".jsx", ".py", ".json", "/index.js"];
+
+function resolveDep(byName, d) {
+  const key = d.replace(/^\.\//, "");
+  for (const ext of FILE_EXTS) {
+    if (byName.has(key + ext)) return key + ext;
   }
-  return joined;
+  return null;
 }
 function detectStack(cwd, files) {
   const names = new Set(files.map((f) => f.file));
@@ -155,14 +161,13 @@ function buildMap(cwd) {
   const byName = new Map(files.map((f) => [f.file, f]));
   for (const f of files) {
     if (f.role.startsWith("code")) {
-      f.imports = parseImports(cwd, f.file).filter((d) => byName.has(d) || byName.has(d.replace(/^\.\//, "")));
+      f.imports = parseImports(cwd, f.file).map((d) => resolveDep(byName, d)).filter(Boolean);
     } else f.imports = [];
     f.importedBy = [];
   }
   for (const f of files) {
     for (const d of (f.imports || [])) {
-      const key = byName.has(d) ? d : d.replace(/^\.\//, "");
-      if (byName.has(key)) byName.get(key).importedBy.push(f.file);
+      if (byName.has(d)) byName.get(d).importedBy.push(f.file);
     }
   }
   return {
@@ -174,4 +179,4 @@ function buildMap(cwd) {
   };
 }
 
-module.exports = { buildMap, scan, detectStack, parseImports };
+module.exports = { buildMap, scan, detectStack, parseImports, resolveDep };

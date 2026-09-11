@@ -172,6 +172,15 @@ ok("cli-update-offline-safe", () => {
   assert(out.includes("deep-era") && /up to date|update available|offline|unreachable|unreadable/i.test(out), `update behaved badly: ${out.slice(0, 200)}`);
 });
 
+ok("cli-sbom-cyclonedx", () => {
+  const tmp = sandbox({ "package.json": JSON.stringify({ name: "x", dependencies: { leftpad: "^1.0.0" } }), "requirements.txt": "requests==2.31.0\nunpinned\n" });
+  cli(tmp, ["sbom"]);
+  const j = JSON.parse(fs.readFileSync(path.join(tmp, ".deep-era", "sbom.json"), "utf8"));
+  assert(j.bomFormat === "CycloneDX" && j.specVersion === "1.5", "not CycloneDX!");
+  assert(j.components.some((c) => c["bom-ref"] === "pypi:requests@2.31.0"), "pypi missed!");
+  assert(j.metadata.comment.includes("Direct deps"), "honesty note missing!");
+});
+
 ok("cli-check-json", () => {
   const tmp = sandbox();
   cli(tmp, ["init"]);

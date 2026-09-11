@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-09-11T00:02:46.882Z",
+  "generatedAt": "2026-09-11T11:28:19.746Z",
   "stack": {
     "kind": "node",
     "run": null,
@@ -8,7 +8,7 @@
     "test": "npm test"
   },
   "counts": {
-    "total": 57,
+    "total": 59,
     "truncated": false
   },
   "files": [
@@ -85,7 +85,7 @@
     {
       "file": "bin/cli.js",
       "role": "code-js",
-      "size": 18989,
+      "size": 19194,
       "imports": [
         "src/init.js",
         "src/doctor.js",
@@ -157,12 +157,21 @@
       "role": "config",
       "size": 650,
       "imports": [],
-      "importedBy": []
+      "importedBy": [
+        "src/sbom.js"
+      ]
     },
     {
       "file": "README.md",
       "role": "doc",
-      "size": 7602,
+      "size": 7645,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": "SECURITY.md",
+      "role": "doc",
+      "size": 1305,
       "imports": [],
       "importedBy": []
     },
@@ -286,7 +295,7 @@
     {
       "file": "src/guard.js",
       "role": "code-js",
-      "size": 9526,
+      "size": 9386,
       "imports": [
         "src/map.js",
         "src/init.js"
@@ -332,7 +341,7 @@
     {
       "file": "src/map.js",
       "role": "code-js",
-      "size": 7745,
+      "size": 7924,
       "imports": [],
       "importedBy": [
         "bin/cli.js",
@@ -414,6 +423,15 @@
         "src/doctor.js",
         "tests/run.js"
       ]
+    },
+    {
+      "file": "src/sbom.js",
+      "role": "code-js",
+      "size": 2287,
+      "imports": [
+        "package.json"
+      ],
+      "importedBy": []
     },
     {
       "file": "src/security.js",
@@ -520,7 +538,7 @@
     {
       "file": "tests/cli.js",
       "role": "code-js",
-      "size": 8332,
+      "size": 8911,
       "imports": [
         "src/global.js"
       ],
@@ -606,7 +624,7 @@
     {
       "file": "tests/run.js",
       "role": "code-js",
-      "size": 26058,
+      "size": 26443,
       "imports": [
         "src/map.js",
         "src/security.js",
