@@ -9,7 +9,7 @@ const targetDir = process.argv[3] && !process.argv[3].startsWith("-") ? path.res
 async function main() {
   if (!cmd || cmd === "help" || cmd === "--help" || cmd === "-h") {
     console.log(`
-AI Deep Era v0.39.0 - give the blind AI developer eyes (no frontend, proof in your IDE)
+AI Deep Era v0.40.0 - give the blind AI developer eyes (no frontend, proof in your IDE)
 
 Usage:
   deep-era onboard             One shot: init + setup-ide + CI + skill
@@ -30,6 +30,7 @@ Usage:
   deep-era setup-ide [dir]     MCP configs for 25+ clients (.deep-era/ide/)
   deep-era snapshot [label]    Take a backup (restore if broken)
   deep-era snapshots           List backups
+  deep-era prune               Keep newest 5 snapshots, delete the rot
   deep-era diff <id>           What changed since snapshot <id>
   deep-era restore <id>        Restore a snapshot
   deep-era rules               Show the checklist pack for this project's stack
@@ -404,6 +405,12 @@ Usage:
       timer = setTimeout(() => { console.log(`\n[deep-era] change: ${file}`); run(); }, 800);
     });
     run();
+    return;
+  }
+  if (cmd === "prune") {
+    const { pruneSnapshots } = require("../src/snapshot");
+    const r = pruneSnapshots(process.cwd());
+    console.log(`[deep-era] prune: kept ${r.kept}, dropped ${r.dropped} old snapshots`);
     return;
   }
   if (cmd === "snapshot") {

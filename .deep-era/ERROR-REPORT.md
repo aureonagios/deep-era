@@ -1,6 +1,6 @@
 # ERROR-REPORT.md (AI Deep Era Doctor)
 
-Generated: 2026-09-11T13:14:01.769Z
+Generated: 2026-09-11T13:51:18.829Z
 Stack: node | Files: 60
 
 ## 1. Terminal / build truth
@@ -17,7 +17,7 @@ PASS context-saves-tokens
 PASS verify-deep-all-files
 PASS snapshot-create-restore
 PASS init-creates-agents-md
-[deep-era] init ok -> C:\Users\Mustafa\AppData\Local\Temp\deep-era-uIozDl
+[deep-era] init ok -> C:\Users\Mustafa\AppData\Local\Temp\deep-era-1zZWZM
   - AGENTS.md (universal rules, 25+ IDEs)
   - .deep-era/map.json (2 files, stack=unknown)
   - .deep-era/RULES.md + logs/
@@ -44,8 +44,8 @@ PASS graph-from-real-imports
 [deep-era] timeline (1 events):
   2026-01-01T00:00 [step] init ok: 2 files
 PASS timeline-reads-logs
-[deep-era demo] planted 4 traps in C:\Users\Mustafa\AppData\Local\Temp\deep-era-demo-oVZwCq (SQL injection, new Function, hijacked dep, dummy stats)
-[deep-era demo] caught 5 critical/high in 7176ms:
+[deep-era demo] planted 4 traps in C:\Users\Mustafa\AppData\Local\Temp\deep-era-demo-ROD5aT (SQL injection, new Function, hijacked dep, dummy stats)
+[deep-era demo] caught 5 critical/high in 3644ms:
   ! [high] app.js: Possible SQL injection (string concat) (sql-concat)
   ! [high] app.js: new Function(string) — code from string, injection risk (new-function)
   ! [critical] app.js: String-concatenated SQL — parameterized queries are mandatory. (sql-injection)
@@ -81,13 +81,13 @@ None. Clean.
 - AGENTS.md (doc, 3377b)
 - ARCHITECTURE.md (doc, 2246b)
 - BENCH.md (doc, 1641b)
-- bin/cli.js (code-js, 20444b)
+- bin/cli.js (code-js, 20756b)
 - DEMO.md (doc, 1451b)
-- ERROR-REPORT.md (doc, 4205b)
+- ERROR-REPORT.md (doc, 4183b)
 - LICENSE (other, 73b)
-- mcp/server.js (code-js, 13349b)
+- mcp/server.js (code-js, 13797b)
 - package.json (config, 650b)
-- README.md (doc, 7766b)
+- README.md (doc, 7845b)
 - SECURITY.md (doc, 1305b)
 - src/browser.js (code-js, 1970b)
 - src/ci.js (code-js, 1020b)
@@ -113,8 +113,8 @@ None. Clean.
 - src/security.js (code-js, 6220b)
 - src/serve.js (code-js, 4432b)
 - src/setupIde.js (code-js, 8662b)
-- src/skill.js (code-js, 6679b)
-- src/snapshot.js (code-js, 4395b)
+- src/skill.js (code-js, 7459b)
+- src/snapshot.js (code-js, 4914b)
 - src/spend.js (code-js, 1372b)
 - src/stacks.js (code-js, 1519b)
 - src/timeline.js (code-js, 1515b)

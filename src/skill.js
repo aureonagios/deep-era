@@ -75,8 +75,7 @@ One agent, many repos — without mixing them up:
 4. **Per repo, full loop**: onboard (once) → work → check → remember. Same discipline, every repo.
 5. **Report per repo**: proof blocks must name the repo. Mixed proof = rejected proof.`,
   },
-  "deep-era-browse": {
-    description: "Verify in a REAL browser via Playwright MCP. Use after serve is green — drive pages, read console, screenshot proof.",
+  "deep-era-browse": {    description: "Verify in a REAL browser via Playwright MCP. Use after serve is green — drive pages, read console, screenshot proof.",
     body: `# Deep-Era Browse Skill
 
 Seeing beats assuming — drive it like a user:
@@ -87,6 +86,21 @@ Seeing beats assuming — drive it like a user:
 4. **Read console**: any console error = bug, even if the page "looks fine". Paste it into the fix.
 5. **Screenshot**: capture the critical path AFTER the fix. Screenshot + probe-200 = proof.
 6. **Close**: shut the browser and the dev server. Never leave processes running.`,
+  },
+  "deep-era-ship": {
+    description: "Release gate: prove a version is shippable. Use before merge, tag, or publish. No proof, no ship.",
+    body: `# Deep-Era Ship Skill
+
+Merge/tag/publish only with proof in hand:
+
+1. **Review**: \`deep-era review\` — the diff must be PASS. Legacy code is not your excuse, your diff is.
+2. **Full audit**: \`deep-era check\` — 0 FAIL. Paste the line.
+3. **Serve + browse** (if runnable): probe 200 + screenshot of the critical path.
+4. **SBOM**: \`deep-era sbom\` for anything with dependencies.
+5. **Timeline proof**: \`deep-era timeline\` tail showing fix → verify → PASS.
+6. **Remember**: release notes as decision (what shipped, why now).
+
+Ship message format: version | review PASS | check PASS | probe/screenshot | SBOM ok.`,
   },
 };
 

@@ -24,6 +24,7 @@ const TOOLS = [
   { name: "search_code", description: "Ranked code search: find files by name + content + import hubs. Returns top files with hit counts.", inputSchema: { type: "object", properties: { query: { type: "string" } }, required: ["query"] } },
   { name: "fetch_url", description: "Fetch a docs/API URL to capped text (stdlib, offline-safe). Use to verify APIs against official docs — never invent them.", inputSchema: { type: "object", properties: { url: { type: "string" } }, required: ["url"] } },
   { name: "research_topic", description: "Best-effort instant-answer research (no key). Degrades honestly offline — then ask user for a docs URL.", inputSchema: { type: "object", properties: { query: { type: "string" } }, required: ["query"] } },
+  { name: "spend_report", description: "AI spend so far: calls, chars, token estimate and cost tiers. Spending honesty for the human.", inputSchema: { type: "object", properties: {} } },
 ];
 
 function reply(id, result) {
@@ -48,7 +49,7 @@ async function runMcp() {
       const { id, method, params } = msg;
       try {
         if (method === "initialize") {
-          reply(id, { protocolVersion: "2024-11-05", capabilities: { tools: {} }, serverInfo: { name: "deep-era", version: "0.39.0" } });
+          reply(id, { protocolVersion: "2024-11-05", capabilities: { tools: {} }, serverInfo: { name: "deep-era", version: "0.40.0" } });
         } else if (method === "notifications/initialized") {
         } else if (method === "tools/list") {
           reply(id, { tools: TOOLS });
@@ -166,6 +167,10 @@ async function runMcp() {
             const r = await instantAnswer(args.query || "");
             logStep(cwd, `research: "${(args.query || "").slice(0, 60)}" -> ${r.ok ? "answered" : r.error}`);
             reply(id, { content: [{ type: "text", text: r.ok ? `${r.text}\n\n(Source: ${r.source})` : r.error }] });
+          } else if (name === "spend_report") {
+            const { spendReport } = require("../src/spend");
+            const sp = spendReport(cwd);
+            reply(id, { content: [{ type: "text", text: JSON.stringify(sp, null, 2).slice(0, 3000) }] });
           } else {
             errReply(id, `unknown tool: ${name}`);
           }

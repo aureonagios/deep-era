@@ -319,7 +319,7 @@ ok("skill-md-valid", () => {
   const { runSkill } = require("../src/skill");
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-"));
   const out = runSkill(tmp);
-  assert(Array.isArray(out) && out.length === 7, "skill pack incomplete!");
+  assert(Array.isArray(out) && out.length === 8, "skill pack incomplete!");
   const md = fs.readFileSync(path.join(tmp, ".deep-era", "skills", "deep-era-audit", "SKILL.md"), "utf8");
   assert(md.startsWith("---\nname: deep-era-audit"), "frontmatter broken!");
   assert(md.includes("verify_work") && md.includes("ENGLISH ONLY"), "workflow missing!");
@@ -527,6 +527,16 @@ ok("recall-proximity-density", () => {
   remember(tmp, "chat", "deploy happened monday. unrelated pipeline tuesday. rate was fine. limit unknown.");
   const r = recall(tmp, "deploy rate limit");
   assert(r.entries[0].text.includes("rate limit notes"), "dense entry lost!");
+});
+
+ok("snapshot-prune-keeps-five", () => {
+  const { createSnapshot, listSnapshots, pruneSnapshots } = require("../src/snapshot");
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-"));
+  fs.writeFileSync(path.join(tmp, "a.js"), "x");
+  for (let i = 0; i < 7; i++) createSnapshot(tmp, "s" + i);
+  assert(listSnapshots(tmp).length === 7, "setup wrong!");
+  const r = pruneSnapshots(tmp, 5);
+  assert(r.kept === 5 && r.dropped === 2 && listSnapshots(tmp).length === 5, "prune wrong!");
 });
 
 ok("universal-stacks-detected", () => {

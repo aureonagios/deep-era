@@ -57,6 +57,19 @@ function createSnapshot(cwd, label) {
   return { id, files: count };
 }
 
+// Prune: keep the newest KEEP snapshots, delete older ones. Backups rot;
+// a rollback target from 3 months ago is archaeology, not safety.
+function pruneSnapshots(cwd, keep = 5) {
+  const ids = listSnapshots(cwd).sort();
+  const drop = ids.slice(0, Math.max(0, ids.length - keep));
+  for (const id of drop) {
+    try {
+      fs.rmSync(path.join(snapDir(cwd), id), { recursive: true, force: true });
+    } catch {}
+  }
+  return { kept: ids.length - drop.length, dropped: drop.length };
+}
+
 function listSnapshots(cwd) {
   try {
     return fs.readdirSync(snapDir(cwd)).filter((n) => !n.startsWith("."));
@@ -119,4 +132,4 @@ function diffSnapshot(cwd, id) {
   return { id, added, removed, modified };
 }
 
-module.exports = { createSnapshot, listSnapshots, restoreSnapshot, diffSnapshot };
+module.exports = { createSnapshot, listSnapshots, restoreSnapshot, diffSnapshot, pruneSnapshots };

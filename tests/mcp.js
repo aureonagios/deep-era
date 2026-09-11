@@ -59,7 +59,7 @@ ok("mcp-initialize-and-list", async () => {
   const init = await s.send("initialize", {});
   assert(init.result.serverInfo.name === "deep-era", "wrong server");
   const list = await s.send("tools/list", {});
-  assert(list.result.tools.length === 14, `expected 14 tools, got ${list.result.tools.length}`);
+  assert(list.result.tools.length === 15, `expected 15 tools, got ${list.result.tools.length}`);
   s.stop();
 });
 
@@ -147,6 +147,14 @@ ok("mcp-remember-global-lesson", async () => {
     if (before === null) fs2.unlinkSync(lf);
     else fs2.writeFileSync(lf, before);
   } catch {}
+});
+
+ok("mcp-spend-report", async () => {
+  const s = session(sandbox());
+  await s.send("initialize", {});
+  const r = await s.send("tools/call", { name: "spend_report", arguments: {} });
+  assert(r.result.content[0].text.includes("calls"), "spend_report broke");
+  s.stop();
 });
 
 ok("mcp-unknown-tool-errors", async () => {
