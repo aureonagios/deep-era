@@ -48,7 +48,7 @@ async function runMcp() {
       const { id, method, params } = msg;
       try {
         if (method === "initialize") {
-          reply(id, { protocolVersion: "2024-11-05", capabilities: { tools: {} }, serverInfo: { name: "deep-era", version: "0.36.0" } });
+          reply(id, { protocolVersion: "2024-11-05", capabilities: { tools: {} }, serverInfo: { name: "deep-era", version: "0.37.0" } });
         } else if (method === "notifications/initialized") {
         } else if (method === "tools/list") {
           reply(id, { tools: TOOLS });
@@ -134,8 +134,8 @@ async function runMcp() {
           } else if (name === "audit_work") {
             let map = readJson(cwd, "map.json", null);
             if (!map) map = buildMap(cwd);
-            const { auditDeps, auditOsv } = require("../src/deps");
-            const findings = [...guardScan(cwd, map.files), ...auditDeps(cwd), ...(await Promise.resolve(auditOsv(cwd)).catch(() => []))];
+            const { auditDeps, auditOsv, auditLicenses } = require("../src/deps");
+            const findings = [...guardScan(cwd, map.files), ...auditDeps(cwd), ...(await Promise.resolve(auditOsv(cwd)).catch(() => [])), ...(await Promise.resolve(auditLicenses(cwd)).catch(() => []))];
             logStep(cwd, `audit: ${findings.length} findings`);
             reply(id, { content: [{ type: "text", text: findings.length ? JSON.stringify(findings, null, 2).slice(0, 8000) : "Clean. No dummy proof, injection, missing tests, or non-English code." }] });
           } else if (name === "search_code") {

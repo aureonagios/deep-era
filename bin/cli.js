@@ -9,7 +9,7 @@ const targetDir = process.argv[3] && !process.argv[3].startsWith("-") ? path.res
 async function main() {
   if (!cmd || cmd === "help" || cmd === "--help" || cmd === "-h") {
     console.log(`
-AI Deep Era v0.36.0 - give the blind AI developer eyes (no frontend, proof in your IDE)
+AI Deep Era v0.37.0 - give the blind AI developer eyes (no frontend, proof in your IDE)
 
 Usage:
   deep-era onboard             One shot: init + setup-ide + CI + skill
@@ -36,6 +36,7 @@ Usage:
   deep-era graph               ARCHITECTURE.md from real imports (Mermaid)
   deep-era timeline            Project history from logs (one screen)
   deep-era costs               AI spend so far (tokens + $ estimate)
+  deep-era memory              Memory stats: entries by kind + top terms
   deep-era skill               SKILL.md for the skills ecosystem
   deep-era ci                  Create GitHub Action gate (runs check on every PR)
   deep-era watch               Re-run check on every file change
@@ -66,14 +67,14 @@ Usage:
     const { verifyProject } = require("../src/verify");
     const { securityScan } = require("../src/security");
     const { guardScan } = require("../src/guard");
-    const { auditDeps, auditOsv } = require("../src/deps");
+    const { auditDeps, auditOsv, auditLicenses } = require("../src/deps");
     const { readJson } = require("../src/logger");
     let map = readJson(cwd0, "map.json", null);
     if (!map) map = buildMap(cwd0);
     const v = verifyProject(cwd0, map);
     const s = securityScan(cwd0, map.files);
     const g = guardScan(cwd0, map.files);
-    const d = [...auditDeps(cwd0), ...(await Promise.resolve(auditOsv(cwd0)).catch(() => []))];
+    const d = [...auditDeps(cwd0), ...(await Promise.resolve(auditOsv(cwd0)).catch(() => [])), ...(await Promise.resolve(auditLicenses(cwd0)).catch(() => []))];
     const vf = v.filter((x) => !x.ok).length;
     const bad = [...s, ...g, ...d].filter((x) => x.sev === "critical" || x.sev === "high").length;
     if (process.argv.includes("--json")) {
@@ -160,6 +161,24 @@ Usage:
   if (cmd === "timeline") {
     const { runTimeline } = require("../src/timeline");
     runTimeline(process.cwd());
+    return;
+  }
+  if (cmd === "memory") {
+    const { readAll, readLessons } = require("../src/memory");
+    const all = readAll(process.cwd());
+    const lessons = readLessons();
+    const byKind = {};
+    const freq = {};
+    for (const e of all) {
+      byKind[e.kind] = (byKind[e.kind] || 0) + 1;
+      for (const t of ((e.text || "").toLowerCase().match(/[a-z]{4,}/g) || [])) {
+        if (!["that", "this", "with", "from", "have", "will", "what", "when"].includes(t)) freq[t] = (freq[t] || 0) + 1;
+      }
+    }
+    const top = Object.entries(freq).sort((a, b) => b[1] - a[1]).slice(0, 8);
+    console.log(`[deep-era] memory: ${all.length} local entries, ${lessons.length} global lessons`);
+    for (const [k, n] of Object.entries(byKind)) console.log(`  - ${k}: ${n}`);
+    console.log(`  top terms: ${top.map(([t, n]) => `${t}(${n})`).join(", ") || "-"}`);
     return;
   }
   if (cmd === "costs") {

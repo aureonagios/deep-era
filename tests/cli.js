@@ -181,6 +181,20 @@ ok("cli-sbom-cyclonedx", () => {
   assert(j.metadata.comment.includes("Direct deps"), "honesty note missing!");
 });
 
+ok("cli-memory-stats", () => {
+  const tmp = sandbox();
+  cli(tmp, ["remember", "decision", "ship on friday"]);
+  const out = cli(tmp, ["memory"]);
+  assert(out.includes("decision: 1") && out.includes("friday"), `memory stats wrong: ${out.slice(0, 200)}`);
+});
+
+ok("cli-license-offline-safe", async () => {
+  const { auditLicenses } = require("../src/deps");
+  const tmp = sandbox({ "package.json": JSON.stringify({ dependencies: { "leftpad": "1.3.0" } }) });
+  const r = await auditLicenses(tmp); // network or silent skip — must never throw
+  assert(Array.isArray(r), "licenses must resolve array!");
+});
+
 ok("cli-check-json", () => {
   const tmp = sandbox();
   cli(tmp, ["init"]);

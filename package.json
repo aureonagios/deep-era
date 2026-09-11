@@ -1,6 +1,6 @@
 {
   "name": "deep-era",
-  "version": "0.36.0",
+  "version": "0.37.0",
   "description": "AI Deep Era - universal layer that gives any AI agent eyes: map, terminal truth, verify, security proof",
   "type": "commonjs",
   "main": "./src/map.js",

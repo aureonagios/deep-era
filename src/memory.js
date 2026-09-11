@@ -185,6 +185,14 @@ function recall(cwd, query, budget = 4000, homeDir) {
     // Trigram bonus: morphological cousins (authenticating/authentication).
     const tri = trigramScore(qTri, trigrams(raw.slice(0, 500)));
     if (tri > 0.25) s += tri * 4;
+    // Proximity bonus: query terms packed close together = about ONE thing.
+    if (q0.length > 1) {
+      const pos = q0.map((tok) => raw.indexOf(tok)).filter((p) => p >= 0);
+      if (pos.length >= 2) {
+        const span = Math.max(...pos) - Math.min(...pos);
+        if (span < 120) s += 3 * (1 - span / 120);
+      }
+    }
     return { e, s };
   });
   scored.sort((a, b) => b.s - a.s || (a.e.at < b.e.at ? 1 : -1));

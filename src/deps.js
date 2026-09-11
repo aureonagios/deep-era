@@ -73,6 +73,68 @@ function auditDeps(cwd) {
   return [...auditNode(cwd), ...auditPython(cwd)];
 }
 
+// License compliance: GPL/AGPL deps contaminate commercial codebases.
+// Best-effort online (npm registry, cached 30 days), silent offline.
+// Only flags RECIPROCAL licenses (GPL/AGPL) as high; unknown = low note.
+function licCachePath(cwd) {
+  return path.join(cwd, ".deep-era", "license-cache.json");
+}
+
+function readLicCache(cwd) {
+  try {
+    const j = JSON.parse(fs.readFileSync(licCachePath(cwd), "utf8"));
+    if (Date.now() - j.at > 30 * 864e5) return {};
+    return j.data || {};
+  } catch { return {}; }
+}
+
+function npmLicense(name) {
+  return new Promise((resolve) => {
+    let proc;
+    try {
+      proc = require("child_process").execFile("npm", ["view", name, "license", "--json"], { timeout: 8000 });
+    } catch { return resolve(null); }
+    let out = "";
+    proc.stdout.on("data", (c) => { out += c; });
+    proc.on("error", () => resolve(null));
+    proc.on("close", () => {
+      try {
+        const v = JSON.parse(out);
+        resolve(typeof v === "string" ? v : null);
+      } catch { resolve(null); }
+    });
+    setTimeout(() => { try { proc.kill(); } catch {} resolve(null); }, 9000);
+  });
+}
+
+async function auditLicenses(cwd) {
+  let pkg = {};
+  try { pkg = JSON.parse(fs.readFileSync(path.join(cwd, "package.json"), "utf8")); } catch { return []; }
+  const names = Object.keys(Object.assign({}, pkg.dependencies));
+  if (!names.length) return [];
+  const cache = readLicCache(cwd);
+  const out = [];
+  let dirty = false;
+  for (const name of names.slice(0, 25)) {
+    let lic = cache[name];
+    if (lic === undefined) {
+      lic = await npmLicense(name);
+      if (lic) { cache[name] = lic; dirty = true; }
+      else continue; // offline or unknown — silent, honest skip
+    }
+    if (/GPL|AGPL/i.test(lic)) {
+      out.push({ file: "package.json", rule: "license-gpl", sev: "high", msg: `${name} is ${lic} — reciprocal license contaminates commercial code. Replace or get legal review.` });
+    }
+  }
+  if (dirty) {
+    try {
+      fs.mkdirSync(path.join(cwd, ".deep-era"), { recursive: true });
+      fs.writeFileSync(licCachePath(cwd), JSON.stringify({ at: Date.now(), data: cache }));
+    } catch {}
+  }
+  return out;
+}
+
 // Real CVE data from OSV.dev (Google's open vuln DB) — online best-effort,
 // 7-day disk cache, silent offline. No key, no account, zero deps.
 function osvCachePath(cwd) {
@@ -152,4 +214,4 @@ function auditOsv(cwd) {
   });
 }
 
-module.exports = { auditDeps, auditOsv, fixedIn };
+module.exports = { auditDeps, auditOsv, fixedIn, auditLicenses };

@@ -521,6 +521,14 @@ ok("resolve-dep-no-fake-ext", () => {
   assert(resolveDep(names, "src/ghost") === null, "ghost resolved!");
 });
 
+ok("recall-proximity-density", () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-"));
+  remember(tmp, "chat", "deploy pipeline rate limit notes for release");
+  remember(tmp, "chat", "deploy happened monday. unrelated pipeline tuesday. rate was fine. limit unknown.");
+  const r = recall(tmp, "deploy rate limit");
+  assert(r.entries[0].text.includes("rate limit notes"), "dense entry lost!");
+});
+
 ok("universal-stacks-detected", () => {
   const kinds = [
     [[{ file: "go.mod" }], "go"],

@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-09-11T11:28:19.746Z",
+  "generatedAt": "2026-09-11T11:59:02.813Z",
   "stack": {
     "kind": "node",
     "run": null,
@@ -85,7 +85,7 @@
     {
       "file": "bin/cli.js",
       "role": "code-js",
-      "size": 19194,
+      "size": 20231,
       "imports": [
         "src/init.js",
         "src/doctor.js",
@@ -120,7 +120,7 @@
     {
       "file": "ERROR-REPORT.md",
       "role": "doc",
-      "size": 4251,
+      "size": 4204,
       "imports": [],
       "importedBy": []
     },
@@ -134,7 +134,7 @@
     {
       "file": "mcp/server.js",
       "role": "code-js",
-      "size": 13270,
+      "size": 13349,
       "imports": [
         "src/map.js",
         "src/verify.js",
@@ -164,7 +164,7 @@
     {
       "file": "README.md",
       "role": "doc",
-      "size": 7645,
+      "size": 7702,
       "imports": [],
       "importedBy": []
     },
@@ -225,20 +225,21 @@
     {
       "file": "src/deps.js",
       "role": "code-js",
-      "size": 6860,
+      "size": 9098,
       "imports": [],
       "importedBy": [
         "bin/cli.js",
         "mcp/server.js",
         "src/demo.js",
         "src/doctor.js",
+        "tests/cli.js",
         "tests/run.js"
       ]
     },
     {
       "file": "src/doctor.js",
       "role": "code-js",
-      "size": 4703,
+      "size": 4782,
       "imports": [
         "src/map.js",
         "src/verify.js",
@@ -360,7 +361,7 @@
     {
       "file": "src/memory.js",
       "role": "code-js",
-      "size": 8820,
+      "size": 9157,
       "imports": [],
       "importedBy": [
         "bin/cli.js",
@@ -538,9 +539,10 @@
     {
       "file": "tests/cli.js",
       "role": "code-js",
-      "size": 8911,
+      "size": 9535,
       "imports": [
-        "src/global.js"
+        "src/global.js",
+        "src/deps.js"
       ],
       "importedBy": []
     },
@@ -624,7 +626,7 @@
     {
       "file": "tests/run.js",
       "role": "code-js",
-      "size": 26443,
+      "size": 26870,
       "imports": [
         "src/map.js",
         "src/security.js",

@@ -4,7 +4,7 @@ const { buildMap } = require("./map");
 const { verifyProject } = require("./verify");
 const { securityScan } = require("./security");
 const { guardScan } = require("./guard");
-const { auditDeps, auditOsv } = require("./deps");
+const { auditDeps, auditOsv, auditLicenses } = require("./deps");
 const { tagSuffix } = require("./cwe");
 const { ensureDeepDir, writeJson, logStep } = require("./logger");
 
@@ -16,7 +16,7 @@ async function runDoctor(cwd) {
   const verify = verifyProject(cwd, map);
   const security = securityScan(cwd, map.files);
   const guard = guardScan(cwd, map.files);
-  const deps = [...auditDeps(cwd), ...(await Promise.resolve(auditOsv(cwd)).catch(() => []))];
+  const deps = [...auditDeps(cwd), ...(await Promise.resolve(auditOsv(cwd)).catch(() => [])), ...(await Promise.resolve(auditLicenses(cwd)).catch(() => []))];
   const allFindings = [...security, ...guard, ...deps];
 
   const failed = verify.filter((v) => !v.ok);
