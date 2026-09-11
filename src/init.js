@@ -4,7 +4,7 @@ const { buildMap } = require("./map");
 const { renderPack } = require("./stacks");
 const { ensureDeepDir, writeJson, logStep } = require("./logger");
 
-const AGENTS_MD = `# AI Deep Era v0.20 — Agent Rules (AUTO-INSTALLED, DO NOT SKIP)
+const AGENTS_MD = `# AI Deep Era v0.35 — Agent Rules (AUTO-INSTALLED, DO NOT SKIP)
 
 You are NOT a blind developer. Any project, any language/framework (JS/TS/Python/Go/Rust/Java/PHP/Ruby/Dart/C#/Swift) — same rules. ZERO mistakes leave without verification.
 

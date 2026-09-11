@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-09-10T20:05:04.011Z",
+  "generatedAt": "2026-09-11T00:02:46.882Z",
   "stack": {
     "kind": "node",
     "run": null,
@@ -520,7 +520,7 @@
     {
       "file": "tests/cli.js",
       "role": "code-js",
-      "size": 7979,
+      "size": 8332,
       "imports": [
         "src/global.js"
       ],

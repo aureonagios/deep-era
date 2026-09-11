@@ -166,6 +166,12 @@ ok("cli-sarif-has-cwe-tags", () => {
   assert(sql && JSON.stringify(sql.properties.tags).includes("CWE-89"), "CWE tags missing in SARIF!");
 });
 
+ok("cli-update-offline-safe", () => {
+  const { execFileSync } = require("child_process");
+  const out = execFileSync(process.execPath, [CLI, "update"], { timeout: 30000 }).toString();
+  assert(out.includes("deep-era") && /up to date|update available|offline|unreachable|unreadable/i.test(out), `update behaved badly: ${out.slice(0, 200)}`);
+});
+
 ok("cli-check-json", () => {
   const tmp = sandbox();
   cli(tmp, ["init"]);
