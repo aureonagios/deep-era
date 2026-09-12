@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-09-12T14:26:26.337Z",
+  "generatedAt": "2026-09-12T18:26:09.247Z",
   "stack": {
     "kind": "node",
     "run": null,
@@ -8,7 +8,7 @@
     "test": "npm test"
   },
   "counts": {
-    "total": 66,
+    "total": 67,
     "truncated": false
   },
   "files": [
@@ -64,7 +64,7 @@
     {
       "file": "AGENTS.md",
       "role": "doc",
-      "size": 3494,
+      "size": 3926,
       "imports": [],
       "importedBy": []
     },
@@ -85,7 +85,7 @@
     {
       "file": "bin/cli.js",
       "role": "code-js",
-      "size": 22310,
+      "size": 22705,
       "imports": [
         "src/init.js",
         "src/doctor.js",
@@ -104,9 +104,9 @@
         "src/timeline.js",
         "src/snapshot.js",
         "src/review.js",
+        "src/receipt.js",
         "src/demo.js",
-        "src/stacks.js",
-        "src/projects.js"
+        "src/stacks.js"
       ],
       "importedBy": []
     },
@@ -120,7 +120,7 @@
     {
       "file": "ERROR-REPORT.md",
       "role": "doc",
-      "size": 4143,
+      "size": 4144,
       "imports": [],
       "importedBy": []
     },
@@ -349,7 +349,7 @@
     {
       "file": "src/init.js",
       "role": "code-js",
-      "size": 4595,
+      "size": 5032,
       "imports": [
         "src/map.js",
         "src/stacks.js",
@@ -388,6 +388,7 @@
         "src/graph.js",
         "src/guard.js",
         "src/init.js",
+        "src/receipt.js",
         "src/review.js",
         "tests/perf.js",
         "tests/run.js"
@@ -401,6 +402,7 @@
       "importedBy": [
         "bin/cli.js",
         "mcp/server.js",
+        "src/receipt.js",
         "tests/perf.js",
         "tests/run.js"
       ]
@@ -419,9 +421,7 @@
       "role": "code-js",
       "size": 1722,
       "imports": [],
-      "importedBy": [
-        "bin/cli.js"
-      ]
+      "importedBy": []
     },
     {
       "file": "src/pyast.js",
@@ -431,6 +431,20 @@
       "importedBy": [
         "src/security.js",
         "tests/run.js"
+      ]
+    },
+    {
+      "file": "src/receipt.js",
+      "role": "code-js",
+      "size": 3103,
+      "imports": [
+        "src/map.js",
+        "src/spend.js",
+        "src/snapshot.js",
+        "src/memory.js"
+      ],
+      "importedBy": [
+        "bin/cli.js"
       ]
     },
     {
@@ -506,7 +520,7 @@
     {
       "file": "src/skill.js",
       "role": "code-js",
-      "size": 9616,
+      "size": 9781,
       "imports": [],
       "importedBy": [
         "src/global.js"
@@ -521,6 +535,7 @@
         "bin/cli.js",
         "mcp/server.js",
         "src/fix.js",
+        "src/receipt.js",
         "tests/run.js"
       ]
     },
@@ -531,7 +546,8 @@
       "imports": [],
       "importedBy": [
         "bin/cli.js",
-        "mcp/server.js"
+        "mcp/server.js",
+        "src/receipt.js"
       ]
     },
     {
@@ -573,14 +589,14 @@
     {
       "file": "TEST-REPORT.md",
       "role": "doc",
-      "size": 2816,
+      "size": 2877,
       "imports": [],
       "importedBy": []
     },
     {
       "file": "tests/cli.js",
       "role": "code-js",
-      "size": 13180,
+      "size": 13642,
       "imports": [
         "tests/lib/report.js",
         "src/global.js",
@@ -681,7 +697,7 @@
     {
       "file": "tests/run.js",
       "role": "code-js",
-      "size": 28210,
+      "size": 28441,
       "imports": [
         "src/map.js",
         "src/security.js",

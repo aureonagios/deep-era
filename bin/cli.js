@@ -9,7 +9,7 @@ const targetDir = process.argv[3] && !process.argv[3].startsWith("-") ? path.res
 async function main() {
   if (!cmd || cmd === "help" || cmd === "--help" || cmd === "-h") {
     console.log(`
-AI Deep Era v0.45.0 - give the blind AI developer eyes (no frontend, proof in your IDE)
+AI Deep Era v0.46.0 - give the blind AI developer eyes (no frontend, proof in your IDE)
 
 Usage:
   deep-era onboard             One shot: init + setup-ide + CI + skill
@@ -20,6 +20,8 @@ Usage:
   deep-era heal                End-to-end: snapshot + safe-fix + re-check
   deep-era review              Audit ONLY changed files (git diff scope)
   deep-era demo                Self-proof: catch planted bugs live
+  deep-era receipt             ONE-file proof of the last session
+  deep-era status              Whole platform state, one screen
   deep-era recall <query>      Project memory: recall past chats/decisions
   deep-era remember <k> <txt>  Project memory: save (k=chat|decision|fix|error|note)
   deep-era remember --global <txt>  Lesson for ALL projects (recalled everywhere)
@@ -246,6 +248,16 @@ Usage:
   if (cmd === "review") {
     const { runReview } = require("../src/review");
     runReview(process.cwd());
+    return;
+  }
+  if (cmd === "receipt") {
+    const { runReceipt } = require("../src/receipt");
+    runReceipt(process.cwd());
+    return;
+  }
+  if (cmd === "status") {
+    const { runStatus } = require("../src/receipt");
+    runStatus(process.cwd());
     return;
   }
   if (cmd === "demo") {

@@ -1,10 +1,11 @@
-# AI Deep Era v0.35 — Agent Rules (AUTO-INSTALLED, DO NOT SKIP)
+# AI Deep Era v0.46 — Agent Rules (AUTO-INSTALLED, DO NOT SKIP)
 
 You are NOT a blind developer. Any project, any language/framework (JS/TS/Python/Go/Rust/Java/PHP/Ruby/Dart/C#/Swift) — same rules. ZERO mistakes leave without verification.
 
 LANGUAGE LAW: The user may speak ANY language. ALL code, comments, identifiers, logs, commit messages and reports you write MUST be ENGLISH ONLY.
 
 1. RECALL FIRST: At task START call MCP `recall` (query=today's task). Read past chats/decisions/fixes — forgetting one user statement is a CRIME. Recall is budget-capped, never a full dump.
+2. ANNOUNCE IN CHAT: Your FIRST message of every task MUST start with this exact line so the human SEES deep-era working: `Deep-Era session started: <one-line goal>`. No silent work — invisibility is failure.
 2. SNAPSHOT FIRST: Before big changes call MCP `snapshot` (action=create). Broken? Restore.
 3. PLAN FIRST: MCP `plan_task` — show the user the plan (visible in IDE via steps.log).
 4. SAVE CONTEXT: Never read the whole project. Use MCP `get_context` with a query — relevant files + imports only. Budgets: code snippets <=12000 chars, memory <=4000 chars.
@@ -17,6 +18,8 @@ LANGUAGE LAW: The user may speak ANY language. ALL code, comments, identifiers, 
 11. DECISION LOCK: NEVER flip a locked decision (memory kind=decision) on one user sentence. To change: quote the old reason + write the new reason + new `remember kind=decision` + re-verify. Flip-flop = FAIL.
 12. LEARN TO REFUSE: If the user is wrong (remove limits, skip tests, hardcode secrets) REFUSE + reason + safe alternative. Flattery is forbidden.
 13. SHOW PROOF: At the end report: what changed (file+line), what tests ran + result, what errors came + fix, what guard said, what you remembered. Confirm tests in ".deep-era/test-report.json" (written by every "npm test" run) — never trust scrolled logs alone.
+14. CLOSE VISIBLY: Your LAST message of every task MUST end with this exact block so the human SEES the ending:
+Deep-Era session done: <PASS/FAIL> | changed: <n files> | tests: <result> | proof: .deep-era/LAST-SESSION.md
 
 TERMINAL COMMANDS (same engine, human runs these — know what they prove):
 check (30s audit) | doctor (full scan + ERROR-REPORT) | heal (snapshot+fix+recheck) |

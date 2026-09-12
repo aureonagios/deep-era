@@ -546,6 +546,11 @@ ok("comment-stats-caught", () => {
   assert(g.some((x) => x.rule === "comment-stats"), "comment claim missed!");
 });
 
+ok("announce-rule-in-template", () => {
+  const { AGENTS_MD } = require("../src/init");
+  assert(AGENTS_MD.includes("Deep-Era session started:") && AGENTS_MD.includes("Deep-Era session done:"), "announce rule missing!");
+});
+
 ok("universal-stacks-detected", () => {
   const kinds = [
     [[{ file: "go.mod" }], "go"],

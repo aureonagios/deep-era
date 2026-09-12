@@ -264,6 +264,17 @@ ok("cli-installers-and-llms", () => {
   assert(llms.includes("recall") && llms.includes("verify_work") && llms.includes("ENGLISH ONLY"), "llms.txt shallow!");
 });
 
+ok("cli-receipt-and-status", () => {
+  const tmp = sandbox();
+  cli(tmp, ["init"]);
+  cli(tmp, ["remember", "decision", "x"]);
+  cli(tmp, ["receipt"]);
+  const md = fs.readFileSync(path.join(tmp, ".deep-era", "LAST-SESSION.md"), "utf8");
+  assert(md.includes("# LAST SESSION") && md.includes("Working tree"), "receipt broken!");
+  const st = cli(tmp, ["status"]);
+  assert(st.includes("status:") && st.includes("proof files"), "status broken!");
+});
+
 ok("cli-check-json", () => {
   const tmp = sandbox();
   cli(tmp, ["init"]);
