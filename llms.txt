@@ -2,7 +2,7 @@
 # Standard AI-consumable brief. Any AI reading this knows the platform deeply:
 # what it is, how to install it on a PC, how to work under it, how to prove work.
 
-> AI Deep Era v0.42.0: universal audit layer that makes any AI coding agent
+> AI Deep Era v0.44.0: universal audit layer that makes any AI coding agent
 > (Cursor, Copilot, Antigravity, Trae, Windsurf, Claude Code, Gemini CLI, Codex,
 > JetBrains Junie, Roo, Kilo, Zed, Cline, Continue + more) deep, safe and
 > transparent. Zero dependencies, offline-first, MIT. 11 languages audited.

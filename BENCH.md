@@ -2,19 +2,19 @@
 
 How to reproduce: `node tests/perf.js` (writes `tests/perf-result.json`).
 Machine: Windows, Node 22. No server, no cloud, no cache tricks.
-Last run: v0.19.0 (see History).
+Last run: v0.44.0 (see History).
 
-## Own repo (41 files) — milliseconds
+## Own repo (66 files) — milliseconds
 
 | Engine | Time |
 |---|---|
-| map (scan + import graph) | ~16 ms |
-| guard + duplication scan | ~50 ms |
-| security (regex + entropy + Python AST batch) | ~17 ms |
-| verify (two-tier syntax + scripts) | ~13 ms |
-| get_context + snippets | ~1 ms |
-| recall (200 memory entries, TF-IDF + synonyms) | ~8 ms |
-| **Full `check`** | **~0.1 s** |
+| map (scan + import graph) | ~20 ms |
+| guard + duplication scan | ~55 ms |
+| security (regex + entropy + Python AST batch) | ~23 ms |
+| verify (two-tier syntax + scripts) | ~17 ms |
+| get_context + snippets | ~2 ms |
+| recall (200 memory entries, TF-IDF + synonyms) | ~9 ms |
+| **Full `check`** | **~0.1 s engines (+ project test-suite time)** |
 
 History: verify was 4392 ms (one node process per file) → 12 ms single-process two-tier (354x).
 Python AST was 14.7 s for 60 files (one process per file) → batched single process.
@@ -23,9 +23,9 @@ Python AST was 14.7 s for 60 files (one process per file) → batched single pro
 
 | Engine | Time (range over runs) |
 |---|---|
-| map | 0.4-4 s |
-| guard + dup | 0.5-8.9 s (worst case: near-identical files; capped at 60 files) |
-| security | 0.2-3.9 s |
+| map | 0.3-4 s |
+| guard + dup | 0.5-8.9 s worst case, ~0.5 s typical (60-file + 20k-window caps) |
+| security | 0.2-3.9 s typical, ~0.7 s (batched Python AST) |
 | context | 5-45 ms |
 
 ## Token-proxy (chars that would reach the AI)

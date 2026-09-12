@@ -1,6 +1,6 @@
 # ERROR-REPORT.md (AI Deep Era Doctor)
 
-Generated: 2026-09-12T11:01:45.953Z
+Generated: 2026-09-12T11:51:07.599Z
 Stack: node | Files: 66
 
 ## 1. Terminal / build truth
@@ -17,7 +17,7 @@ PASS context-saves-tokens
 PASS verify-deep-all-files
 PASS snapshot-create-restore
 PASS init-creates-agents-md
-[deep-era] init ok -> C:\Users\Mustafa\AppData\Local\Temp\deep-era-dv87HA
+[deep-era] init ok -> C:\Users\Mustafa\AppData\Local\Temp\deep-era-Z4ENPZ
   - AGENTS.md (universal rules, 25+ IDEs)
   - .deep-era/map.json (2 files, stack=unknown)
   - .deep-era/RULES.md + logs/
@@ -44,8 +44,8 @@ PASS graph-from-real-imports
 [deep-era] timeline (1 events):
   2026-01-01T00:00 [step] init ok: 2 files
 PASS timeline-reads-logs
-[deep-era demo] planted 4 traps in C:\Users\Mustafa\AppData\Local\Temp\deep-era-demo-rwiysE (SQL injection, new Function, hijacked dep, dummy stats)
-[deep-era demo] caught 5 critical/high in 2527ms:
+[deep-era demo] planted 4 traps in C:\Users\Mustafa\AppData\Local\Temp\deep-era-demo-97Fb2S (SQL injection, new Function, hijacked dep, dummy stats)
+[deep-era demo] caught 5 critical/high in 1607ms:
   ! [high] app.js: Possible SQL injection (string concat) (sql-concat)
   ! [high] app.js: new Function(string) — code from string, injection risk (new-function)
   ! [critical] app.js: String-concatenated SQL — parameterized queries are mandatory. (sql-injection)
@@ -80,7 +80,7 @@ None. Clean.
 - .npmignore (other, 50b)
 - AGENTS.md (doc, 3494b)
 - ARCHITECTURE.md (doc, 2246b)
-- BENCH.md (doc, 1641b)
+- BENCH.md (doc, 1714b)
 - bin/cli.js (code-js, 22310b)
 - DEMO.md (doc, 1451b)
 - ERROR-REPORT.md (doc, 4143b)
@@ -90,7 +90,7 @@ None. Clean.
 - llms.txt (other, 2184b)
 - mcp/server.js (code-js, 13797b)
 - package.json (config, 650b)
-- README.md (doc, 7947b)
+- README.md (doc, 7963b)
 - SECURITY.md (doc, 1305b)
 - src/browser.js (code-js, 1970b)
 - src/ci.js (code-js, 1020b)
