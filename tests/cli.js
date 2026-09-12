@@ -223,6 +223,46 @@ ok("cli-browser-bridge", () => {
   assert(fs.existsSync(path.join(tmp, ".deep-era", "browser", "BROWSER.md")), "no BROWSER.md!");
 });
 
+ok("cli-hook-installs-gate", () => {
+  const { execFileSync } = require("child_process");
+  const tmp = sandbox();
+  execFileSync("git", ["init", "-b", "main"], { cwd: tmp });
+  cli(tmp, ["hook"]);
+  const hook = fs.readFileSync(path.join(tmp, ".git", "hooks", "pre-commit"), "utf8");
+  assert(hook.includes("deep-era") && hook.includes("check"), "hook gate missing!");
+  cli(tmp, ["hook"]); // idempotent re-run
+});
+
+ok("cli-graph-full-and-for", () => {
+  const tmp = sandbox({ "a.js": "require('./b');\n", "b.js": "require('./c');\n", "c.js": "module.exports = 1;\n" });
+  cli(tmp, ["init"]);
+  const full = cli(tmp, ["graph", "--full"]);
+  assert(full.includes("Full graph") || full.includes("modules"), "full graph broke");
+  const ego = cli(tmp, ["graph", "--for", "b.js"]);
+  assert(ego.includes("Ego-graph") || ego.includes("modules"), "ego graph broke");
+  const miss = (() => { try { cli(tmp, ["graph", "--for", "nope.js"]); return ""; } catch (e) { return (e.stdout || "").toString(); } })();
+  assert(miss.includes("no such module"), "missing module not honest!");
+});
+
+ok("cli-timeline-json", () => {
+  const tmp = sandbox();
+  cli(tmp, ["init"]);
+  const raw = cli(tmp, ["timeline", "--json"]).split("\n").filter((l) => l.startsWith("[{") || l === "[]").join("");
+  const j = JSON.parse(raw || "[]");
+  assert(Array.isArray(j), "timeline json not array!");
+});
+
+ok("cli-memory-export-import", () => {
+  const a = sandbox();
+  cli(a, ["remember", "decision", "portable lesson one"]);
+  const exp = path.join(a, "mem.jsonl");
+  assert(cli(a, ["memory", "export", exp]).includes("exported"), "export broke");
+  const b = sandbox();
+  const out = cli(b, ["memory", "import", exp]);
+  assert(out.includes("1 new"), `import wrong: ${out}`);
+  assert(cli(b, ["memory", "import", exp]).includes("1 duplicates"), "dedupe broke!");
+});
+
 ok("cli-check-json", () => {
   const tmp = sandbox();
   cli(tmp, ["init"]);

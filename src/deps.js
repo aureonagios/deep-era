@@ -22,7 +22,8 @@ function auditNode(cwd) {
     out.push({ file: "package.json", rule: "dep-bloat", sev: "low", msg: `${Object.keys(deps).length} deps — large attack surface. Are all needed?` });
   }
   // npm audit: best-effort, 20s timeout, failure = skip (no lies on offline CI)
-  try {
+  // DEEP_ERA_OFFLINE=1 (git-hook fast path) skips network entirely.
+  if (process.env.DEEP_ERA_OFFLINE !== "1") try {
     const raw = execSync("npm audit --json", { cwd, timeout: 20000, stdio: ["ignore", "pipe", "pipe"] }).toString();
     const j = JSON.parse(raw);
     const vulns = (j.metadata && j.metadata.vulnerabilities) || {};
@@ -108,6 +109,7 @@ function npmLicense(name) {
 }
 
 async function auditLicenses(cwd) {
+  if (process.env.DEEP_ERA_OFFLINE === "1") return []; // hook fast path
   let pkg = {};
   try { pkg = JSON.parse(fs.readFileSync(path.join(cwd, "package.json"), "utf8")); } catch { return []; }
   const names = Object.keys(Object.assign({}, pkg.dependencies));
@@ -164,6 +166,7 @@ function fixedIn(vuln) {
 }
 
 function auditOsv(cwd) {
+  if (process.env.DEEP_ERA_OFFLINE === "1") return []; // hook fast path: offline core only
   let pkg = {};
   try { pkg = JSON.parse(fs.readFileSync(path.join(cwd, "package.json"), "utf8")); } catch { return []; }
   const deps = Object.assign({}, pkg.dependencies);

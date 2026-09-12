@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-09-11T13:49:07.924Z",
+  "generatedAt": "2026-09-12T00:29:58.143Z",
   "stack": {
     "kind": "node",
     "run": null,
@@ -8,7 +8,7 @@
     "test": "npm test"
   },
   "counts": {
-    "total": 60,
+    "total": 61,
     "truncated": false
   },
   "files": [
@@ -85,7 +85,7 @@
     {
       "file": "bin/cli.js",
       "role": "code-js",
-      "size": 20756,
+      "size": 22310,
       "imports": [
         "src/init.js",
         "src/doctor.js",
@@ -232,7 +232,7 @@
     {
       "file": "src/deps.js",
       "role": "code-js",
-      "size": 9098,
+      "size": 9377,
       "imports": [],
       "importedBy": [
         "bin/cli.js",
@@ -291,7 +291,7 @@
     {
       "file": "src/graph.js",
       "role": "code-js",
-      "size": 2035,
+      "size": 2971,
       "imports": [
         "src/map.js"
       ],
@@ -317,6 +317,13 @@
         "tests/perf.js",
         "tests/run.js"
       ]
+    },
+    {
+      "file": "src/hook.js",
+      "role": "code-js",
+      "size": 1826,
+      "imports": [],
+      "importedBy": []
     },
     {
       "file": "src/init.js",
@@ -368,7 +375,7 @@
     {
       "file": "src/memory.js",
       "role": "code-js",
-      "size": 9157,
+      "size": 10416,
       "imports": [],
       "importedBy": [
         "bin/cli.js",
@@ -478,7 +485,7 @@
     {
       "file": "src/skill.js",
       "role": "code-js",
-      "size": 7459,
+      "size": 9616,
       "imports": [],
       "importedBy": [
         "src/global.js",
@@ -546,7 +553,7 @@
     {
       "file": "tests/cli.js",
       "role": "code-js",
-      "size": 10848,
+      "size": 12728,
       "imports": [
         "src/global.js",
         "src/deps.js"

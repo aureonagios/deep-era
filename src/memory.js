@@ -54,6 +54,35 @@ function compact(cwd) {
   } catch { /* memory must never break the build */ }
 }
 
+// Portable memory: export to a file, import on another machine.
+// Dedupe on import — moving twice never doubles the past.
+function exportMemory(cwd, outFile) {
+  const all = readAll(cwd);
+  const dest = outFile || path.join(cwd, ".deep-era", "memory-export.jsonl");
+  fs.mkdirSync(path.dirname(dest), { recursive: true });
+  fs.writeFileSync(dest, all.map((e) => JSON.stringify(e)).join("\n") + (all.length ? "\n" : ""));
+  return dest;
+}
+
+function importMemory(cwd, inFile) {
+  let incoming = [];
+  try {
+    incoming = fs.readFileSync(inFile, "utf8").split("\n").filter(Boolean).map((l) => JSON.parse(l));
+  } catch (e) {
+    throw new Error(`cannot read ${inFile}: ${e.message}`);
+  }
+  const existing = new Set(readAll(cwd, 5000).map((e) => `${e.kind}|${e.text}`));
+  let added = 0, skipped = 0;
+  for (const e of incoming) {
+    if (!e || typeof e.text !== "string" || !e.text.trim()) { skipped++; continue; }
+    if (existing.has(`${e.kind}|${e.text}`)) { skipped++; continue; }
+    remember(cwd, ["chat", "decision", "fix", "error", "note"].includes(e.kind) ? e.kind : "note", e.text.slice(0, 2000));
+    existing.add(`${e.kind}|${e.text}`);
+    added++;
+  }
+  return { added, skipped };
+}
+
 function readAll(cwd, maxEntries = 500) {
   try {
     const lines = fs.readFileSync(memFile(cwd), "utf8").split("\n").filter(Boolean);
@@ -212,4 +241,4 @@ function recall(cwd, query, budget = 4000, homeDir) {
   return { entries: out, chars: used, total: all.length };
 }
 
-module.exports = { remember, recall, readAll, rememberGlobal, readLessons };
+module.exports = { remember, recall, readAll, rememberGlobal, readLessons, exportMemory, importMemory };

@@ -9,7 +9,7 @@ const targetDir = process.argv[3] && !process.argv[3].startsWith("-") ? path.res
 async function main() {
   if (!cmd || cmd === "help" || cmd === "--help" || cmd === "-h") {
     console.log(`
-AI Deep Era v0.40.0 - give the blind AI developer eyes (no frontend, proof in your IDE)
+AI Deep Era v0.41.0 - give the blind AI developer eyes (no frontend, proof in your IDE)
 
 Usage:
   deep-era onboard             One shot: init + setup-ide + CI + skill
@@ -38,8 +38,10 @@ Usage:
   deep-era timeline            Project history from logs (one screen)
   deep-era costs               AI spend so far (tokens + $ estimate)
   deep-era memory              Memory stats: entries by kind + top terms
-  deep-era skill               SKILL.md for the skills ecosystem
+  deep-era skill               SKILL pack (8 installable skills)
+  deep-era skill --add <git>   Install any standard skills repo (validated)
   deep-era ci                  Create GitHub Action gate (runs check on every PR)
+  deep-era hook                Install git pre-commit hook running check (blocks bad commits)
   deep-era watch               Re-run check on every file change
   deep-era perf [dir]          Engine speed table (ms)
   deep-era browser             Playwright MCP bridge for browser-driven verify
@@ -48,7 +50,7 @@ Usage:
   deep-era serve               Run the project, probe it, observe, shut down
   deep-era fetch <url>         Fetch a docs URL to text (stdlib, capped)
   deep-era research <query>    Instant-answer research (best-effort, honest)
-  deep-era mcp                 MCP server (stdio) - 14 tools
+  deep-era mcp                 MCP server (stdio) - 15 tools
 `);
     return;
   }
@@ -63,7 +65,9 @@ Usage:
     return;
   }
   if (cmd === "check") {
-    // ONE COMMAND: audit any AI's work in 30 seconds — inside your own IDE
+    // ONE COMMAND: audit any AI's work in 30 seconds — inside your own IDE.
+    // --hook-mode (git pre-commit): offline-lite, no network calls, still strict.
+    if (process.argv.includes("--hook-mode")) process.env.DEEP_ERA_OFFLINE = "1";
     const cwd0 = process.cwd();
     const { buildMap } = require("../src/map");
     const { verifyProject } = require("../src/verify");
@@ -157,15 +161,32 @@ Usage:
   }
   if (cmd === "graph") {
     const { runGraph } = require("../src/graph");
-    runGraph(process.cwd());
+    runGraph(process.cwd(), {
+      full: process.argv.includes("--full"),
+      for: (() => { const i = process.argv.indexOf("--for"); return i >= 0 ? process.argv[i + 1] : null; })(),
+    });
     return;
   }
   if (cmd === "timeline") {
     const { runTimeline } = require("../src/timeline");
-    runTimeline(process.cwd());
+    const lines = runTimeline(process.cwd());
+    if (process.argv.includes("--json")) console.log(JSON.stringify(lines));
     return;
   }
   if (cmd === "memory") {
+    const sub = process.argv[3];
+    if (sub === "export") {
+      const { exportMemory } = require("../src/memory");
+      console.log(`[deep-era] memory exported: ${exportMemory(process.cwd(), process.argv[4])}`);
+      return;
+    }
+    if (sub === "import") {
+      const { importMemory } = require("../src/memory");
+      if (!process.argv[4]) { console.error("Usage: deep-era memory import <file>"); process.exit(1); }
+      const r = importMemory(process.cwd(), process.argv[4]);
+      console.log(`[deep-era] memory imported: ${r.added} new, ${r.skipped} duplicates skipped`);
+      return;
+    }
     const { readAll, readLessons } = require("../src/memory");
     const all = readAll(process.cwd());
     const lessons = readLessons();
@@ -279,6 +300,11 @@ Usage:
     console.log(`Next: give any AI the 1-prompt from README, then run: deep-era check`);
     return;
   }
+  if (cmd === "hook") {
+    const { runHook } = require("../src/hook");
+    runHook(process.cwd(), path.join(__dirname, "cli.js"));
+    return;
+  }
   if (cmd === "ci") {
     const { runCi } = require("../src/ci");
     runCi(process.cwd());
@@ -366,6 +392,11 @@ Usage:
     return;
   }
   if (cmd === "skill") {
+    if (process.argv[3] === "--add" && process.argv[4]) {
+      const { addSkill } = require("../src/skill");
+      addSkill(process.cwd(), process.argv[4]);
+      return;
+    }
     const { runSkill } = require("../src/skill");
     runSkill(process.cwd());
     return;

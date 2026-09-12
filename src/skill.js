@@ -108,6 +108,48 @@ function skillFile(name, s) {
   return `---\nname: ${name}\ndescription: ${s.description}\n---\n\n${s.body}\n`;
 }
 
+function validateSkillDir(dir) {
+  // A skill = folder with SKILL.md carrying name+description frontmatter.
+  // Returns {ok, name?, error?}. Rejects anything else — honestly.
+  const full = path.join(dir, "SKILL.md");
+  if (!fs.existsSync(full)) return { ok: false, error: "no SKILL.md in repo root" };
+  let txt = "";
+  try { txt = fs.readFileSync(full, "utf8"); } catch { return { ok: false, error: "SKILL.md unreadable" }; }
+  const m = txt.match(/^---\s*\nname:\s*([a-z0-9-]+)\s*\ndescription:\s*(.+?)\s*\n---/);
+  if (!m) return { ok: false, error: "SKILL.md frontmatter must have name: and description:" };
+  if (!txt.slice(m[0].length).trim()) return { ok: false, error: "SKILL.md has no body" };
+  return { ok: true, name: m[1] };
+}
+
+// Install any standard skills repo (scientific-agent-skills, anthropics/skills,
+// your own): git-clone into .deep-era/skills/<name>/, validated, never blind.
+function addSkill(cwd, gitUrl) {
+  const { execFileSync } = require("child_process");
+  const os = require("os");
+  if (!/^([a-zA-Z0-9_.-]+\/)?[a-zA-Z0-9_.-]+(@[a-zA-Z0-9_./-]+)?(\/|:)[a-zA-Z0-9_./-]+(\.git)?$/.test(gitUrl) && !/^(https?|git|ssh|file):/.test(gitUrl) && !fs.existsSync(gitUrl)) {
+    throw new Error(`not a git URL or local path: ${gitUrl}`);
+  }
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-skill-"));
+  const repo = tmp + "-repo";
+  try {
+    try {
+      execFileSync("git", ["clone", "--depth", "1", gitUrl, repo], { timeout: 60000, stdio: "pipe" });
+    } catch (e) {
+      throw new Error(`git clone failed: ${(e.message || "").split("\n")[0]}`);
+    }
+    const v = validateSkillDir(repo);
+    if (!v.ok) throw new Error(`not a valid skill repo: ${v.error}`);
+    const dest = path.join(cwd, ".deep-era", "skills", v.name);
+    fs.rmSync(dest, { recursive: true, force: true });
+    fs.mkdirSync(path.join(cwd, ".deep-era", "skills"), { recursive: true });
+    fs.renameSync(repo, dest);
+    console.log(`[deep-era] skill installed: ${v.name} (.deep-era/skills/${v.name}/)`);
+    return dest;
+  } finally {
+    try { fs.rmSync(tmp, { recursive: true, force: true }); } catch {}
+  }
+}
+
 function runSkill(cwd) {
   const out = [];
   for (const [name, s] of Object.entries(SKILLS)) {
@@ -126,4 +168,4 @@ function runSkill(cwd) {
 
 const SKILL_MD = skillFile("deep-era-audit", SKILLS["deep-era-audit"]);
 
-module.exports = { runSkill, SKILL_MD, SKILLS };
+module.exports = { runSkill, SKILL_MD, SKILLS, addSkill, validateSkillDir };
