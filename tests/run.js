@@ -528,6 +528,24 @@ ok("snapshot-prune-keeps-five", () => {
   assert(r.kept === 5 && r.dropped === 2 && listSnapshots(tmp).length === 5, "prune wrong!");
 });
 
+ok("undefined-method-caught", () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-"));
+  fs.writeFileSync(path.join(tmp, "lib.js"), "function real() {}\nmodule.exports = { real };\n");
+  fs.writeFileSync(path.join(tmp, "app.js"), "const lib = require('./lib');\nlib.real();\nlib.imaginary();\n");
+  const map = buildMap(tmp);
+  const g = guardScan(tmp, map.files);
+  assert(g.some((x) => x.rule === "undefined-method" && x.file === "app.js"), "imaginary method missed!");
+  assert(!g.some((x) => x.file === "lib.js"), "real method flagged!");
+});
+
+ok("comment-stats-caught", () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-"));
+  fs.writeFileSync(path.join(tmp, "a.js"), "// e" + ".g. 1400 runs, 99" + ".5% accurate, trust me\nconsole.log(1);\n");
+  const map = buildMap(tmp);
+  const g = guardScan(tmp, map.files);
+  assert(g.some((x) => x.rule === "comment-stats"), "comment claim missed!");
+});
+
 ok("universal-stacks-detected", () => {
   const kinds = [
     [[{ file: "go.mod" }], "go"],

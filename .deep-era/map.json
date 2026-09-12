@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-09-12T11:49:25.024Z",
+  "generatedAt": "2026-09-12T14:26:26.337Z",
   "stack": {
     "kind": "node",
     "run": null,
@@ -324,7 +324,7 @@
     {
       "file": "src/guard.js",
       "role": "code-js",
-      "size": 9386,
+      "size": 14306,
       "imports": [
         "src/map.js",
         "src/init.js"
@@ -573,7 +573,7 @@
     {
       "file": "TEST-REPORT.md",
       "role": "doc",
-      "size": 2759,
+      "size": 2816,
       "imports": [],
       "importedBy": []
     },
@@ -681,7 +681,7 @@
     {
       "file": "tests/run.js",
       "role": "code-js",
-      "size": 27253,
+      "size": 28210,
       "imports": [
         "src/map.js",
         "src/security.js",

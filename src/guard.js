@@ -79,6 +79,84 @@ function duplicationScan(cwd, files) {
   return out;
 }
 
+// Exported names per JS file (approximate static pass): functions, consts,
+// classes, exports.x, module.exports = {a, b}. Unknown re-exports bail out.
+function jsExports(txt) {
+  const out = new Set();
+  for (const m of txt.matchAll(/^\s*(?:async\s+)?function\s+([A-Za-z_$][\w$]*)\s*\(/gm)) out.add(m[1]);
+  for (const m of txt.matchAll(/^\s*(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=/gm)) out.add(m[1]);
+  for (const m of txt.matchAll(/^\s*class\s+([A-Za-z_$][\w$]*)/gm)) out.add(m[1]);
+  for (const m of txt.matchAll(/(?:exports|module\.exports)\.([A-Za-z_$][\w$]*)\s*=/g)) out.add(m[1]);
+  for (const m of txt.matchAll(/module\.exports\s*=\s*\{([^}]{0,2000})\}/g)) {
+    for (const k of m[1].matchAll(/([A-Za-z_$][\w$]*)\s*[:,}]/g)) out.add(k[1]);
+  }
+  return out;
+}
+
+function jsIsOpaque(txt) {
+  // module.exports = someIdentifier → contents unknowable statically. Bail honestly.
+  return /module\.exports\s*=\s*[A-Za-z_$][\w$]*\s*;/.test(txt);
+}
+
+// Undefined-method detection: AI calls mod.foo() where the local module
+// never defines foo — a hallucinated API. Conservative: skips opaque modules,
+// destructuring is resolved too. Medium severity (verify, don't auto-block).
+function undefinedMethodScan(cwd, files, byName) {
+  const out = [];
+  const expCache = new Map();
+  const getExp = (file) => {
+    if (!expCache.has(file)) {
+      try {
+        const txt = require("fs").readFileSync(require("path").join(cwd, file), "utf8");
+        expCache.set(file, jsIsOpaque(txt) ? null : jsExports(txt));
+      } catch { expCache.set(file, null); }
+    }
+    return expCache.get(file);
+  };
+  for (const f of files) {
+    if (!/\.(js|mjs|cjs)$/.test(f.file)) continue;
+    if (f.file.startsWith("tests/fixtures/") || f.file.startsWith("tests/")) continue;
+    if (f.size > 200000) continue;
+    let txt = "";
+    try { txt = require("fs").readFileSync(require("path").join(cwd, f.file), "utf8"); } catch { continue; }
+    const { resolveDep } = require("./map");
+    let n = 0;
+    const checkCall = (modFile, method, idx) => {
+      const exp = getExp(modFile);
+      if (exp === null) return; // opaque — cannot judge
+      if (!exp.has(method) && n < 5) {
+        n++;
+        const line = txt.slice(0, idx).split("\n").length;
+        out.push({ sev: "medium", rule: "undefined-method", file: f.file, msg: `${method}() not exported by ${modFile} (line ${line}) — hallucinated API? Verify.` });
+      }
+    };
+    for (const m of txt.matchAll(/(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*require\(\s*["'](\.[^"']+)["']\s*\)/g)) {
+      const base = require("path").posix.dirname(f.file.replace(/\\/g, "/"));
+      const joined = require("path").posix.normalize(require("path").posix.join(base, m[2])).replace(/^\.\//, "");
+      const hit = resolveDep(byName, joined);
+      if (!hit || !/\.(js|mjs|cjs)$/.test(hit)) continue; // JSON/data requires have no JS exports
+      const re = new RegExp(`\\b${m[1]}\\.([A-Za-z_$][\\w$]*)\\s*\\(`, "g");
+      let c;
+      while ((c = re.exec(txt))) checkCall(hit, c[1], c.index);
+    }
+    for (const m of txt.matchAll(/(?:const|let|var)\s*\{([^}]{0,500})\}\s*=\s*require\(\s*["'](\.[^"']+)["']\s*\)/g)) {
+      const base = require("path").posix.dirname(f.file.replace(/\\/g, "/"));
+      const joined = require("path").posix.normalize(require("path").posix.join(base, m[2])).replace(/^\.\//, "");
+      const hit = resolveDep(byName, joined);
+      if (!hit || !/\.(js|mjs|cjs)$/.test(hit)) continue; // JSON/data requires have no JS exports
+      for (const name of m[1].split(",").map((s) => s.trim().split(/[:=]/)[0].trim()).filter(Boolean)) {
+        const exp = getExp(hit);
+        if (exp === null) continue;
+        if (!exp.has(name) && n < 5) {
+          n++;
+          out.push({ sev: "medium", rule: "undefined-method", file: f.file, msg: `Destructured {${name}} not exported by ${hit} — hallucinated API? Verify.` });
+        }
+      }
+    }
+  }
+  return out;
+}
+
 function guardScan(cwd, files) {
   const out = [];
   const push = (sev, rule, file, msg) => out.push({ sev, rule, file, msg });
@@ -175,6 +253,27 @@ function declaredDeps(cwd) {
       const actual = fs.readFileSync(path.join(cwd, "AGENTS.md"), "utf8");
       if (norm(actual) !== norm(AGENTS_MD)) {
         push("low", "agents-drift", "AGENTS.md", "Rules differ from the deep-era template — intentional? Otherwise re-run init.");
+      }
+    }
+  } catch {}
+
+  // Undefined methods: mod.foo() where the local module never defines foo.
+  try {
+    const byName = new Set(files.map((f) => f.file));
+    out.push(...undefinedMethodScan(cwd, files, byName));
+  } catch {}
+
+  // Comment claims: example numbers plus nine-x-percent inside CODE comments is the
+  // same hallucination as in docs — numbers without provenance.
+  try {
+    for (const f of codeFiles.slice(0, 120)) {
+      if (f.file.startsWith("tests/fixtures/")) continue;
+      let txt = "";
+      try { txt = fs.readFileSync(path.join(cwd, f.file), "utf8"); } catch { continue; }
+      const comments = extractComments(f.file, txt);
+      if (/e\.g\.,?\s*\d/.test(comments) && /9\d(\.\d+)?%/.test(comments)) {
+        push("medium", "comment-stats", f.file, "Example numbers + 9x% in code comments — prove them or remove them.");
+        break;
       }
     }
   } catch {}

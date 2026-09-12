@@ -1,8 +1,8 @@
-# AI Deep Era v0.44.0 — give the blind AI developer eyes
+# AI Deep Era v0.45.0 — give the blind AI developer eyes
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/Node-%3E%3D18-blue.svg)](package.json)
-[![Tests](https://img.shields.io/badge/Tests-89%20passing-brightgreen.svg)](tests/run.js)
+[![Tests](https://img.shields.io/badge/Tests-91%20passing-brightgreen.svg)](tests/run.js)
 [![No deps](https://img.shields.io/badge/Dependencies-0-orange.svg)](package.json)
 [![MCP](https://img.shields.io/badge/MCP-14%20tools-purple.svg)](mcp/server.js)
 [![IDE](https://img.shields.io/badge/IDEs-25%2B-blueviolet.svg)](src/setupIde.js)
@@ -114,8 +114,8 @@ Changed (file+line) | Tests ran + result | Errors seen + fix | Guard findings | 
 ## Demo
 `DEMO.md` — 5-minute video script. Or run `deep-era demo` and watch 4 traps get caught.
 
-## Self-proof (v0.44.0, just ran)
-- `npm test` → 52 unit + 27 CLI + 10 MCP = **89 green**
+## Self-proof (v0.45.0, just ran)
+- `npm test` → 54 unit + 27 CLI + 10 MCP = **91 green**
 - Test report: `.deep-era/test-report.json` (+ `TEST-REPORT.md`) — AI reads this, not scrolled logs
 - `check` → verify 2/2, 0 security/guard/deps → PASS
 - `mcp tools/list` → 15 tools ok
