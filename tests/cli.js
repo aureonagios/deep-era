@@ -263,6 +263,16 @@ ok("cli-memory-export-import", () => {
   assert(cli(b, ["memory", "import", exp]).includes("1 duplicates"), "dedupe broke!");
 });
 
+ok("cli-installers-and-llms", () => {
+  const root = path.join(__dirname, "..");
+  const ps1 = fs.readFileSync(path.join(root, "install.ps1"), "utf8");
+  const sh = fs.readFileSync(path.join(root, "install.sh"), "utf8");
+  assert(ps1.includes("npm i -g github:aureonagios/deep-era") && ps1.includes("deep-era global"), "ps1 incomplete!");
+  assert(sh.includes("npm i -g github:aureonagios/deep-era") && sh.includes("deep-era global"), "sh incomplete!");
+  const llms = fs.readFileSync(path.join(root, "llms.txt"), "utf8");
+  assert(llms.includes("recall") && llms.includes("verify_work") && llms.includes("ENGLISH ONLY"), "llms.txt shallow!");
+});
+
 ok("cli-check-json", () => {
   const tmp = sandbox();
   cli(tmp, ["init"]);

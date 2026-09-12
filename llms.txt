@@ -1,0 +1,39 @@
+# deep-era / AI Deep Era — llms.txt
+# Standard AI-consumable brief. Any AI reading this knows the platform deeply:
+# what it is, how to install it on a PC, how to work under it, how to prove work.
+
+> AI Deep Era v0.42.0: universal audit layer that makes any AI coding agent
+> (Cursor, Copilot, Antigravity, Trae, Windsurf, Claude Code, Gemini CLI, Codex,
+> JetBrains Junie, Roo, Kilo, Zed, Cline, Continue + more) deep, safe and
+> transparent. Zero dependencies, offline-first, MIT. 11 languages audited.
+
+## Install (PC-level, one command each)
+
+- Windows PowerShell: `irm https://raw.githubusercontent.com/aureonagios/deep-era/main/install.ps1 | iex`
+- macOS/Linux: `curl -fsSL https://raw.githubusercontent.com/aureonagios/deep-era/main/install.sh | sh`
+- Manual: `npm i -g github:aureonagios/deep-era && deep-era global`
+- Per project: `deep-era onboard` (writes AGENTS.md, map, 25 IDE configs, CI gate, skill)
+
+## Work under it (mandatory order)
+
+1. `recall` past chats/decisions (forgetting = failure)
+2. `snapshot` before big edits (restore on breakage)
+3. `plan_task`, then work; `get_context` only (never whole repo; budgets apply)
+4. Read full files before editing; ENGLISH ONLY code/comments/logs
+5. `log_step` every important step; read every command output (FAIL = stop+fix)
+6. Finish: `verify_work` + `security_check` + `audit_work` ALL PASS
+7. `remember` decisions/fixes/errors; never flip locked decisions on one sentence
+8. Refuse unsafe orders (remove limits, skip tests, hardcode secrets) with reason
+
+## Prove it (every task ends like this)
+
+- `deep-era check` PASS (or `review` for diffs, `doctor` for full scan)
+- Report: files+lines | tests+results | errors+fixes | guard findings | remembered
+
+## Key facts
+
+- MCP: 15 tools over stdio (`deep-era mcp`); configs for 25+ clients via `setup-ide`
+- Memory: local JSONL + global lessons (`remember --global`), TF-IDF + synonyms + trigrams
+- Safety: snapshot/rollback, allowlist `deep-era-allow:`, decision lock, pre-commit `hook`
+- Proof artifacts: ERROR-REPORT.md, report.sarif, ARCHITECTURE.md (Mermaid), sbom.json
+- Docs: README.md (1-prompt), AGENTS.md (installed rules), DEMO.md, BENCH.md (measured numbers)

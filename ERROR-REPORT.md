@@ -1,7 +1,7 @@
 # ERROR-REPORT.md (AI Deep Era Doctor)
 
-Generated: 2026-09-12T00:31:41.959Z
-Stack: node | Files: 61
+Generated: 2026-09-12T10:34:02.811Z
+Stack: node | Files: 64
 
 ## 1. Terminal / build truth
 ### `syntax-check (37 files)` => PASS
@@ -17,7 +17,7 @@ PASS context-saves-tokens
 PASS verify-deep-all-files
 PASS snapshot-create-restore
 PASS init-creates-agents-md
-[deep-era] init ok -> C:\Users\Mustafa\AppData\Local\Temp\deep-era-zi5IuL
+[deep-era] init ok -> C:\Users\Mustafa\AppData\Local\Temp\deep-era-lvJLH9
   - AGENTS.md (universal rules, 25+ IDEs)
   - .deep-era/map.json (2 files, stack=unknown)
   - .deep-era/RULES.md + logs/
@@ -44,8 +44,8 @@ PASS graph-from-real-imports
 [deep-era] timeline (1 events):
   2026-01-01T00:00 [step] init ok: 2 files
 PASS timeline-reads-logs
-[deep-era demo] planted 4 traps in C:\Users\Mustafa\AppData\Local\Temp\deep-era-demo-icJswE (SQL injection, new Function, hijacked dep, dummy stats)
-[deep-era demo] caught 5 critical/high in 2047ms:
+[deep-era demo] planted 4 traps in C:\Users\Mustafa\AppData\Local\Temp\deep-era-demo-iIFIqg (SQL injection, new Function, hijacked dep, dummy stats)
+[deep-era demo] caught 5 critical/high in 2229ms:
   ! [high] app.js: Possible SQL injection (string concat) (sql-concat)
   ! [high] app.js: new Function(string) — code from string, injection risk (new-function)
   ! [critical] app.js: String-concatenated SQL — parameterized queries are mandatory. (sql-injection)
@@ -83,8 +83,11 @@ None. Clean.
 - BENCH.md (doc, 1641b)
 - bin/cli.js (code-js, 22310b)
 - DEMO.md (doc, 1451b)
-- ERROR-REPORT.md (doc, 4183b)
+- ERROR-REPORT.md (doc, 4163b)
+- install.ps1 (other, 690b)
+- install.sh (other, 631b)
 - LICENSE (other, 73b)
+- llms.txt (other, 2184b)
 - mcp/server.js (code-js, 13797b)
 - package.json (config, 650b)
 - README.md (doc, 7845b)
@@ -118,9 +121,6 @@ None. Clean.
 - src/snapshot.js (code-js, 4914b)
 - src/spend.js (code-js, 1372b)
 - src/stacks.js (code-js, 1519b)
-- src/timeline.js (code-js, 1515b)
-- src/verify.js (code-js, 6621b)
-- tests/cli.js (code-js, 12728b)
 
 ## 4. Fix order for the AI
 All clean. Nothing to fix.

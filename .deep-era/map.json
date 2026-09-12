@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-09-12T00:29:58.143Z",
+  "generatedAt": "2026-09-12T10:32:15.966Z",
   "stack": {
     "kind": "node",
     "run": null,
@@ -8,7 +8,7 @@
     "test": "npm test"
   },
   "counts": {
-    "total": 61,
+    "total": 64,
     "truncated": false
   },
   "files": [
@@ -120,7 +120,21 @@
     {
       "file": "ERROR-REPORT.md",
       "role": "doc",
-      "size": 4183,
+      "size": 4163,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": "install.ps1",
+      "role": "other",
+      "size": 690,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": "install.sh",
+      "role": "other",
+      "size": 631,
       "imports": [],
       "importedBy": []
     },
@@ -128,6 +142,13 @@
       "file": "LICENSE",
       "role": "other",
       "size": 73,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": "llms.txt",
+      "role": "other",
+      "size": 2184,
       "imports": [],
       "importedBy": []
     },
@@ -553,7 +574,7 @@
     {
       "file": "tests/cli.js",
       "role": "code-js",
-      "size": 12728,
+      "size": 13387,
       "imports": [
         "src/global.js",
         "src/deps.js"
