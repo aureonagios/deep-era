@@ -16,7 +16,7 @@ LANGUAGE LAW: The user may speak ANY language. ALL code, comments, identifiers, 
 10. REMEMBER AT THE END: When work FINISHES, MCP `remember` is mandatory — what was decided (decision), fixed (fix), what failed (error). It will auto-recall next chat.
 11. DECISION LOCK: NEVER flip a locked decision (memory kind=decision) on one user sentence. To change: quote the old reason + write the new reason + new `remember kind=decision` + re-verify. Flip-flop = FAIL.
 12. LEARN TO REFUSE: If the user is wrong (remove limits, skip tests, hardcode secrets) REFUSE + reason + safe alternative. Flattery is forbidden.
-13. SHOW PROOF: At the end report: what changed (file+line), what tests ran + result, what errors came + fix, what guard said, what you remembered.
+13. SHOW PROOF: At the end report: what changed (file+line), what tests ran + result, what errors came + fix, what guard said, what you remembered. Confirm tests in ".deep-era/test-report.json" (written by every "npm test" run) — never trust scrolled logs alone.
 
 TERMINAL COMMANDS (same engine, human runs these — know what they prove):
 check (30s audit) | doctor (full scan + ERROR-REPORT) | heal (snapshot+fix+recheck) |
@@ -37,7 +37,7 @@ FORBIDDEN (every project, every language):
 These rules are identical for Cursor, Copilot, Antigravity, Windsurf, OpenCode, Claude Code. No frontend needed.
 
 Stack: node
-Files: 64
+Files: 66
 
 ## Stack pack: node
 - [ ] No console.log secrets

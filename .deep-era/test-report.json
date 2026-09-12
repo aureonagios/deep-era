@@ -1,0 +1,564 @@
+{
+  "version": 1,
+  "suites": {
+    "unit": {
+      "pass": 52,
+      "fail": 0,
+      "tests": [
+        {
+          "name": "map-builds-with-imports",
+          "ok": true,
+          "at": "2026-09-12T10:59:58.091Z",
+          "detail": "35ms"
+        },
+        {
+          "name": "security-runs-deep",
+          "ok": true,
+          "at": "2026-09-12T10:59:58.137Z",
+          "detail": "45ms"
+        },
+        {
+          "name": "context-saves-tokens",
+          "ok": true,
+          "at": "2026-09-12T10:59:58.165Z",
+          "detail": "27ms"
+        },
+        {
+          "name": "verify-deep-all-files",
+          "ok": true,
+          "at": "2026-09-12T10:59:58.213Z",
+          "detail": "47ms"
+        },
+        {
+          "name": "snapshot-create-restore",
+          "ok": true,
+          "at": "2026-09-12T10:59:58.223Z",
+          "detail": "10ms"
+        },
+        {
+          "name": "init-creates-agents-md",
+          "ok": true,
+          "at": "2026-09-12T10:59:58.229Z",
+          "detail": "6ms"
+        },
+        {
+          "name": "guard-generic-no-trading",
+          "ok": true,
+          "at": "2026-09-12T10:59:58.351Z",
+          "detail": "106ms"
+        },
+        {
+          "name": "fixture-demo-caught",
+          "ok": true,
+          "at": "2026-09-12T11:00:01.992Z",
+          "detail": "3641ms"
+        },
+        {
+          "name": "memory-no-chat-forgotten",
+          "ok": true,
+          "at": "2026-09-12T11:00:02.006Z",
+          "detail": "14ms"
+        },
+        {
+          "name": "english-only-code-enforced",
+          "ok": true,
+          "at": "2026-09-12T11:00:02.085Z",
+          "detail": "79ms"
+        },
+        {
+          "name": "memory-dedupe-saves-tokens",
+          "ok": true,
+          "at": "2026-09-12T11:00:02.091Z",
+          "detail": "6ms"
+        },
+        {
+          "name": "duplication-caught-offline",
+          "ok": true,
+          "at": "2026-09-12T11:00:02.100Z",
+          "detail": "9ms"
+        },
+        {
+          "name": "verify-fast-two-tier",
+          "ok": true,
+          "at": "2026-09-12T11:00:02.283Z",
+          "detail": "183ms"
+        },
+        {
+          "name": "stack-packs-cover-all",
+          "ok": true,
+          "at": "2026-09-12T11:00:02.283Z",
+          "detail": "0ms"
+        },
+        {
+          "name": "ci-gate-generator",
+          "ok": true,
+          "at": "2026-09-12T11:00:02.287Z",
+          "detail": "4ms"
+        },
+        {
+          "name": "sarif-output-valid",
+          "ok": true,
+          "at": "2026-09-12T11:00:02.292Z",
+          "detail": "5ms"
+        },
+        {
+          "name": "dep-blocklist-critical",
+          "ok": true,
+          "at": "2026-09-12T11:00:04.507Z",
+          "detail": "2214ms"
+        },
+        {
+          "name": "sinks-and-entropy-caught",
+          "ok": true,
+          "at": "2026-09-12T11:00:04.510Z",
+          "detail": "3ms"
+        },
+        {
+          "name": "py-ast-precision",
+          "ok": true,
+          "at": "2026-09-12T11:00:04.835Z",
+          "detail": "324ms"
+        },
+        {
+          "name": "recall-tfidf-ranks-rare-first",
+          "ok": true,
+          "at": "2026-09-12T11:00:04.868Z",
+          "detail": "33ms"
+        },
+        {
+          "name": "ide-22-clients-valid",
+          "ok": true,
+          "at": "2026-09-12T11:00:04.871Z",
+          "detail": "2ms"
+        },
+        {
+          "name": "graph-from-real-imports",
+          "ok": true,
+          "at": "2026-09-12T11:00:04.880Z",
+          "detail": "9ms"
+        },
+        {
+          "name": "timeline-reads-logs",
+          "ok": true,
+          "at": "2026-09-12T11:00:04.887Z",
+          "detail": "6ms"
+        },
+        {
+          "name": "allowlist-suppression",
+          "ok": true,
+          "at": "2026-09-12T11:00:07.424Z",
+          "detail": "5ms"
+        },
+        {
+          "name": "snapshot-diff-tracks-ai",
+          "ok": true,
+          "at": "2026-09-12T11:00:07.433Z",
+          "detail": "9ms"
+        },
+        {
+          "name": "recall-synonym-finds-bug",
+          "ok": true,
+          "at": "2026-09-12T11:00:07.438Z",
+          "detail": "5ms"
+        },
+        {
+          "name": "skill-md-valid",
+          "ok": true,
+          "at": "2026-09-12T11:00:07.450Z",
+          "detail": "12ms"
+        },
+        {
+          "name": "recall-distributional-links",
+          "ok": true,
+          "at": "2026-09-12T11:00:07.462Z",
+          "detail": "12ms"
+        },
+        {
+          "name": "broken-import-caught",
+          "ok": true,
+          "at": "2026-09-12T11:00:07.559Z",
+          "detail": "7ms"
+        },
+        {
+          "name": "spend-tracks-chars",
+          "ok": true,
+          "at": "2026-09-12T11:00:07.564Z",
+          "detail": "5ms"
+        },
+        {
+          "name": "agents-sync-detects-drift",
+          "ok": true,
+          "at": "2026-09-12T11:00:07.577Z",
+          "detail": "13ms"
+        },
+        {
+          "name": "onboard-end-to-end",
+          "ok": true,
+          "at": "2026-09-12T11:00:07.768Z",
+          "detail": "191ms"
+        },
+        {
+          "name": "stdlib-not-hallucination",
+          "ok": true,
+          "at": "2026-09-12T11:00:07.970Z",
+          "detail": "20ms"
+        },
+        {
+          "name": "global-lesson-travels-projects",
+          "ok": true,
+          "at": "2026-09-12T11:00:07.975Z",
+          "detail": "5ms"
+        },
+        {
+          "name": "projects-registry-lists-health",
+          "ok": true,
+          "at": "2026-09-12T11:00:07.981Z",
+          "detail": "5ms"
+        },
+        {
+          "name": "recall-phrase-beats-scatter",
+          "ok": true,
+          "at": "2026-09-12T11:00:07.989Z",
+          "detail": "8ms"
+        },
+        {
+          "name": "osv-fixed-version-parsed",
+          "ok": true,
+          "at": "2026-09-12T11:00:07.989Z",
+          "detail": "0ms"
+        },
+        {
+          "name": "deep-eraignore-tames-monorepo",
+          "ok": true,
+          "at": "2026-09-12T11:00:08.027Z",
+          "detail": "4ms"
+        },
+        {
+          "name": "recall-trigram-cousins",
+          "ok": true,
+          "at": "2026-09-12T11:00:08.037Z",
+          "detail": "9ms"
+        },
+        {
+          "name": "cwe-tags-present",
+          "ok": true,
+          "at": "2026-09-12T11:00:08.038Z",
+          "detail": "1ms"
+        },
+        {
+          "name": "resolve-dep-no-fake-ext",
+          "ok": true,
+          "at": "2026-09-12T11:00:08.038Z",
+          "detail": "0ms"
+        },
+        {
+          "name": "recall-proximity-density",
+          "ok": true,
+          "at": "2026-09-12T11:00:08.047Z",
+          "detail": "9ms"
+        },
+        {
+          "name": "snapshot-prune-keeps-five",
+          "ok": true,
+          "at": "2026-09-12T11:00:08.081Z",
+          "detail": "34ms"
+        },
+        {
+          "name": "universal-stacks-detected",
+          "ok": true,
+          "at": "2026-09-12T11:00:08.082Z",
+          "detail": "0ms"
+        },
+        {
+          "name": "heal-loop-reports",
+          "ok": true,
+          "at": "2026-09-12T11:00:08.091Z",
+          "detail": "323ms"
+        },
+        {
+          "name": "demo-catches-traps",
+          "ok": true,
+          "at": "2026-09-12T11:00:08.093Z",
+          "detail": "3206ms"
+        },
+        {
+          "name": "safe-fix-guards",
+          "ok": true,
+          "at": "2026-09-12T11:00:08.093Z",
+          "detail": "9864ms"
+        },
+        {
+          "name": "net-fetch-local-server",
+          "ok": true,
+          "at": "2026-09-12T11:00:08.111Z",
+          "detail": "122ms"
+        },
+        {
+          "name": "serve-fail-spots-crash",
+          "ok": true,
+          "at": "2026-09-12T11:00:08.122Z",
+          "detail": "126ms"
+        },
+        {
+          "name": "net-research-degrades-honestly",
+          "ok": true,
+          "at": "2026-09-12T11:00:08.428Z",
+          "detail": "434ms"
+        },
+        {
+          "name": "osv-resolves-array-offline-safe",
+          "ok": true,
+          "at": "2026-09-12T11:00:08.644Z",
+          "detail": "1181ms"
+        },
+        {
+          "name": "serve-run-observe-probe",
+          "ok": true,
+          "at": "2026-09-12T11:00:16.036Z",
+          "detail": "8023ms"
+        }
+      ]
+    },
+    "cli": {
+      "pass": 27,
+      "fail": 0,
+      "tests": [
+        {
+          "name": "cli-init-check-rules-costs",
+          "ok": true,
+          "at": "2026-09-12T11:00:16.950Z",
+          "detail": "796ms"
+        },
+        {
+          "name": "cli-remember-recall-roundtrip",
+          "ok": true,
+          "at": "2026-09-12T11:00:17.332Z",
+          "detail": "379ms"
+        },
+        {
+          "name": "cli-snapshot-diff-restore",
+          "ok": true,
+          "at": "2026-09-12T11:00:17.885Z",
+          "detail": "552ms"
+        },
+        {
+          "name": "cli-graph-timeline-skill-ci",
+          "ok": true,
+          "at": "2026-09-12T11:00:18.393Z",
+          "detail": "507ms"
+        },
+        {
+          "name": "cli-perf-smoke",
+          "ok": true,
+          "at": "2026-09-12T11:00:18.514Z",
+          "detail": "121ms"
+        },
+        {
+          "name": "cli-fix-doctor-sarif",
+          "ok": true,
+          "at": "2026-09-12T11:00:18.935Z",
+          "detail": "421ms"
+        },
+        {
+          "name": "cli-serve-fixture-probe",
+          "ok": true,
+          "at": "2026-09-12T11:00:31.077Z",
+          "detail": "12141ms"
+        },
+        {
+          "name": "cli-global-machine-setup",
+          "ok": true,
+          "at": "2026-09-12T11:00:31.117Z",
+          "detail": "25ms"
+        },
+        {
+          "name": "cli-review-scoped-diff",
+          "ok": true,
+          "at": "2026-09-12T11:00:31.613Z",
+          "detail": "496ms"
+        },
+        {
+          "name": "cli-search-ranked",
+          "ok": true,
+          "at": "2026-09-12T11:00:31.886Z",
+          "detail": "273ms"
+        },
+        {
+          "name": "cli-skill-pack-six",
+          "ok": true,
+          "at": "2026-09-12T11:00:31.988Z",
+          "detail": "102ms"
+        },
+        {
+          "name": "cli-doctor-json",
+          "ok": true,
+          "at": "2026-09-12T11:00:32.234Z",
+          "detail": "246ms"
+        },
+        {
+          "name": "cli-sarif-has-cwe-tags",
+          "ok": true,
+          "at": "2026-09-12T11:00:32.481Z",
+          "detail": "247ms"
+        },
+        {
+          "name": "cli-update-offline-safe",
+          "ok": true,
+          "at": "2026-09-12T11:00:33.828Z",
+          "detail": "1347ms"
+        },
+        {
+          "name": "cli-sbom-cyclonedx",
+          "ok": true,
+          "at": "2026-09-12T11:00:33.930Z",
+          "detail": "102ms"
+        },
+        {
+          "name": "cli-memory-stats",
+          "ok": true,
+          "at": "2026-09-12T11:00:34.111Z",
+          "detail": "181ms"
+        },
+        {
+          "name": "cli-context-shows-files",
+          "ok": true,
+          "at": "2026-09-12T11:00:34.325Z",
+          "detail": "195ms"
+        },
+        {
+          "name": "cli-demo-verdict",
+          "ok": true,
+          "at": "2026-09-12T11:00:36.670Z",
+          "detail": "2345ms"
+        },
+        {
+          "name": "cli-browser-bridge",
+          "ok": true,
+          "at": "2026-09-12T11:00:36.806Z",
+          "detail": "136ms"
+        },
+        {
+          "name": "cli-hook-installs-gate",
+          "ok": true,
+          "at": "2026-09-12T11:00:37.267Z",
+          "detail": "461ms"
+        },
+        {
+          "name": "cli-graph-full-and-for",
+          "ok": true,
+          "at": "2026-09-12T11:00:37.672Z",
+          "detail": "405ms"
+        },
+        {
+          "name": "cli-timeline-json",
+          "ok": true,
+          "at": "2026-09-12T11:00:37.868Z",
+          "detail": "196ms"
+        },
+        {
+          "name": "cli-memory-export-import",
+          "ok": true,
+          "at": "2026-09-12T11:00:38.222Z",
+          "detail": "353ms"
+        },
+        {
+          "name": "cli-installers-and-llms",
+          "ok": true,
+          "at": "2026-09-12T11:00:38.223Z",
+          "detail": "1ms"
+        },
+        {
+          "name": "cli-check-json",
+          "ok": true,
+          "at": "2026-09-12T11:00:38.438Z",
+          "detail": "215ms"
+        },
+        {
+          "name": "cli-license-offline-safe",
+          "ok": true,
+          "at": "2026-09-12T11:00:38.440Z",
+          "detail": "4329ms"
+        },
+        {
+          "name": "cli-watch-detects-change",
+          "ok": true,
+          "at": "2026-09-12T11:00:42.442Z",
+          "detail": "11365ms"
+        }
+      ]
+    },
+    "mcp": {
+      "pass": 10,
+      "fail": 0,
+      "tests": [
+        {
+          "name": "mcp-initialize-and-list",
+          "ok": true,
+          "at": "2026-09-12T11:00:43.550Z",
+          "detail": "324ms"
+        },
+        {
+          "name": "mcp-spend-report",
+          "ok": true,
+          "at": "2026-09-12T11:00:43.607Z",
+          "detail": "280ms"
+        },
+        {
+          "name": "mcp-memory-roundtrip",
+          "ok": true,
+          "at": "2026-09-12T11:00:43.665Z",
+          "detail": "419ms"
+        },
+        {
+          "name": "mcp-verify-security-audit",
+          "ok": true,
+          "at": "2026-09-12T11:00:43.699Z",
+          "detail": "432ms"
+        },
+        {
+          "name": "mcp-snapshot-safefix",
+          "ok": true,
+          "at": "2026-09-12T11:00:43.717Z",
+          "detail": "441ms"
+        },
+        {
+          "name": "mcp-search-code",
+          "ok": true,
+          "at": "2026-09-12T11:00:43.731Z",
+          "detail": "435ms"
+        },
+        {
+          "name": "mcp-remember-global-lesson",
+          "ok": true,
+          "at": "2026-09-12T11:00:43.748Z",
+          "detail": "432ms"
+        },
+        {
+          "name": "mcp-plan-log-context",
+          "ok": true,
+          "at": "2026-09-12T11:00:43.755Z",
+          "detail": "501ms"
+        },
+        {
+          "name": "mcp-unknown-tool-errors",
+          "ok": true,
+          "at": "2026-09-12T11:00:43.782Z",
+          "detail": "448ms"
+        },
+        {
+          "name": "mcp-fetch-research",
+          "ok": true,
+          "at": "2026-09-12T11:00:43.858Z",
+          "detail": "551ms"
+        }
+      ]
+    }
+  },
+  "at": "2026-09-12T11:00:43.859Z",
+  "deepEra": "0.43.0",
+  "total": {
+    "pass": 89,
+    "fail": 0
+  },
+  "result": "PASS"
+}

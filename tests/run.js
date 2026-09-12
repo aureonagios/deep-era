@@ -15,18 +15,7 @@ const { guardScan } = require("../src/guard");
 const { remember, recall } = require("../src/memory");
 const { detectStack } = require("../src/map");
 const { packFor } = require("../src/stacks");
-
-let pass = 0;
-const pending = [];
-function ok(name, fn) {
-  try {
-    const r = fn();
-    if (r && typeof r.then === "function") {
-      pending.push(r.then(() => { pass++; console.log(`PASS ${name}`); }).catch((e) => { console.error(`FAIL ${name}: ${e.message}`); process.exitCode = 1; }));
-    } else { pass++; console.log(`PASS ${name}`); }
-  }
-  catch (e) { console.error(`FAIL ${name}: ${e.message}`); process.exitCode = 1; }
-}
+const { ok, finish, pending } = require("./lib/report")("unit");
 
 ok("map-builds-with-imports", () => {
   const cwd = path.resolve(__dirname, "..");
@@ -553,4 +542,10 @@ ok("universal-stacks-detected", () => {
   }
 });
 
-Promise.all(pending).then(() => console.log(`\n${pass} tests passed`));
+ok("test-report-written", async () => {
+  await finish();
+  const { readReport } = require("./lib/report");
+  const r = readReport(process.cwd());
+  assert(r.suites.unit && r.suites.unit.pass > 30, "unit suite missing in report!");
+  assert(r.total.pass > 30 && typeof r.result === "string", "report totals wrong!");
+});

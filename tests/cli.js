@@ -8,16 +8,7 @@ const os = require("os");
 const { execFileSync } = require("child_process");
 
 const CLI = path.join(__dirname, "..", "bin", "cli.js");
-let pass = 0;
-function ok(name, fn) {
-  try {
-    const r = fn();
-    if (r && typeof r.then === "function") {
-      pending.push(r.then(() => { pass++; console.log(`PASS ${name}`); }).catch((e) => { console.error(`FAIL ${name}: ${e.message}`); process.exitCode = 1; }));
-    } else { pass++; console.log(`PASS ${name}`); }
-  } catch (e) { console.error(`FAIL ${name}: ${e.message}`); process.exitCode = 1; }
-}
-const pending = [];
+const { ok, finish, pending } = require("./lib/report")("cli");
 
 function sandbox(files) {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-cli-"));
@@ -280,4 +271,9 @@ ok("cli-check-json", () => {
   assert(j.result === "PASS" && typeof j.verifyPass === "number", "json shape wrong");
 });
 
-Promise.all(pending).then(() => console.log(`\n${pass} CLI tests passed`));
+ok("cli-suite-reported", async () => {
+  await finish();
+  const { readReport } = require("./lib/report");
+  const r = readReport(process.cwd());
+  assert(r.suites.cli && r.suites.cli.fail === 0, "cli suite missing/failed in report!");
+});

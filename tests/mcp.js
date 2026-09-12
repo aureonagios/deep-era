@@ -8,16 +8,7 @@ const { spawn } = require("child_process");
 const CLI = path.join(__dirname, "..", "bin", "cli.js");
 const fs = require("fs");
 const os = require("os");
-let pass = 0;
-const pending = [];
-function ok(name, fn) {
-  try {
-    const r = fn();
-    if (r && typeof r.then === "function") {
-      pending.push(r.then(() => { pass++; console.log(`PASS ${name}`); }).catch((e) => { console.error(`FAIL ${name}: ${e.message}`); process.exitCode = 1; }));
-    } else { pass++; console.log(`PASS ${name}`); }
-  } catch (e) { console.error(`FAIL ${name}: ${e.message}`); process.exitCode = 1; }
-}
+const { ok, finish, pending } = require("./lib/report")("mcp");
 
 function sandbox() {
   // NEVER run state-mutating tools in the real repo — tests polluted it once (14 junk snapshots).
@@ -165,7 +156,13 @@ ok("mcp-unknown-tool-errors", async () => {
   s.stop();
 });
 
-Promise.all(pending).then(() => console.log(`\n${pass} MCP tests passed`));
+ok("mcp-suite-reported", async () => {
+  await finish();
+  const { readReport } = require("./lib/report");
+  const r = readReport(process.cwd());
+  assert(r.suites.mcp && r.suites.mcp.fail === 0, "mcp suite missing/failed in report!");
+  assert(r.total && r.total.pass >= 80, "total too low — suites missing!");
+});
 
 // Safety net: a failed assert must never hang the suite on a stray child process.
 setTimeout(() => {

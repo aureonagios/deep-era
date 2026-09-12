@@ -1,4 +1,4 @@
-# AI Deep Era v0.42.0 — give the blind AI developer eyes
+# AI Deep Era v0.43.0 — give the blind AI developer eyes
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/Node-%3E%3D18-blue.svg)](package.json)
@@ -114,8 +114,9 @@ Changed (file+line) | Tests ran + result | Errors seen + fix | Guard findings | 
 ## Demo
 `DEMO.md` — 5-minute video script. Or run `deep-era demo` and watch 4 traps get caught.
 
-## Self-proof (v0.42.0, just ran)
+## Self-proof (v0.43.0, just ran)
 - `npm test` → 52 unit + 27 CLI + 10 MCP = **89 green**
+- Test report: `.deep-era/test-report.json` (+ `TEST-REPORT.md`) — AI reads this, not scrolled logs
 - `check` → verify 2/2, 0 security/guard/deps → PASS
 - `mcp tools/list` → 15 tools ok
 - `npm publish --dry-run` → 33 files, clean
