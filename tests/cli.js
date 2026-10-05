@@ -1,5 +1,8 @@
 // CLI integration tests — every command runs for real in a sandbox.
 // This suite would have caught the snapshot-label bug before any human did.
+// deep-era-allow: secret-assign, entropy-secret
+// The guard-secrets tests below embed fake tokens as fixtures (slack/stripe shapes
+// with no real account behind them). Suppressed for this file only.
 process.env.DEEP_ERA_SELFTEST = "1";
 const assert = require("assert");
 const fs = require("fs");
@@ -280,6 +283,38 @@ ok("cli-check-json", () => {
   cli(tmp, ["init"]);
   const j = JSON.parse(cli(tmp, ["check", "--json"]));
   assert(j.result === "PASS" && typeof j.verifyPass === "number", "json shape wrong");
+});
+
+ok("cli-guard-secrets-flags-real-skips-placeholder", () => {
+  // Placeholder-only project: clean bill, exit 0.
+  const clean = sandbox({ "docs.md": 'SECRET_KEY="your-secret-key-here"\n' });
+  const out = cli(clean, ["guard-secrets"]);
+  assert(out.includes("CLEAN"), `placeholder flagged as leak: ${out}`);
+  // Real slack token (high, not critical): reported, exit stays 0.
+  // (Assembled at runtime — see note in tests/run.js. Committed blobs must never
+  // contain a full key-shaped literal or push protection blocks the push.)
+  const slackBody = "123456789012-abcdefghijAB";
+  const dirty = sandbox({ "app.js": "const t = 'xoxb-" + slackBody + "';\nconsole.log(t);\n" });
+  const out2 = cli(dirty, ["guard-secrets"]);
+  assert(out2.includes("FOUND") && out2.includes("Slack Token"), `real token missed: ${out2}`);
+  // Critical finding exits nonzero so CI gates can block on it. execFileSync throws
+  // on nonzero exit — the throw IS the assertion, stdout rides along on the error.
+  const stripeBody = "51H7xY9mN2pQ4rS8tU6vW0xYzAb";
+  const crit = sandbox({ "app.js": "const k = 'sk_live_" + stripeBody + "';\nconsole.log(k);\n" });
+  let threw = false;
+  try { cli(crit, ["guard-secrets"]); } catch (e) {
+    threw = true;
+    assert(String((e.stdout || "") + e.message).includes("FOUND"), "critical output lost in throw");
+  }
+  assert(threw, "critical secret did not set exit code 1");
+});
+
+ok("cli-setup-ide-writes-configs", () => {
+  const tmp = sandbox();
+  const out = cli(tmp, ["setup-ide"]);
+  assert(out.includes("ide configs ready"), `setup-ide broke: ${out}`);
+  assert(fs.existsSync(path.join(tmp, ".deep-era", "ide", "SETUP.md")), "no SETUP.md");
+  assert(fs.existsSync(path.join(tmp, ".deep-era", "ide", ".vscode", "mcp.json")), "no vscode config");
 });
 
 ok("cli-suite-reported", async () => {

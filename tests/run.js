@@ -1,8 +1,9 @@
 // Self-test v0.6 for AI Deep Era (no deps)
-// deep-era-allow: secret-assign, entropy-secret
-// The encryption tests below use passphrase strings as fixtures. Those are test inputs,
-// not credentials, so the secret rule is suppressed for this file only. Everything else
-// in this file is still checked, which is the point of a scoped marker.
+// deep-era-allow: secret-assign, entropy-secret, aws-key, passwd-assign
+// The encryption and guardian tests below use passphrase strings and fake keys as
+// fixtures. Those are test inputs, not credentials, so the secret rules are suppressed
+// for this file only. Everything else in this file is still checked, which is the
+// point of a scoped marker.
 process.env.DEEP_ERA_SELFTEST = "1";
 const assert = require("assert");
 const fs = require("fs");
@@ -42,6 +43,71 @@ ok("security-runs-deep", () => {
   const map = buildMap(cwd);
   const f = securityScan(cwd, map.files);
   assert(Array.isArray(f), "not array");
+});
+
+ok("guardian-skips-placeholders", () => {
+  // A scanner that flags SECRET_KEY="your-secret-key-here" trains everyone to ignore
+  // it — then the real key in the next file gets missed. Placeholders must be silent.
+  const { isPlaceholder, scanFileSecrets } = require("../src/guardian");
+  for (const doc of [
+    'SECRET_KEY="your-secret-key-here"',
+    'password = "changeme1234567890"',
+    'api_key = "<YOUR_API_KEY>"',
+    'token = "${API_TOKEN}"',
+    "secret = '***'",
+    'auth_token = "example-token-abcdef123456"',
+  ]) assert(isPlaceholder(doc), `placeholder not recognized: ${doc}`);
+  // ...but weak-looking real values still count. Doubting a real secret is worse.
+  assert(!isPlaceholder('password="test123456"'), "real value wrongly excused");
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-guard-"));
+  fs.writeFileSync(path.join(tmp, "docs.md"), 'SECRET_KEY="your-secret-key-here"\n');
+  assert(scanFileSecrets(path.join(tmp, "docs.md"), "docs.md").length === 0, "placeholder flagged as leak");
+});
+
+ok("guardian-catches-real-secrets", () => {
+  const { scanFileSecrets } = require("../src/guardian");
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-guard-"));
+  // NOTE: the famous AWS docs example key (AKIA followed by IOSFODNN7EXAMPLE) is
+  // deliberately NOT used here — it contains the word EXAMPLE, so the placeholder
+  // filter skips it (correctly: that exact key appears in AWS documentation, never
+  // as a real leak). Spelled broken here so no full key-shaped literal is committed.
+  // NOTE: fixture secrets are assembled at runtime (prefix + body), never as one
+  // literal. GitHub push protection scans committed blobs for full key patterns and
+  // blocks the push — even for fakes. Runtime assembly keeps the test meaningful
+  // (the scanner still sees the complete string) while the repo never contains one.
+  const stripeBody = "51H7xY9mN2pQ4rS8tU6vW0xYzAb";
+  const awsBody = "JX7Q2K9M4N8P3R6T5VZ";
+  const slackBody = "123456789012-abcdefghijAB";
+  fs.writeFileSync(path.join(tmp, "app.js"),
+    "const a = 'sk_live_" + stripeBody + "';\n" +
+    "const b = 'AKIA" + awsBody + "';\n" +
+    "const c = 'xoxb-" + slackBody + "';\n");
+  const f = scanFileSecrets(path.join(tmp, "app.js"), "app.js");
+  const rules = f.map((x) => x.rule);
+  assert(rules.includes("stripe-secret"), "stripe key missed");
+  assert(rules.includes("aws-key"), "aws key missed");
+  assert(f.every((x) => x.line > 0 && x.file === "app.js"), "findings must carry file+line");
+});
+
+ok("guardian-merge-keeps-worst-finding", () => {
+  // Both engines see the same leak on the same line: keep the critical specific
+  // report, not the medium generic one. First-wins dropped a stripe-secret once
+  // because an entropy note sat on the same line.
+  const { mergeSecretFindings } = require("../src/guardian");
+  const base = [{ file: "a.js", line: 1, rule: "entropy-secret", sev: "medium", msg: "e" }];
+  const extra = [{ file: "a.js", line: 1, rule: "stripe-secret", sev: "critical", msg: "s" }];
+  const m = mergeSecretFindings(base, extra);
+  assert(m.length === 1, `expected 1 merged finding, got ${m.length}`);
+  assert(m[0].rule === "stripe-secret", `wrong survivor: ${m[0].rule}`);
+  // Same severity + same family still collapses (no double-report of one leak).
+  const m2 = mergeSecretFindings(
+    [{ file: "a.js", line: 1, rule: "aws-key", sev: "critical", msg: "e" }],
+    [{ file: "a.js", line: 1, rule: "aws-key", sev: "critical", msg: "s" }]
+  );
+  assert(m2.length === 1, "same leak reported twice");
+  // Different lines are different leaks — both survive.
+  const m3 = mergeSecretFindings(base, [{ file: "a.js", line: 2, rule: "stripe-secret", sev: "critical", msg: "s" }]);
+  assert(m3.length === 2, "distinct leaks collapsed");
 });
 
 ok("context-saves-tokens", () => {

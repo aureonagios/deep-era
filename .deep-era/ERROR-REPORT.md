@@ -1,7 +1,7 @@
 # ERROR-REPORT.md (AI Deep Era Doctor)
 
-Generated: 2026-10-05T15:28:42.579Z
-Stack: node | Files: 100
+Generated: 2026-10-05T16:57:34.473Z
+Stack: node | Files: 101
 
 ## 1. Terminal / build truth
 ### `syntax-check (52 JS + 0 TS/JSX)` => PASS
@@ -18,7 +18,7 @@ PASS verify-deep-all-files
 PASS snapshot-create-restore
 PASS snapshot-restore-removes-new-files
 PASS init-creates-agents-md
-[deep-era] init ok -> C:\Users\Mustafa\AppData\Local\Temp\deep-era-vLzSwF
+[deep-era] init ok -> C:\Users\Mustafa\AppData\Local\Temp\deep-era-jy3LjA
   - AGENTS.md (universal rules, 25+ IDEs)
   - .deep-era/map.json (2 files, stack=unknown)
   - .deep-era/RULES.md + logs/
@@ -31,6 +31,11 @@ PASS semantic-respects-guard-patterns
 PASS tsparse-valid-typescript-passes
 PASS tsparse-catches-broken-typescript
 PASS verify-fails-on-broken-typescript
+PASS prompt-file-exists-and-is-complete
+PASS prompt-names-only-tools-that-exist
+PASS prompt-states-the-real-limits
+PASS prompt-covers-the-detected-failures
+PASS cli-prompt-prints-clean-copy
 PASS skills-catalog-has-triggers
 PASS skills-match-the-right-skill
 PASS skills-handles-shorthand
@@ -60,13 +65,7 @@ PASS english-only-code-enforced
 PASS memory-dedupe-saves-tokens
 PASS duplication-caught-offline
 PASS verify-fast-two-tier
-PASS stack-packs-cover-all
-[deep-era] CI gate created: .github/workflows/deep-era.yml
-Every push/PR will now run: deep-era check
-PASS ci-gate-generator
-PASS sarif-output-valid
-PASS dep-blocklist-critical
-PASS sinks-
+PASS stack-packs-cover-al
 ```
 
 ## 2. Security findings (0)
@@ -108,16 +107,17 @@ None. Clean.
 - AGENTS.md (doc, 5191b)
 - ARCHITECTURE.md (doc, 2246b)
 - BENCH.md (doc, 6539b)
-- bin/cli.js (code-js, 34127b)
+- bin/cli.js (code-js, 35720b)
 - DEMO.md (doc, 1451b)
-- ERROR-REPORT.md (doc, 4584b)
+- ERROR-REPORT.md (doc, 4662b)
 - install.ps1 (other, 690b)
 - install.sh (other, 631b)
 - LICENSE (other, 73b)
 - llms.txt (other, 2184b)
-- mcp/server.js (code-js, 17829b)
-- package.json (config, 1208b)
-- README.md (doc, 25910b)
+- mcp/server.js (code-js, 18083b)
+- package.json (config, 1225b)
+- PROMPT.md (doc, 9072b)
+- README.md (doc, 25303b)
 - SECURITY.md (doc, 1305b)
 - src/browser.js (code-js, 1970b)
 - src/ci.js (code-js, 1874b)
@@ -128,12 +128,12 @@ None. Clean.
 - src/demo.js (code-js, 2506b)
 - src/deps.js (code-js, 9377b)
 - src/docker.js (code-js, 4522b)
-- src/doctor.js (code-js, 6145b)
+- src/doctor.js (code-js, 6513b)
 - src/fix.js (code-js, 1701b)
 - src/global.js (code-js, 3199b)
 - src/graph.js (code-js, 2971b)
 - src/guard.js (code-js, 14306b)
-- src/guardian.js (code-js, 3400b)
+- src/guardian.js (code-js, 6432b)
 - src/guidance.js (code-js, 15893b)
 - src/hook.js (code-js, 1826b)
 - src/hunt.js (code-js, 2737b)
@@ -142,11 +142,10 @@ None. Clean.
 - src/logger.js (code-js, 886b)
 - src/map.js (code-js, 7924b)
 - src/memory.js (code-js, 12398b)
-- src/memorybank.js (code-js, 5838b)
 
 ## 4. Fix order for the AI
 All clean. Nothing to fix.
 
 ## 5. Progress vs last run
-Fixed since last run (1): secret-assign@tests/run.js
+Fixed since last run (2): passwd-assign@src/guardian.js, todo-fixme@src/guardian.js
 Newly broken (0): —

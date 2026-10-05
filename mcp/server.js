@@ -53,7 +53,7 @@ async function runMcp() {
       const { id, method, params } = msg;
       try {
         if (method === "initialize") {
-          reply(id, { protocolVersion: "2024-11-05", capabilities: { tools: {} }, serverInfo: { name: "deep-era", version: "0.52.0" } });
+          reply(id, { protocolVersion: "2024-11-05", capabilities: { tools: {} }, serverInfo: { name: "deep-era", version: "0.53.0" } });
         } else if (method === "notifications/initialized") {
         } else if (method === "tools/list") {
           reply(id, { tools: TOOLS });
@@ -125,7 +125,8 @@ async function runMcp() {
           } else if (name === "security_check") {
             let map = readJson(cwd, "map.json", null);
             if (!map) map = buildMap(cwd);
-            const findings = securityScan(cwd, map.files);
+            const { scanSecretsFor, mergeSecretFindings } = require("../src/guardian");
+            const findings = mergeSecretFindings(securityScan(cwd, map.files), scanSecretsFor(cwd));
             logStep(cwd, `security: ${findings.length} findings`);
             reply(id, { content: [{ type: "text", text: findings.length ? JSON.stringify(findings, null, 2).slice(0, 8000) : "Clean. No secrets or dangers found." }] });
           } else if (name === "snapshot") {
@@ -145,7 +146,8 @@ async function runMcp() {
           } else if (name === "review_changes") {
             const { buildMap: bm2 } = require("../src/map");
             const { verifyProject: vp2 } = require("../src/verify");
-            const { securityScan: ss2 } = require("../src/security");
+                const { securityScan: ss2 } = require("../src/security");
+              const { scanSecretsFor: ssf2, mergeSecretFindings: msf2 } = require("../src/guardian");
               const { guardScan: gs2 } = require("../src/guard");
               const { semanticScan: ss3 } = require("../src/semantics");
               const { changedFiles } = require("../src/review");
@@ -159,7 +161,7 @@ async function runMcp() {
                 if (!map2) map2 = bm2(cwd);
                 const names2 = new Set(changed);
                 const res = vp2(cwd, { ...map2, files: map2.files.filter((f) => names2.has(f.file)) });
-                const findings = [...ss2(cwd, map2.files), ...gs2(cwd, map2.files), ...ss3(cwd, map2.files)].filter((x) => names2.has(x.file));
+                const findings = [...msf2(ss2(cwd, map2.files), ssf2(cwd)), ...gs2(cwd, map2.files), ...ss3(cwd, map2.files)].filter((x) => names2.has(x.file));
               logStep(cwd, `review: ${changed.length} files, ${findings.length} findings`);
               reply(id, { content: [{ type: "text", text: JSON.stringify({ changed, verify: res, findings }, null, 2).slice(0, 8000) }] });
             }

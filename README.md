@@ -1,4 +1,4 @@
-# AI Deep Era v0.52.0 — give the blind AI developer eyes
+# AI Deep Era v0.53.0 — give the blind AI developer eyes
 
 > ## Paste this into your AI agent
 > ```
@@ -15,7 +15,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/Node-%3E%3D18-blue.svg)](package.json)
-[![Tests](https://img.shields.io/badge/Tests-139%20passing-brightgreen.svg)](tests/run.js)
+[![Tests](https://img.shields.io/badge/Tests-144%20passing-brightgreen.svg)](tests/run.js)
 [![No deps](https://img.shields.io/badge/Dependencies-0-orange.svg)](package.json)
 [![Skills](https://img.shields.io/badge/Skills-410%20vault-blue.svg)](.agents/skills/)
 [![MCP](https://img.shields.io/badge/MCP-19%20tools-purple.svg)](mcp/server.js)
@@ -441,8 +441,8 @@ silent — a clean bill of health from any tool, including this one, deserves su
 ## Demo
 `DEMO.md` — 5-minute video script. Or run `deep-era demo` and watch 4 traps get caught.
 
-## Self-proof (v0.52.0, just ran)
-- `npm test` → 92 unit + 28 CLI + 12 MCP + 7 superpowers = **139 green (100% PASS)**
+## Self-proof (v0.53.0, just ran)
+- `npm test` → 95 unit + 30 CLI + 12 MCP + 7 superpowers = **144 green (100% PASS)**
 - `deep-era start` on a real 7-file Express app → **10 findings, all verified correct**, in one command
 - Encryption: AES-256-GCM, 7/7 proof tests (wrong key refuses, tampering detected, no plaintext leak)
 - Encryption perf: 1.24 ms/record after the salt fix, down from 155 ms (125x faster, 70 s → 0.55 s)

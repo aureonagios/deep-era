@@ -65,7 +65,11 @@ function entropyScan(txt, file, findings) {
 
 function securityScan(cwd, files) {
   const findings = [];
-  const SELF = new Set(["src/security.js", ".deep-era/RULES.md", "AGENTS.md"]);
+  // Scanner sources contain their own patterns as literals (security.js holds the
+  // passwd-assign regex, guardian.js holds TODO|FIXME inside its placeholder regex
+  // plus password="..." in its docs). Scanning them as suspect code is a guaranteed
+  // false positive, so they are exempt — same rationale as tests/fixtures below.
+  const SELF = new Set(["src/security.js", "src/guardian.js", ".deep-era/RULES.md", "AGENTS.md"]);
   for (const f of files.slice(0, 300)) {
     if (SELF.has(f.file)) continue;
     if (f.file.startsWith("tests/fixtures/")) continue; // intentional demo bugs — out of real scan

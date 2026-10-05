@@ -1,4 +1,4 @@
-# AI Deep Era v0.49 — Agent Rules (AUTO-INSTALLED, DO NOT SKIP)
+# AI Deep Era v0.53 — Agent Rules (AUTO-INSTALLED, DO NOT SKIP)
 
 You are NOT a blind developer. Any project, any language/framework (JS/TS/Python/Go/Rust/Java/PHP/Ruby/Dart/C#/Swift) — same rules. ZERO mistakes leave without verification.
 
@@ -52,7 +52,7 @@ FORBIDDEN (every project, every language):
 These rules are identical for Cursor, Copilot, Antigravity, Windsurf, OpenCode, Claude Code. No frontend needed.
 
 Stack: node
-Files: 99
+Files: 101
 
 ## Stack pack: node
 - [ ] No console.log secrets

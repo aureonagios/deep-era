@@ -14,6 +14,22 @@ const SECRET_PATTERNS = [
   { rule: "generic-secret-assign", name: "Hardcoded Credential Assignment", regex: /(api_key|apiKey|secret_key|secretKey|password|auth_token)\s*[:=]\s*["'][A-Za-z0-9_\-+/]{16,}["']/gi, sev: "high" }
 ];
 
+// Placeholder values are documentation, not leaks. SECRET_KEY="your-secret-key-here"
+// in a README or a scaffold is the opposite of a leak — but a scanner that flags it
+// trains everyone to ignore the scanner, which is how the real key in the next file
+// gets missed. So obvious placeholders are skipped, loudly documented here, and pinned
+// by tests in both directions.
+//
+// Conservative by design: only values that cannot possibly be real credentials are
+// skipped (words like your-/example/changeme, bracket/template markers, star runs).
+// A weak-but-real value like password="test123456" is still flagged — doubting a real
+// secret is worse than flagging a weak one.
+const PLACEHOLDER_RE = /your[-_]?|example|sample|placeholder|changeme|changethis|xxx+|\*\*\*|[<>]|\$\{|TODO|FIXME|dummy|fake|redacted|replace[-_ ]?(me|this|with)|insert[-_ ]|your[-_ ]key|here\b|my[-_]?domain|localhost/i;
+
+function isPlaceholder(snippet) {
+  return PLACEHOLDER_RE.test(snippet);
+}
+
 function shannonEntropy(str) {
   if (!str || str.length === 0) return 0;
   const freqs = {};
@@ -40,6 +56,7 @@ function scanFileSecrets(filePath, relPath = filePath) {
         p.regex.lastIndex = 0;
         let match;
         while ((match = p.regex.exec(line)) !== null) {
+          if (isPlaceholder(match[0])) continue; // documented example, not a leak
           findings.push({
             file: relPath.replace(/\\/g, "/"),
             line: i + 1,
@@ -80,9 +97,65 @@ function scanDirectorySecrets(dir = process.cwd(), excludePatterns = ["node_modu
   return results;
 }
 
+// Secret families shared with security.js. Both engines detect the same leaks with
+// slightly different rule names (github-pat vs github-token), so merging raw lists
+// would report one leaked key twice. The family key collapses those; engine-specific
+// rules (google-api-key, stripe-secret, slack-token, entropy-secret) pass through.
+function secretFamily(rule) {
+  const r = String(rule || "").toLowerCase();
+  if (/aws/.test(r)) return "aws";
+  if (/github|ghp/.test(r)) return "github";
+  if (/openai|^sk-|api[-_]?key/.test(r)) return "openai";
+  if (/private[-_]?key/.test(r)) return "privatekey";
+  if (/secret|passwd|password|token|credential/.test(r)) return "secret";
+  return "other:" + r;
+}
+
+// Merge guardian findings into an existing finding list. Same file+line+family means
+// both engines saw the same leak — keep the HIGHEST severity report, not the first.
+// (First-wins dropped a critical stripe-secret once because a medium entropy note sat
+// on the same line. The specific, severe report must survive; the vague one goes.)
+const SEV_RANK = { critical: 4, high: 3, medium: 2, low: 1 };
+function mergeSecretFindings(base, extra) {
+  const best = new Map();
+  for (const f of [...(base || []), ...(extra || [])]) {
+    const key = `${f.file}:${f.line || 0}:${secretFamily(f.rule)}`;
+    const cur = best.get(key);
+    if (!cur || (SEV_RANK[f.sev] || 0) > (SEV_RANK[cur.sev] || 0)) best.set(key, f);
+  }
+  // Stable order: base order first, then extras in scan order.
+  const order = new Map();
+  [...(base || []), ...(extra || [])].forEach((f, i) => {
+    const key = `${f.file}:${f.line || 0}:${secretFamily(f.rule)}`;
+    if (!order.has(key)) order.set(key, i);
+  });
+  return [...best.entries()].sort((a, b) => order.get(a[0]) - order.get(b[0])).map(([, f]) => f);
+}
+
+// Normalized scan for pipeline use (doctor/review/MCP): same findings as
+// scanDirectorySecrets, shaped like every other engine ({file, line, rule, sev, msg}).
+// Skips tests/fixtures like security.js does — fixtures hold deliberately broken input
+// for the scanners to practice on, and auditing them as real code would cry wolf.
+function scanSecretsFor(cwd) {
+  return scanDirectorySecrets(cwd)
+    .filter((f) => !f.file.startsWith("tests/fixtures/"))
+    .map((f) => ({
+    file: f.file,
+    line: f.line,
+    col: f.col,
+    rule: f.rule,
+    sev: f.sev,
+    msg: `${f.name} — ${String(f.snippet || "").slice(0, 80)}`
+  }));
+}
+
 module.exports = {
   SECRET_PATTERNS,
   shannonEntropy,
+  isPlaceholder,
+  secretFamily,
+  mergeSecretFindings,
+  scanSecretsFor,
   scanFileSecrets,
   scanDirectorySecrets
 };

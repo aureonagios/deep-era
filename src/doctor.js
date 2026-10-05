@@ -3,6 +3,7 @@ const path = require("path");
 const { buildMap } = require("./map");
 const { verifyProject } = require("./verify");
 const { securityScan } = require("./security");
+const { scanSecretsFor, mergeSecretFindings } = require("./guardian");
 const { guardScan } = require("./guard");
 const { auditDeps, auditOsv, auditLicenses } = require("./deps");
 const { auditLinks } = require("./links");
@@ -17,7 +18,10 @@ async function runDoctor(cwd) {
   writeJson(cwd, "map.json", map);
 
   const verify = verifyProject(cwd, map);
-  const security = securityScan(cwd, map.files);
+  // Two secret engines, one list: security.js (CWE-tagged patterns) plus guardian.js
+  // (entropy + provider-specific tokens + line/col). Same-family duplicates on the
+  // same file+line collapse to one — reporting one leaked key twice is noise.
+  const security = mergeSecretFindings(securityScan(cwd, map.files), scanSecretsFor(cwd));
   const guard = guardScan(cwd, map.files);
   const semantic = semanticScan(cwd, map.files);
   const slop = slopScan(cwd, map.files);
