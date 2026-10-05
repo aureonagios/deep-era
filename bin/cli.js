@@ -9,7 +9,7 @@ const targetDir = process.argv[3] && !process.argv[3].startsWith("-") ? path.res
 async function main() {
   if (!cmd || cmd === "help" || cmd === "--help" || cmd === "-h") {
     console.log(`
-AI Deep Era v0.53.0 - give the blind AI developer eyes (no frontend, proof in your IDE)
+AI Deep Era v0.54.0 - give the blind AI developer eyes (no frontend, proof in your IDE)
 
 START HERE:
   npx deep-era start             Install, wire up, and audit this project in ONE command.
@@ -23,6 +23,7 @@ Usage:
   deep-era guide "<task>"        PRE-FLIGHT: where to work, what not to touch, locked decisions
   deep-era onboard               One shot: init + setup-ide + CI + skill
   deep-era global                Machine setup: wire MCP into 6 IDEs + skill, once per PC
+  deep-era ide [name]            ONE command: detect IDEs, wire MCP into project, print end-to-end brief
   deep-era init [dir]            Install into a project (map + AGENTS.md + rules)
   deep-era doctor [dir]          Full scan + tests + guard + deps + ERROR-REPORT.md
   deep-era check                 1-COMMAND AUDIT: tests+security+guard+deps in 30s
@@ -58,7 +59,7 @@ Usage:
   deep-era links               Check all URLs in docs/code (online best-effort)
   deep-era browser             Playwright MCP bridge for browser-driven verify
   deep-era sbom                CycloneDX SBOM of direct deps (.deep-era/sbom.json)
-  deep-era update              Check npm registry for a newer deep-era (best-effort)
+  deep-era update [--apply]    Check github:aureonagios/deep-era for a newer release (--apply installs it)
   deep-era serve               Run the project, probe it, observe, shut down
   deep-era fetch <url>         Fetch a docs URL to text (stdlib, capped)
   deep-era research <query>    Instant-answer research (best-effort, honest)
@@ -120,6 +121,15 @@ Usage:
     [...g, ...s, ...d, ...li].slice(0, 12).forEach((x) => console.log(`  ! [${x.sev}] ${x.file}: ${x.msg}`));
     if (vf || bad) { console.log(`RESULT: FAIL — do not accept the AI's work. Open ERROR-REPORT.md.`); process.exitCode = 1; }
     else console.log(`RESULT: PASS — work is clean.`);
+    // Staleness notice: cache-only here, so the gate never touches the network.
+    // (Live refresh happens in `start` and `update`.) Skipped for machine output.
+    if (!process.argv.includes("--hook-mode")) {
+      try {
+        const { stalenessNotice } = require("../src/selfupdate");
+        const note = await stalenessNotice(undefined, 0, true);
+        if (note) console.log(`[deep-era] ${note}`);
+      } catch {}
+    }
     return;
   }
   if (cmd === "fix") {
@@ -340,6 +350,16 @@ Usage:
     runGlobal();
     return;
   }
+  if (cmd === "ide") {
+    // ONE command: detect installed IDEs, wire MCP into the project, print the
+    // end-to-end brief. `deep-era ide [name]` narrows to one client.
+    // Operates on the current project (like guide/context), not targetDir — the
+    // first argument is the IDE name, so it must not be mistaken for a path.
+    const { runIde } = require("../src/ide");
+    const name = process.argv[3] && !process.argv[3].startsWith("-") ? process.argv[3] : null;
+    runIde(process.cwd(), { name });
+    return;
+  }
   if (cmd === "prompt") {
     // The one paste that turns a generic agent into one that routes, remembers,
     // verifies and refuses. Printed rather than hidden in a file so it can be piped
@@ -431,6 +451,11 @@ Usage:
     console.log('  deep-era guide "<what you are about to build>"   tell your agent where to work');
     console.log("  deep-era check                                one-command audit from now on");
     console.log("  deep-era doctor                               full report with fixes");
+    try {
+      const { stalenessNotice } = require("../src/selfupdate");
+      const note = await stalenessNotice();
+      if (note) console.log(`[deep-era] ${note}`);
+    } catch {}
     return;
   }
   if (cmd === "onboard") {
@@ -487,24 +512,11 @@ Usage:
     return;
   }
   if (cmd === "update") {
-    const https = require("https");
-    const { version } = require("../package.json");
-    console.log(`[deep-era] installed: ${version}. Checking registry...`);
-    const req = https.get("https://registry.npmjs.org/deep-era/latest", { timeout: 12000 }, (res) => {
-      let body = "";
-      res.on("data", (c) => { body += c; });
-      res.on("end", () => {
-        try {
-          const latest = JSON.parse(body).version;
-          if (latest === version) console.log(`[deep-era] up to date (${version}).`);
-          else console.log(`[deep-era] update available: ${version} -> ${latest}. Run: npm i -g deep-era@latest`);
-        } catch {
-          console.log(`[deep-era] registry unreadable (offline?) — staying on ${version}.`);
-        }
-      });
-    });
-    req.on("timeout", () => { req.destroy(); console.log(`[deep-era] registry timeout (offline?) — staying on ${version}.`); });
-    req.on("error", (e) => console.log(`[deep-era] registry unreachable (${e.code || "offline"}) — staying on ${version}.`));
+    // Source of truth is the GitHub repo (the package was never published to npm,
+    // so the old registry check 404'd forever). Default = check and report.
+    // --apply = reinstall the global package. Nothing installs silently, ever.
+    const { runUpdate } = require("../src/selfupdate");
+    await runUpdate({ apply: process.argv.includes("--apply") });
     return;
   }
   if (cmd === "sbom") {

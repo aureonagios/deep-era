@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-10-05T17:16:24.537Z",
+  "generatedAt": "2026-10-05T18:12:34.363Z",
   "stack": {
     "kind": "node",
     "run": null,
@@ -8,7 +8,7 @@
     "test": "npm test"
   },
   "counts": {
-    "total": 101,
+    "total": 104,
     "truncated": false
   },
   "files": [
@@ -120,7 +120,7 @@
     {
       "file": "bin/cli.js",
       "role": "code-js",
-      "size": 35720,
+      "size": 36326,
       "imports": [
         "src/init.js",
         "src/doctor.js",
@@ -132,6 +132,7 @@
         "src/logger.js",
         "src/links.js",
         "src/spend.js",
+        "src/selfupdate.js",
         "src/fix.js",
         "src/setupIde.js",
         "src/context.js",
@@ -140,9 +141,15 @@
         "src/graph.js",
         "src/timeline.js",
         "src/snapshot.js",
-        "src/review.js",
-        "src/receipt.js"
+        "src/review.js"
       ],
+      "importedBy": []
+    },
+    {
+      "file": "CHANGELOG.md",
+      "role": "doc",
+      "size": 14518,
+      "imports": [],
       "importedBy": []
     },
     {
@@ -217,25 +224,26 @@
     {
       "file": "package.json",
       "role": "config",
-      "size": 1225,
+      "size": 1245,
       "imports": [],
       "importedBy": [
         "src/sarif.js",
         "src/sbom.js",
+        "src/selfupdate.js",
         "tests/run.js"
       ]
     },
     {
       "file": "PROMPT.md",
       "role": "doc",
-      "size": 9072,
+      "size": 9114,
       "imports": [],
       "importedBy": []
     },
     {
       "file": "README.md",
       "role": "doc",
-      "size": 25303,
+      "size": 13780,
       "imports": [],
       "importedBy": []
     },
@@ -475,6 +483,16 @@
       ]
     },
     {
+      "file": "src/ide.js",
+      "role": "code-js",
+      "size": 12571,
+      "imports": [
+        "src/map.js",
+        "src/setupIde.js"
+      ],
+      "importedBy": []
+    },
+    {
       "file": "src/init.js",
       "role": "code-js",
       "size": 6321,
@@ -528,6 +546,7 @@
         "src/fix.js",
         "src/graph.js",
         "src/guard.js",
+        "src/ide.js",
         "src/init.js",
         "src/receipt.js",
         "src/review.js",
@@ -599,9 +618,7 @@
         "src/snapshot.js",
         "src/memory.js"
       ],
-      "importedBy": [
-        "bin/cli.js"
-      ]
+      "importedBy": []
     },
     {
       "file": "src/review.js",
@@ -660,6 +677,17 @@
       ]
     },
     {
+      "file": "src/selfupdate.js",
+      "role": "code-js",
+      "size": 5716,
+      "imports": [
+        "package.json"
+      ],
+      "importedBy": [
+        "bin/cli.js"
+      ]
+    },
+    {
       "file": "src/semantics.js",
       "role": "code-js",
       "size": 22660,
@@ -686,7 +714,8 @@
       "size": 8662,
       "imports": [],
       "importedBy": [
-        "bin/cli.js"
+        "bin/cli.js",
+        "src/ide.js"
       ]
     },
     {
@@ -798,14 +827,14 @@
     {
       "file": "TEST-REPORT.md",
       "role": "doc",
-      "size": 4830,
+      "size": 5105,
       "imports": [],
       "importedBy": []
     },
     {
       "file": "tests/cli.js",
       "role": "code-js",
-      "size": 15415,
+      "size": 16867,
       "imports": [
         "tests/lib/report.js",
         "src/global.js",
@@ -979,7 +1008,7 @@
     {
       "file": "tests/run.js",
       "role": "code-js",
-      "size": 57393,
+      "size": 62765,
       "imports": [
         "src/map.js",
         "src/security.js",

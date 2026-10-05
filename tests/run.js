@@ -1116,6 +1116,92 @@ ok("stack-detection", () => {
   }
 });
 
+ok("selfupdate-compare-versions", () => {
+  const { compareVersions } = require("../src/selfupdate");
+  // 0.9.0 < 0.10.0 is the classic trap string comparison falls into.
+  const cases = [
+    ["0.9.0", "0.10.0", -1], ["0.10.0", "0.9.0", 1], ["0.53.0", "0.53.0", 0],
+    ["1.0.0", "0.99.99", 1], ["0.53", "0.53.0", 0], ["2.0", "10.0", -1],
+  ];
+  for (const [a, b, want] of cases) {
+    assert(compareVersions(a, b) === want, `compareVersions(${a}, ${b}) !== ${want}`);
+  }
+});
+
+ok("selfupdate-cache-roundtrip", () => {
+  const { writeCache, readCache } = require("../src/selfupdate");
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-home-"));
+  assert(readCache(home) === null, "empty cache should read null");
+  writeCache(home, "0.99.0");
+  const c = readCache(home);
+  assert(c && c.latest === "0.99.0" && c.checkedAt, "cache roundtrip broke");
+});
+
+ok("selfupdate-staleness-notice", async () => {
+  const { writeCache, stalenessNotice, currentVersion } = require("../src/selfupdate");
+  const cur = currentVersion();
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-home-"));
+  // Same version cached fresh: silence.
+  writeCache(home, cur);
+  assert(await stalenessNotice(home, 0, true) === null, "up-to-date install should be silent");
+  // Newer version cached fresh: one-line notice naming both versions.
+  writeCache(home, "99.0.0");
+  const note = await stalenessNotice(home, 0, true);
+  assert(note && note.includes(cur) && note.includes("99.0.0") && note.includes("deep-era update"), `bad notice: ${note}`);
+  // No cache + cache-only (offline gate path): silence, never network.
+  const empty = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-home-"));
+  assert(await stalenessNotice(empty, 0, true) === null, "missing cache should stay silent offline");
+});
+
+ok("selfupdate-apply-command-shape", () => {
+  const { buildApplyCommand } = require("../src/selfupdate");
+  const { cmd, args } = buildApplyCommand();
+  assert(cmd === "npm", "apply must go through npm");
+  assert(args.includes("-g") && args.some((a) => a.includes("aureonagios/deep-era")), `apply points at wrong source: ${args.join(" ")}`);
+  assert(!args.some((a) => a.includes("registry.npmjs.org")), "apply must not use the npm registry (package was never published there)");
+});
+
+ok("ide-detects-from-disk-markers", () => {
+  const { detectInstalledIdes } = require("../src/ide");
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-home-"));
+  fs.mkdirSync(path.join(home, ".cursor"));
+  fs.mkdirSync(path.join(home, ".vscode"));
+  const found = detectInstalledIdes(home);
+  const ids = found.map((f) => f.id);
+  assert(ids.includes("cursor"), "planted .cursor marker missed");
+  assert(ids.includes("vscode"), "planted .vscode marker missed");
+  // Every detection must carry its evidence — "detected" without proof is a guess.
+  for (const f of found) assert(f.evidence && f.evidence.length > 0, `${f.id} has no evidence`);
+});
+
+ok("ide-wire-creates-and-merges", () => {
+  const { runIde } = require("../src/ide");
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-home-"));
+  fs.mkdirSync(path.join(home, ".cursor"));
+  fs.mkdirSync(path.join(home, ".vscode"));
+  const proj = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-proj-"));
+  fs.writeFileSync(path.join(proj, "package.json"), "{}");
+  // Pre-existing vscode config with another server: must merge, never overwrite.
+  fs.mkdirSync(path.join(proj, ".vscode"), { recursive: true });
+  fs.writeFileSync(path.join(proj, ".vscode", "mcp.json"), JSON.stringify({ servers: { other: { command: "x" } } }));
+  const r = runIde(proj, { homeDir: home });
+  const cursorCfg = JSON.parse(fs.readFileSync(path.join(proj, ".cursor", "mcp.json"), "utf8"));
+  assert(cursorCfg.mcpServers && cursorCfg.mcpServers["deep-era"], "cursor config not created");
+  const vsCfg = JSON.parse(fs.readFileSync(path.join(proj, ".vscode", "mcp.json"), "utf8"));
+  assert(vsCfg.servers["deep-era"] && vsCfg.servers.other, "vscode config not merged (other server lost!)");
+  assert(fs.existsSync(path.join(proj, ".vscode", "mcp.json.deep-era.bak")), "no backup before merge");
+  assert(r.brief && r.brief.stack === "node", "brief missing project facts");
+});
+
+ok("ide-unknown-name-says-so", () => {
+  const { runIde } = require("../src/ide");
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-home-"));
+  const proj = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-proj-"));
+  const r = runIde(proj, { homeDir: home, name: "nosuchide" });
+  assert(r.manual.length === 1 && /no install markers found/i.test(r.manual[0].step), "unknown IDE name did not say so honestly");
+  assert(r.wired.length === 0, "wired something for an unknown IDE?!");
+});
+
 ok("test-report-written", async () => {
   await finish();
   const { readReport } = require("./lib/report");

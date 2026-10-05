@@ -317,6 +317,28 @@ ok("cli-setup-ide-writes-configs", () => {
   assert(fs.existsSync(path.join(tmp, ".deep-era", "ide", ".vscode", "mcp.json")), "no vscode config");
 });
 
+ok("cli-ide-detects-wires-briefs", () => {
+  // Fake HOME so the test never touches the real machine's IDE configs.
+  const { execFileSync } = require("child_process");
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-home-"));
+  fs.mkdirSync(path.join(home, ".cursor"));
+  const tmp = sandbox({ "package.json": "{}" });
+  const out = execFileSync(process.execPath, [CLI, "ide"], {
+    cwd: tmp, timeout: 120000,
+    env: { ...process.env, DEEP_ERA_HOME: home },
+  }).toString();
+  assert(out.includes("detected") && out.includes("Cursor"), `ide detection broke: ${out.slice(0, 300)}`);
+  assert(fs.existsSync(path.join(tmp, ".cursor", "mcp.json")), "cursor project config not written");
+  assert(out.includes("AGENT BRIEF"), "end-to-end brief missing");
+  assert(out.includes("deep-era prompt --raw"), "brief does not point at the paste");
+  // Unknown name: honest refusal, nothing written.
+  const out2 = execFileSync(process.execPath, [CLI, "ide", "nosuchide"], {
+    cwd: tmp, timeout: 120000,
+    env: { ...process.env, DEEP_ERA_HOME: home },
+  }).toString();
+  assert(/not detected/i.test(out2), `unknown IDE not refused honestly: ${out2.slice(0, 200)}`);
+});
+
 ok("cli-suite-reported", async () => {
   await finish();
   const { readReport } = require("./lib/report");

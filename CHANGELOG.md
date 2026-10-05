@@ -3,6 +3,17 @@
 > The README shows only the latest version. Everything else lives here, newest first.
 > Older than this file: `git log --oneline`.
 
+## v0.53: secret scanning runs everywhere, placeholders stop crying wolf
+
+`guardian.js` (entropy scan, provider tokens, exact `line:col`) used to live behind one
+standalone command. `check`, `doctor`, `review`, and the MCP `security_check` /
+`review_changes` tools never ran it, so the platform's own best secret scanner was
+invisible to its own audit. Now merged into all four, with same-family dedup that
+keeps the highest-severity report instead of the first one found.
+
+And `SECRET_KEY="your-secret-key-here"` no longer flags. Weak-but-real values still
+flag. Both directions pinned by tests.
+
 ## v0.52: the prompt is the product, and 410 skills finally get used
 
 `deep-era prompt` prints the one paste that makes any agent route, remember,
