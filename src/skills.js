@@ -4,6 +4,10 @@ const fs = require("fs");
 const path = require("path");
 
 function findCatalogPath(cwd = process.cwd()) {
+  // Static vault catalogs only. The per-project catalog
+  // (<cwd>/.deep-era/skills/catalog.json) is handled separately in getCatalog,
+  // which merges it OVER these — keeping it here too would make getCatalog read
+  // the same file twice and, worse, mistake it for the fallback.
   const candidates = [
     path.join(cwd, ".agents", "catalog.json"),
     path.join(__dirname, "..", ".agents", "catalog.json"),
@@ -18,20 +22,49 @@ function findCatalogPath(cwd = process.cwd()) {
 }
 
 let cachedCatalog = null;
+let cachedCatalogKey = "";
 
-function getCatalog(cwd = process.cwd()) {
-  if (cachedCatalog) return cachedCatalog;
-  const p = findCatalogPath(cwd);
-  if (!p) {
-    return { total: 0, skills: [] };
-  }
+function clearCatalogCache() {
+  // The MCP server is long-lived and tests share one process: a reindex (or a
+  // switch of project) must never keep serving yesterday's catalog.
+  cachedCatalog = null;
+  cachedCatalogKey = "";
+}
+
+function readCatalogFile(p) {
   try {
-    const raw = fs.readFileSync(p, "utf8");
-    cachedCatalog = JSON.parse(raw);
-    return cachedCatalog;
+    const c = JSON.parse(fs.readFileSync(p, "utf8"));
+    return Array.isArray(c.skills) ? c : { total: 0, skills: [] };
   } catch {
     return { total: 0, skills: [] };
   }
+}
+
+function getCatalog(cwd = process.cwd()) {
+  // Project-installed skills (reindexed by `skills --reindex`) merge OVER the static
+  // vault catalogs: user intent wins on id collision, everything stays searchable.
+  // Before this, installing a skill never made it findable — the catalogs no code
+  // wrote were the only ones read.
+  const key = String(cwd);
+  if (cachedCatalog && cachedCatalogKey === key) return cachedCatalog;
+  const seen = new Set();
+  const skills = [];
+  const projectCatalog = path.join(cwd, ".deep-era", "skills", "catalog.json");
+  const fallback = findCatalogPath(cwd);
+  const sources = [projectCatalog];
+  if (fallback) sources.push(fallback);
+  for (const base of sources) {
+    if (!fs.existsSync(base)) continue;
+    for (const s of readCatalogFile(base).skills) {
+      const id = String(s.id || s.name || "");
+      if (!id || seen.has(id)) continue;
+      seen.add(id);
+      skills.push(s);
+    }
+  }
+  cachedCatalog = { total: skills.length, skills };
+  cachedCatalogKey = key;
+  return cachedCatalog;
 }
 
 function searchSkills(query = "", limit = 10, cwd = process.cwd()) {
@@ -76,8 +109,10 @@ function getSkill(nameOrId, cwd = process.cwd()) {
   );
   if (!match) return null;
 
-  // Search for SKILL.md file
+  // Search for SKILL.md file. Project-installed skills (.deep-era/skills) come
+  // first: before this, `skill --add` copied files somewhere nothing ever read.
   const searchDirs = [
+    path.join(cwd, ".deep-era", "skills", match.id),
     path.join(cwd, ".agents", "skills", match.id),
     path.join(__dirname, "..", ".agents", "skills", match.id),
     path.join(process.env.USERPROFILE || process.env.HOME || "", ".gemini", "config", "skills", match.id),
@@ -236,6 +271,7 @@ function matchSkills(taskText, limit = 5, cwd = process.cwd()) {
 module.exports = {
   findCatalogPath,
   getCatalog,
+  clearCatalogCache,
   searchSkills,
   getSkill,
   listCategories,

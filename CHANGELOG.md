@@ -3,6 +3,25 @@
 > The README shows only the latest version. Everything else lives here, newest first.
 > Older than this file: `git log --oneline`.
 
+## v0.55: fewer false alarms, start sets up everything
+
+**The audit stopped crying wolf twice — and `start` is now truly one command.**
+
+Proven on a real project (2 High + 8 Medium in one scan): `rm -rf /var/lib/apt/lists/*`
+is standard Dockerfile hygiene, not danger — the old pattern matched any `rm -rf /...`
+and flagged it High. Now only bare root, home, `/*`, and unquoted variables match
+(14-case matrix pinned by tests). Same scan also proved `import ssl` is stdlib, so it
+joined the never-flag set.
+
+Also fixed in the same pass: a bare third-party import with zero manifests anywhere is
+no longer called "hallucinated" — it may simply be undeclared, so it gets its own
+honest low-severity rule (`unlisted-dependency`) instead of the accusation.
+
+And one command sets up everything by itself: `deep-era start` now wires detected
+IDEs into the project and points at the agent paste, `deep-era --version` answers the
+question every agent asks first, and the PROMPT carries install/setup/update steps so
+no one is told anything twice.
+
 ## v0.54: one-command IDE wiring + self-update that works
 
 `deep-era ide` detects which IDEs are actually installed (markers on disk, never

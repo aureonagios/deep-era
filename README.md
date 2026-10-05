@@ -1,4 +1,4 @@
-# AI Deep Era v0.55.0 — give the blind AI developer eyes
+# AI Deep Era v0.56.0 — give the blind AI developer eyes
 
 > ## Paste this into your AI agent
 > ```
@@ -80,30 +80,25 @@ The agent is told five things it cannot argue its way past:
 5. **Refuse.** Removing test coverage, skipping verification, hardcoding secrets: say no,
    say why in one sentence, offer the safe alternative. No flattery.
 
-## What v0.55 does (latest)
+## What v0.56 does (latest)
 
-**The audit stopped crying wolf twice — and `start` is now truly one command.**
+**Installed skills are finally discoverable — including whole collections.**
 
-Proven on a real project (2 High + 8 Medium in one scan): `rm -rf /var/lib/apt/lists/*`
-is standard Dockerfile hygiene, not danger — the old pattern matched any `rm -rf /...`
-and flagged it High. Now only bare root, home, `/*`, and unquoted variables match
-(14-case matrix pinned by tests). Same scan also proved `import ssl` is stdlib, so it
-joined the never-flag set.
+Until now, `skill --add` copied files somewhere nothing ever read: the matcher only
+read static catalogs that no code wrote, and single-skill validation rejected every
+multi-skill collection (the layout large public vaults use). So installing skills
+changed nothing observable.
 
-Also fixed in the same pass: a bare third-party import with zero manifests anywhere is
-no longer called "hallucinated" — it may simply be undeclared, so it gets its own
-honest low-severity rule (`unlisted-dependency`) instead of the accusation.
+Now `skill --add <git-url>` accepts single-skill repos AND `skills/` collections
+(validated per member, bad members reported not fatal), auto-reindexes, and the new
+indexer makes everything searchable: `match_skills`, `skills <query>`, and
+`guide_task` all see installed skills immediately. Proven against a real 818-skill
+vault: 818/818 install, indexed, matched by task, content readable.
 
-And one command sets up everything by itself: `deep-era start` now wires detected
-IDEs into the project and points at the agent paste, `deep-era --version` answers the
-question every agent asks first, and the PROMPT carries install/setup/update steps so
-no one is told anything twice:
-
-```
-If `deep-era --version` fails:  npm i -g github:aureonagios/deep-era
-If a newer release exists:      deep-era update --apply
-In the project, once:           deep-era start
-```
+Scope, stated plainly: deep-era only READS skill content to rank it — scripts inside
+skills are never listed, never executed. Installing a third-party collection is your
+explicit choice (some vaults are offensive security content); the agent's REFUSE
+rules still govern what gets used.
 
 Full history: [CHANGELOG.md](CHANGELOG.md)
 
@@ -187,7 +182,9 @@ silent — a clean bill of health from any tool, including this one, deserves su
 | `graph` | ARCHITECTURE.md from real imports (Mermaid) |
 | `timeline` | project history from logs (one screen) |
 | `skill <name>` | Render complete SKILL.md guide for any autonomous agent skill |
-| `skills [query]` | 410 skills vault search: semantic search, categories, triggers |
+| `skills [query]` | skills search: semantic search, categories, triggers (installed skills included) |
+| `skills --reindex` | rebuild the skills index from installed skills |
+| `skill --add <git-url>` | install a skill repo or a whole `skills/` collection (validated, auto-indexed) |
 | `ui [port]` | Live Autonomous Command Center & Web Dashboard (dual theme, mobile responsive) |
 | `hunt [port]` | Port hunter & socket conflict resolver (finds free port in 5ms) |
 | `guard` | Secret Guardian: high-entropy scanner, AWS/OpenAI/GitHub token leak detection |
@@ -218,12 +215,13 @@ silent — a clean bill of health from any tool, including this one, deserves su
 ## Demo
 `DEMO.md` — 5-minute video script. Or run `deep-era demo` and watch 4 traps get caught.
 
-## Self-proof (v0.55.0, just ran)
-- `npm test` → 105 unit + 33 CLI + 12 MCP + 7 superpowers = **157 green (100% PASS)**
+## Self-proof (v0.56.0, just ran)
+- `npm test` → 111 unit + 35 CLI + 12 MCP + 7 superpowers = **165 green (100% PASS)**
 - `deep-era start` on a real 7-file Express app → **10 findings, all verified correct**, in one command
 - Encryption: AES-256-GCM, 7/7 proof tests (wrong key refuses, tampering detected, no plaintext leak)
 - Encryption perf: 1.24 ms/record after the salt fix, down from 155 ms (125x faster, 70 s → 0.55 s)
 - Skill matching: 10/10 on this repo, and it refuses on unrelated input instead of guessing
+- Skill collections: real 818-skill vault installs 818/818, indexes, matches by task (nothing vendored, nothing executed)
 - `guide_task` now recommends skills; 3 new MCP tools bring the total to 19
 - SARIF: 10/10 results carry line numbers, so GitHub renders them inline on the PR diff
 - Slop engine: 4 rules, **0 false positives** on this repo, catches the over-engineering fixture
@@ -233,7 +231,7 @@ silent — a clean bill of health from any tool, including this one, deserves su
 - `npm publish --dry-run` → clean
 ## Looking for an alternative?
 
-- **SuperClaude / BMAD alternative** — same plan→verify loop, plus a 157-test suite, decision lock, and a 1-command audit. Zero framework to learn.
+- **SuperClaude / BMAD alternative** — same plan→verify loop, plus a 165-test suite, decision lock, and a 1-command audit. Zero framework to learn.
 - **CodeRabbit / Snyk alternative (offline)** — dep blocklist, OSV.dev CVEs, entropy secrets, SARIF output. No cloud, no per-seat bill.
 - **Semgrep / CodeQL alternative (offline)** — reads the code, not just the syntax: swallowed exceptions, floating promises, dead branches, and tests that cannot fail. Zero deps, milliseconds, no query language to learn.
 - **"Un-spaghettify" cost reducer** — finds the passthrough layers, dead code, and pointless indirection that make AI-written code expensive to own. Catches the complaint that syntax checkers structurally cannot.

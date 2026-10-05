@@ -9,7 +9,7 @@ const targetDir = process.argv[3] && !process.argv[3].startsWith("-") ? path.res
 async function main() {
   if (!cmd || cmd === "help" || cmd === "--help" || cmd === "-h") {
     console.log(`
-AI Deep Era v0.55.0 - give the blind AI developer eyes (no frontend, proof in your IDE)
+AI Deep Era v0.56.0 - give the blind AI developer eyes (no frontend, proof in your IDE)
 
 START HERE:
   npx deep-era start             Install, wire up, and audit this project in ONE command.
@@ -745,17 +745,29 @@ if (cmd === "perf") {
     return;
   }
   if (cmd === "skills") {
-    const { searchSkills, listCategories, getCatalog } = require("../src/skills");
+    const { searchSkills, listCategories, getCatalog, clearCatalogCache } = require("../src/skills");
     const q = process.argv.slice(3).join(" ");
+    if (process.argv.includes("--reindex")) {
+      clearCatalogCache();
+      const { reindexSkills } = require("../src/skillindex");
+      const r = reindexSkills(process.cwd());
+      console.log(`[deep-era skills] reindexed: ${r.indexed} skills -> ${r.catalogPath}`);
+      if (r.rejected.length) {
+        console.log(`  rejected ${r.rejected.length} (showing 5):`);
+        for (const x of r.rejected.slice(0, 5)) console.log(`  - ${x.dir}: ${x.error}`);
+      }
+      return;
+    }
     if (!q) {
       const cat = getCatalog(process.cwd());
       const categories = listCategories(process.cwd());
-      console.log(`[deep-era skills] 410 skills vault loaded (${cat.skills.length} available):`);
+      console.log(`[deep-era skills] ${cat.skills.length} skills indexed (${Object.keys(categories).length} categories):`);
       for (const [k, count] of Object.entries(categories)) {
         console.log(`  - ${k.padEnd(16)} : ${count} skills`);
       }
       console.log(`\nUsage: deep-era skills <query>   (e.g. deep-era skills docker)`);
       console.log(`       deep-era skill <name>     (e.g. deep-era skill tailwind-design-system)`);
+      console.log(`       deep-era skills --reindex (rebuild index from installed skills)`);
       return;
     }
     const results = searchSkills(q, 15, process.cwd());

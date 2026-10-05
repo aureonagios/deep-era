@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-10-05T18:58:34.371Z",
+  "generatedAt": "2026-10-05T19:50:54.666Z",
   "stack": {
     "kind": "node",
     "run": null,
@@ -8,7 +8,7 @@
     "test": "npm test"
   },
   "counts": {
-    "total": 104,
+    "total": 108,
     "truncated": false
   },
   "files": [
@@ -120,7 +120,7 @@
     {
       "file": "bin/cli.js",
       "role": "code-js",
-      "size": 37091,
+      "size": 37718,
       "imports": [
         "package.json",
         "src/init.js",
@@ -148,7 +148,7 @@
     {
       "file": "CHANGELOG.md",
       "role": "doc",
-      "size": 15281,
+      "size": 16327,
       "imports": [],
       "importedBy": []
     },
@@ -162,7 +162,7 @@
     {
       "file": "ERROR-REPORT.md",
       "role": "doc",
-      "size": 4515,
+      "size": 4547,
       "imports": [],
       "importedBy": []
     },
@@ -245,7 +245,7 @@
     {
       "file": "README.md",
       "role": "doc",
-      "size": 13917,
+      "size": 14107,
       "imports": [],
       "importedBy": []
     },
@@ -722,21 +722,36 @@
     {
       "file": "src/skill.js",
       "role": "code-js",
-      "size": 9781,
-      "imports": [],
+      "size": 12722,
+      "imports": [
+        "src/skillindex.js"
+      ],
       "importedBy": [
-        "src/global.js"
+        "src/global.js",
+        "tests/cli.js"
+      ]
+    },
+    {
+      "file": "src/skillindex.js",
+      "role": "code-js",
+      "size": 7518,
+      "imports": [
+        "src/skills.js"
+      ],
+      "importedBy": [
+        "src/skill.js"
       ]
     },
     {
       "file": "src/skills.js",
       "role": "code-js",
-      "size": 11244,
+      "size": 12909,
       "imports": [],
       "importedBy": [
         "mcp/server.js",
         "src/dashboard.js",
         "src/guidance.js",
+        "src/skillindex.js",
         "tests/run.js",
         "tests/superpowers.js"
       ]
@@ -828,19 +843,20 @@
     {
       "file": "TEST-REPORT.md",
       "role": "doc",
-      "size": 5277,
+      "size": 5580,
       "imports": [],
       "importedBy": []
     },
     {
       "file": "tests/cli.js",
       "role": "code-js",
-      "size": 18472,
+      "size": 21009,
       "imports": [
         "tests/lib/report.js",
         "src/global.js",
         "src/deps.js",
-        "package.json"
+        "package.json",
+        "src/skill.js"
       ],
       "importedBy": []
     },
@@ -950,6 +966,27 @@
       "importedBy": []
     },
     {
+      "file": "tests/fixtures/skills-collection/skills/alpha-cache-audit/SKILL.md",
+      "role": "doc",
+      "size": 214,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": "tests/fixtures/skills-collection/skills/beta-container-forensics/SKILL.md",
+      "role": "doc",
+      "size": 417,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": "tests/fixtures/skills-collection/skills/nofront-broken/SKILL.md",
+      "role": "doc",
+      "size": 77,
+      "imports": [],
+      "importedBy": []
+    },
+    {
       "file": "tests/fixtures/slop-bad/generated.js",
       "role": "code-js",
       "size": 1491,
@@ -987,7 +1024,7 @@
     {
       "file": "tests/perf-result.json",
       "role": "config",
-      "size": 936,
+      "size": 937,
       "imports": [],
       "importedBy": []
     },
@@ -1010,7 +1047,7 @@
     {
       "file": "tests/run.js",
       "role": "code-js",
-      "size": 65051,
+      "size": 71479,
       "imports": [
         "src/map.js",
         "src/security.js",

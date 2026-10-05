@@ -401,6 +401,103 @@ ok("mcp-skill-tools-are-exposed", () => {
   }
 });
 
+// --- skill collections: install + index + discover (the missing pipeline) --------
+
+ok("skillindex-parses-both-frontmatter-styles", () => {
+  const { parseSkillFrontmatter } = require("../src/skillindex");
+  const base = path.join(__dirname, "fixtures", "skills-collection", "skills");
+  const a = parseSkillFrontmatter(path.join(base, "alpha-cache-audit"));
+  assert(a.ok && a.entry.name === "alpha-cache-audit", "deep-era-style skill rejected");
+  assert(a.entry.triggers.length === 0, "expected no explicit triggers");
+  const b = parseSkillFrontmatter(path.join(base, "beta-container-forensics"));
+  assert(b.ok && b.entry.name === "beta-container-forensics", "cyber-style skill rejected");
+  assert(b.entry.category === "cybersecurity", `domain not mapped to category: ${b.entry.category}`);
+  assert(b.entry.tags.includes("docker"), "tags list not parsed");
+  assert(b.entry.description.includes("volumes"), "multiline description truncated");
+  // Both directions: invalid members fail loudly with reasons.
+  const broken = parseSkillFrontmatter(path.join(base, "empty-broken"));
+  assert(!broken.ok && broken.error, "skill dir without SKILL.md accepted");
+  const nofront = parseSkillFrontmatter(path.join(base, "nofront-broken"));
+  assert(!nofront.ok && nofront.error, "SKILL.md without frontmatter accepted");
+});
+
+ok("skillindex-normalizes-crlf", () => {
+  // Cloned repos vary (CRLF on Windows checkouts). The parser must not care.
+  const { parseSkillFrontmatter } = require("../src/skillindex");
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-skill-"));
+  const src = fs.readFileSync(path.join(__dirname, "fixtures", "skills-collection", "skills", "beta-container-forensics", "SKILL.md"), "utf8");
+  fs.writeFileSync(path.join(tmp, "SKILL.md"), src.replace(/\n/g, "\r\n"));
+  const r = parseSkillFrontmatter(tmp);
+  assert(r.ok && r.entry.name === "beta-container-forensics", `CRLF skill rejected: ${r.error || "?"}`);
+});
+
+ok("skillindex-derives-triggers", () => {
+  const { deriveTriggers } = require("../src/skillindex");
+  const t = deriveTriggers("beta-container-forensics", "Investigate compromised containers by analyzing images", ["forensics", "docker"]);
+  assert(t.includes("forensics") && t.includes("docker") && t.includes("compromised"), `weak triggers: ${t.join(",")}`);
+  assert(!t.some((w) => ["the", "by", "use", "for"].includes(w)), "stopwords leaked into triggers");
+  assert(t.length <= 24, "trigger list uncapped");
+});
+
+ok("skillindex-collection-install", () => {
+  const { installCollectionFromDir } = require("../src/skill");
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-skill-"));
+  const r = installCollectionFromDir(path.join(__dirname, "fixtures", "skills-collection"), path.join(tmp, "skills"));
+  const names = r.installed.map((x) => x.name);
+  assert(names.includes("alpha-cache-audit") && names.includes("beta-container-forensics"), `valid skills missing: ${names.join(",")}`);
+  assert(r.rejected.length === 2, `expected 2 rejects, got ${r.rejected.length}`);
+  assert(r.rejected.every((x) => x.dir && x.error), "rejects must carry dir + reason");
+  assert(!r.truncated, "small fixture wrongly reported truncated");
+  // Cap is a real valve, not decoration.
+  const tmp2 = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-skill-"));
+  const capped = installCollectionFromDir(path.join(__dirname, "fixtures", "skills-collection"), path.join(tmp2, "skills"), { max: 1 });
+  assert(capped.installed.length === 1 && capped.truncated === true, "max cap not enforced");
+  // Non-collections return null instead of throwing.
+  const plainDir = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-plain-"));
+  assert(installCollectionFromDir(plainDir, path.join(plainDir, "out")) === null, "plain dir misread as collection");
+});
+
+ok("skillindex-reindex-merges-and-discovers", () => {
+  const { installCollectionFromDir } = require("../src/skill");
+  const { reindexSkills } = require("../src/skillindex");
+  const { getCatalog, clearCatalogCache, matchSkills, getSkill } = require("../src/skills");
+  clearCatalogCache();
+  const proj = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-proj-"));
+  fs.writeFileSync(path.join(proj, "package.json"), "{}");
+  const ins = installCollectionFromDir(path.join(__dirname, "fixtures", "skills-collection"), path.join(proj, ".deep-era", "skills"));
+  assert(ins.installed.length === 2, "fixture install broke");
+  const r = reindexSkills(proj);
+  assert(r.indexed === 2, `expected 2 indexed, got ${r.indexed}`);
+  assert(fs.existsSync(path.join(proj, ".deep-era", "skills", "catalog.json")), "catalog not written");
+  // Installed skills are now discoverable by task and readable by id.
+  const m = matchSkills("investigate a compromised container", 5, proj);
+  assert(m.some((s) => s.id === "beta-container-forensics"), `new skill not matched: ${m.map((s) => s.id).join(",")}`);
+  const g = getSkill("beta-container-forensics", proj);
+  assert(g && g.content.includes("runtime logs"), "installed skill content unreadable");
+  // And the base catalog still merges underneath (union, not replacement).
+  const c = getCatalog(proj);
+  assert(c.skills.length > 100, "base catalog lost in merge");
+  clearCatalogCache();
+});
+
+ok("skillindex-cache-refreshes-on-reindex", () => {
+  // The MCP server is long-lived: a reindex in the same process must invalidate
+  // the catalog cache, or match_skills keeps answering from yesterday.
+  const { installCollectionFromDir } = require("../src/skill");
+  const { reindexSkills } = require("../src/skillindex");
+  const { getCatalog, clearCatalogCache, matchSkills } = require("../src/skills");
+  clearCatalogCache();
+  const proj = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-proj-"));
+  fs.writeFileSync(path.join(proj, "package.json"), "{}");
+  installCollectionFromDir(path.join(__dirname, "fixtures", "skills-collection"), path.join(proj, ".deep-era", "skills"));
+  const before = matchSkills("investigate a compromised container", 5, proj).map((s) => s.id);
+  assert(!before.includes("beta-container-forensics"), "unindexed skill matched before any index existed");
+  reindexSkills(proj);
+  assert(matchSkills("investigate a compromised container", 5, proj).some((s) => s.id === "beta-container-forensics"),
+    "stale cache survived reindex");
+  clearCatalogCache();
+});
+
 // --- v0.51: encryption at rest (AES-256-GCM, zero dependencies) ---------------
 
 ok("crypt-roundtrip-and-leaks-nothing", () => {

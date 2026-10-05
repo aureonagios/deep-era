@@ -123,8 +123,49 @@ function validateSkillDir(dir) {
   return { ok: true, name: m[1] };
 }
 
+// Install every valid skill from a collection layout: <repo>/skills/<name>/SKILL.md
+// (the layout large public vaults use). Pure filesystem work, no network — addSkill
+// clones first, tests call this directly. Invalid members are reported, not fatal:
+// one broken folder must not block 800 good ones. Caps total installs as a valve.
+const MAX_COLLECTION_SKILLS = 2000;
+
+function installCollectionFromDir(srcDir, destRoot, opts) {
+  // Uses the tolerant frontmatter parser, NOT the strict single-skill validator:
+  // collection members in the wild carry multi-line descriptions, CRLF endings,
+  // and extra keys (domain, license, mitre_attack). Strict validation here would
+  // reject every one of them while claiming to support collections.
+  const { parseSkillFrontmatter } = require("./skillindex");
+  const collDir = path.join(srcDir, "skills");
+  let entries = [];
+  try {
+    entries = fs.readdirSync(collDir, { withFileTypes: true }).filter((e) => e.isDirectory());
+  } catch {
+    return null; // not a collection layout
+  }
+  const max = (opts && opts.max) || MAX_COLLECTION_SKILLS;
+  const installed = [];
+  const rejected = [];
+  for (const e of entries.slice(0, max)) {
+    const from = path.join(collDir, e.name);
+    const v = parseSkillFrontmatter(from);
+    if (!v.ok) {
+      rejected.push({ dir: e.name, error: v.error });
+      continue;
+    }
+    const dest = path.join(destRoot, v.entry.name);
+    fs.rmSync(dest, { recursive: true, force: true });
+    fs.mkdirSync(destRoot, { recursive: true });
+    fs.cpSync(from, dest, { recursive: true });
+    installed.push({ name: v.entry.name, path: dest });
+  }
+  return { installed, rejected, truncated: entries.length > max };
+}
+
 // Install any standard skills repo (scientific-agent-skills, anthropics/skills,
 // your own): git-clone into .deep-era/skills/<name>/, validated, never blind.
+// Accepts a single-skill repo (SKILL.md at root) or a collection (skills/ subdir).
+// After installing, reindexes so the new skills are immediately discoverable by
+// match_skills/search — installing without indexing was the old dead end.
 function addSkill(cwd, gitUrl) {
   const { execFileSync } = require("child_process");
   const os = require("os");
@@ -139,14 +180,32 @@ function addSkill(cwd, gitUrl) {
     } catch (e) {
       throw new Error(`git clone failed: ${(e.message || "").split("\n")[0]}`);
     }
+    const destRoot = path.join(cwd, ".deep-era", "skills");
     const v = validateSkillDir(repo);
-    if (!v.ok) throw new Error(`not a valid skill repo: ${v.error}`);
-    const dest = path.join(cwd, ".deep-era", "skills", v.name);
-    fs.rmSync(dest, { recursive: true, force: true });
-    fs.mkdirSync(path.join(cwd, ".deep-era", "skills"), { recursive: true });
-    fs.renameSync(repo, dest);
-    console.log(`[deep-era] skill installed: ${v.name} (.deep-era/skills/${v.name}/)`);
-    return dest;
+    if (v.ok) {
+      const dest = path.join(destRoot, v.name);
+      fs.rmSync(dest, { recursive: true, force: true });
+      fs.mkdirSync(destRoot, { recursive: true });
+      fs.renameSync(repo, dest);
+      console.log(`[deep-era] skill installed: ${v.name} (.deep-era/skills/${v.name}/)`);
+    } else {
+      const coll = installCollectionFromDir(repo, destRoot);
+      if (!coll) throw new Error(`not a valid skill repo: ${v.error}`);
+      console.log(`[deep-era] skill collection installed: ${coll.installed.length} skills (.deep-era/skills/)`);
+      if (coll.rejected.length) {
+        console.log(`[deep-era] rejected ${coll.rejected.length} invalid (showing 5):`);
+        for (const r of coll.rejected.slice(0, 5)) console.log(`  - ${r.dir}: ${r.error}`);
+      }
+      if (coll.truncated) console.log(`[deep-era] capped at ${MAX_COLLECTION_SKILLS} skills; rerun targeted if you need more.`);
+    }
+    try {
+      const { reindexSkills } = require("./skillindex");
+      const r = reindexSkills(cwd);
+      console.log(`[deep-era] skills indexed: ${r.indexed} discoverable via match_skills/search.`);
+    } catch (e) {
+      console.log(`[deep-era] reindex skipped (${(e.message || e).toString().slice(0, 120)}). Run: deep-era skills --reindex`);
+    }
+    return destRoot;
   } finally {
     try { fs.rmSync(tmp, { recursive: true, force: true }); } catch {}
   }
@@ -170,4 +229,4 @@ function runSkill(cwd) {
 
 const SKILL_MD = skillFile("deep-era-audit", SKILLS["deep-era-audit"]);
 
-module.exports = { runSkill, SKILL_MD, SKILLS, addSkill, validateSkillDir };
+module.exports = { runSkill, SKILL_MD, SKILLS, addSkill, validateSkillDir, installCollectionFromDir, MAX_COLLECTION_SKILLS };

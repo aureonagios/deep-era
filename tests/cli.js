@@ -367,6 +367,47 @@ ok("cli-start-wires-ide-and-points-at-prompt", () => {
   assert(out.includes("Scanned"), "start printed no audit!");
 });
 
+ok("cli-skills-reindex", () => {
+  const { execFileSync } = require("child_process");
+  const tmp = sandbox({ "package.json": "{}" });
+  // Seed two installed skills straight into the project (no network, no git).
+  const { installCollectionFromDir } = require("../src/skill");
+  const r = installCollectionFromDir(
+    path.join(__dirname, "fixtures", "skills-collection"),
+    path.join(tmp, ".deep-era", "skills")
+  );
+  assert(r.installed.length === 2, "fixture install broke");
+  const out = execFileSync(process.execPath, [CLI, "skills", "--reindex"], { cwd: tmp, timeout: 60000 }).toString();
+  assert(out.includes("reindexed: 2"), `reindex miscounted: ${out.slice(0, 200)}`);
+  assert(fs.existsSync(path.join(tmp, ".deep-era", "skills", "catalog.json")), "catalog not written");
+  const q = execFileSync(process.execPath, [CLI, "skills", "container"], { cwd: tmp, timeout: 60000 }).toString();
+  assert(q.includes("beta-container-forensics"), `indexed skill not searchable: ${q.slice(0, 300)}`);
+});
+
+ok("cli-skill-add-local-collection", () => {
+  // End-to-end --add against a LOCAL git repo (no network). addSkill clones by
+  // design, so this needs git; without it the test states its precondition aloud
+  // instead of failing on environment.
+  const { execFileSync, execSync } = require("child_process");
+  try {
+    execSync("git --version", { timeout: 10000, stdio: "pipe" });
+  } catch {
+    console.log("(skip cli-skill-add-local-collection: git unavailable)");
+    return;
+  }
+  const repo = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-skillrepo-"));
+  execSync(`git init -q "${repo}"`, { timeout: 30000 });
+  execSync(`git -C "${repo}" config user.email t@t.t`, { timeout: 15000 });
+  execSync(`git -C "${repo}" config user.name t`, { timeout: 15000 });
+  fs.cpSync(path.join(__dirname, "fixtures", "skills-collection", "skills"), path.join(repo, "skills"), { recursive: true });
+  execSync(`git -C "${repo}" add -A && git -C "${repo}" commit -qm fixture`, { timeout: 30000 });
+  const tmp = sandbox({ "package.json": "{}" });
+  const out = execFileSync(process.execPath, [CLI, "skill", "--add", repo], { cwd: tmp, timeout: 120000 }).toString();
+  assert(out.includes("skill collection installed: 2"), `--add miscounted: ${out.slice(0, 300)}`);
+  assert(out.includes("indexed: 2"), `--add did not auto-reindex: ${out.slice(0, 300)}`);
+  assert(fs.existsSync(path.join(tmp, ".deep-era", "skills", "alpha-cache-audit", "SKILL.md")), "installed skill missing on disk");
+});
+
 ok("cli-suite-reported", async () => {
   await finish();
   const { readReport } = require("./lib/report");
