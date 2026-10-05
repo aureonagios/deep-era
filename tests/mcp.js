@@ -50,9 +50,11 @@ ok("mcp-initialize-and-list", async () => {
   const init = await s.send("initialize", {});
   assert(init.result.serverInfo.name === "deep-era", "wrong server");
   const list = await s.send("tools/list", {});
-  assert(list.result.tools.length === 16, `expected 16 tools, got ${list.result.tools.length}`);
-// The routing tool is the one that stops an agent guessing, so it must be present.
-assert(list.result.tools.some((t) => t.name === "guide_task"), "guide_task missing from tools/list");
+  assert(list.result.tools.length === 19, `expected 19 tools, got ${list.result.tools.length}`);
+// The routing and skill tools are what stop an agent guessing, so they must be present.
+for (const t of ["guide_task", "match_skills", "get_skill", "list_skills"]) {
+  assert(list.result.tools.some((x) => x.name === t), `${t} missing from tools/list`);
+}
   s.stop();
 });
 
@@ -90,6 +92,24 @@ ok("mcp-guide-task-routes", async () => {
   // An unrelated task must not invent a location.
   const r2 = await s.send("tools/call", { name: "guide_task", arguments: { task: "fix the submarine reactor" } });
   assert(r2.result.content[0].text.includes("search"), "unroutable task did not fall back to search");
+  s.stop();
+});
+
+ok("mcp-skills-tools-work", async () => {
+  // The skill tools over the wire: match, then load, plus the category listing.
+  const s = session(sandbox());
+  await s.send("initialize", {});
+  const list = await s.send("tools/call", { name: "list_skills", arguments: {} });
+  const parsed = JSON.parse(list.result.content[0].text);
+  assert(parsed.total > 100, `catalog looks empty over the wire: ${parsed.total}`);
+
+  // A nonsense task must produce an honest "nothing matched", not an invention.
+  const none = await s.send("tools/call", { name: "match_skills", arguments: { task: "zzzqqq xyzzy nothing here" } });
+  assert(/No installed skill matches/.test(none.result.content[0].text), "invented a skill match for nonsense");
+
+  // An unknown id must fail loudly rather than returning an empty guide.
+  const bad = await s.send("tools/call", { name: "get_skill", arguments: { id: "definitely-not-a-real-skill-xyz" } });
+  assert(/No skill with id/.test(bad.result.content[0].text), "unknown skill id did not report clearly");
   s.stop();
 });
 

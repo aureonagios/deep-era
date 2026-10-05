@@ -1,7 +1,16 @@
 // Memory v0.5 — never forget a single project chat/decision, while keeping tokens low.
 // Store: .deep-era/logs/memory.jsonl (append-only). Recall: keyword-scored + char budget.
+//
+// SECURITY: entries frequently quote whatever the user said, which includes
+// credentials and customer names. When DEEP_ERA_KEY is set each line is sealed with
+// AES-256-GCM (crypt.js). Append-only JSONL cannot be rewritten atomically, so each
+// line is encrypted on its own rather than as one blob: a crash mid-append can then
+// lose the last entry but can never corrupt or expose the ones already written.
+// Recall decrypts lazily and skips any line it cannot open, so a wrong key degrades to
+// "no memory" instead of crashing the agent mid-task.
 const fs = require("fs");
 const path = require("path");
+const crypt = require("./crypt");
 
 function memFile(cwd) {
   return path.join(cwd, ".deep-era", "logs", "memory.jsonl");
@@ -25,7 +34,16 @@ function remember(cwd, kind, text) {
   }
   const entry = { at: new Date().toISOString(), kind, text: clean, weight: weightOf(kind, clean) };
   fs.mkdirSync(path.dirname(memFile(cwd)), { recursive: true });
-  fs.appendFileSync(memFile(cwd), JSON.stringify(entry) + "\n");
+  const key = crypt.passphraseFromEnv();
+  if (key) {
+    // Encrypt the sensitive field only. `at` and `kind` stay readable so `deep-era
+    // timeline` and the memory-stats view keep working without the key.
+    fs.appendFileSync(memFile(cwd), JSON.stringify({
+      at: entry.at, kind, weight: entry.weight, enc: crypt.encrypt(clean, key, crypt.saltPathFor(memFile(cwd))),
+    }) + "\n");
+  } else {
+    fs.appendFileSync(memFile(cwd), JSON.stringify(entry) + "\n");
+  }
   compact(cwd);
   return entry;
 }
@@ -46,11 +64,22 @@ function compact(cwd) {
   try {
     const raw = fs.readFileSync(memFile(cwd), "utf8").split("\n").filter(Boolean);
     if (raw.length <= 400) return;
-    const all = raw.map((l) => JSON.parse(l));
-    const keep = all.filter((e) => e.kind === "decision" || e.kind === "error");
-    const chats = all.filter((e) => e.kind !== "decision" && e.kind !== "error").slice(-150);
-    const merged = [...keep, ...chats].sort((a, b) => (a.at < b.at ? -1 : 1)).slice(-400);
-    fs.writeFileSync(memFile(cwd), merged.map((e) => JSON.stringify(e)).join("\n") + "\n");
+    // Preserve raw lines rather than parsed objects: an encrypted entry must be carried
+    // across compaction byte-for-byte, because rewriting it would require the key in a
+    // code path that deliberately does not have it.
+    const parsed = [];
+    for (const line of raw) {
+      let e;
+      try { e = JSON.parse(line); } catch { continue; }
+      parsed.push({ e, line });
+    }
+    const keep = parsed.filter((x) => x.e.kind === "decision" || x.e.kind === "error");
+    const chats = parsed.filter((x) => x.e.kind !== "decision" && x.e.kind !== "error").slice(-150);
+    const merged = [...keep, ...chats]
+      .sort((a, b) => (a.e.at < b.e.at ? -1 : 1))
+      .slice(-400)
+      .map((x) => x.line);
+    fs.writeFileSync(memFile(cwd), merged.join("\n") + "\n");
   } catch { /* memory must never break the build */ }
 }
 
@@ -84,9 +113,25 @@ function importMemory(cwd, inFile) {
 }
 
 function readAll(cwd, maxEntries = 500) {
+  const key = crypt.passphraseFromEnv();
   try {
     const lines = fs.readFileSync(memFile(cwd), "utf8").split("\n").filter(Boolean);
-    return lines.slice(-maxEntries).map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean);
+    const out = [];
+    for (const line of lines.slice(-maxEntries)) {
+      let e;
+      try { e = JSON.parse(line); } catch { continue; }
+      if (!e) continue;
+      // A sealed entry stays sealed unless the key is present. Silently skipping is
+      // correct: an agent that cannot read a memory should be told it has none, not
+      // handed a partial history it will then reason about confidently.
+      if (e.enc !== undefined) {
+        if (!key) continue;
+        try { e.text = crypt.decrypt(e.enc, key, crypt.saltPathFor(memFile(cwd))); } catch { continue; }
+        delete e.enc;
+      }
+      out.push(e);
+    }
+    return out;
   } catch { return []; }
 }
 

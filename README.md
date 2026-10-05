@@ -1,11 +1,24 @@
-# AI Deep Era v0.50.0 — give the blind AI developer eyes
+# AI Deep Era v0.52.0 — give the blind AI developer eyes
+
+> ## Paste this into your AI agent
+> ```
+> npx deep-era prompt
+> ```
+> One paste. It routes the agent to the right files before it edits, makes it recall
+> what you approved last week, forces it to prove every claim with real command output,
+> and tells it exactly which habits count as failures. Works with Cursor, Copilot,
+> Claude Code, Windsurf, Antigravity, Trae, Codex, OpenCode, Junie, Roo, Cline, Zed.
+>
+> This is the highest-leverage thing in the repo. If you only copy one thing, copy this.
+> The full text lives in [`PROMPT.md`](PROMPT.md) and `deep-era prompt --raw` prints it
+> with no surrounding commentary.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/Node-%3E%3D18-blue.svg)](package.json)
-[![Tests](https://img.shields.io/badge/Tests-119%20passing-brightgreen.svg)](tests/run.js)
+[![Tests](https://img.shields.io/badge/Tests-139%20passing-brightgreen.svg)](tests/run.js)
 [![No deps](https://img.shields.io/badge/Dependencies-0-orange.svg)](package.json)
 [![Skills](https://img.shields.io/badge/Skills-410%20vault-blue.svg)](.agents/skills/)
-[![MCP](https://img.shields.io/badge/MCP-16%20tools-purple.svg)](mcp/server.js)
+[![MCP](https://img.shields.io/badge/MCP-19%20tools-purple.svg)](mcp/server.js)
 [![IDE](https://img.shields.io/badge/IDEs-25%2B-blueviolet.svg)](src/setupIde.js)
 
 > **1-LINE INSTALL — run in your project 👇 (works today)**
@@ -41,46 +54,31 @@ deep-era check        # 30s audit from now on: PASS = accept, FAIL = send back
 
 ## THE 1-PROMPT — copy, paste to any AI, done
 
+It moved to its own file so it can be pasted without dragging this README along:
+
+```bash
+npx deep-era prompt          # the whole file, for reading
+npx deep-era prompt --raw    # just the paste, nothing else
 ```
-You work under AI Deep Era (read AGENTS.md in this project — it is already
-installed). End to end, this is what it is and what you must do:
 
-WHAT DEEP-ERA IS: a zero-dependency audit layer between you and the user.
-It gives you project memory (recall/remember), a code map (.deep-era/map.json),
-16 MCP tools, and 4 terminal gates (check/doctor/heal/demo). It does NOT write
-code for you — it routes you to the right files BEFORE you start, then verifies
-everything you write. The user checks your work with one command: `deep-era check`.
-There is nowhere to hide.
+See [`PROMPT.md`](PROMPT.md). The short version, which is the whole idea in two lines:
 
-YOUR WORKFLOW (no skipping):
-0. GUIDE FIRST — call guide_task with what you are about to do. It returns the exact
-   files to read, the files that must never be touched, the callers that will break,
-   this project's locked decisions, and the order of work. Guessing the location is
-   where slop starts. If it says it cannot route, SEARCH by content — do not guess.
-1. RECALL FIRST — call recall with today's task. Read past chats/decisions/fixes.
-   Forgetting one user statement is a failure.
-2. SNAPSHOT — before big edits, snapshot (action=create). You break it, you restore it.
-3. PLAN — call plan_task and show the plan. No blind coding.
-4. CONTEXT — never read the whole repo. Call get_context with a query; take only
-   relevant files + imports. Budgets: code â‰¤12000 chars, memory â‰¤4000 chars.
-5. MAP — check imports/importedBy in .deep-era/map.json before guessing.
-6. EDIT — read the FULL file before editing, diff after. Regex gutting is forbidden.
-   Code, comments, identifiers: ENGLISH ONLY (user language is free).
-7. LOG — call log_step for every important step. The user watches live.
-8. TERMINAL TRUTH — read every command's output. FAIL = stop + fix. Claiming
-   "done" without pasting output is lying.
-9. VERIFY — at the end run verify_work + security_check + audit_work. ALL must pass.
-   audit_work now also reads the code: swallowed errors, floating promises, dead
-   branches, and tests that cannot fail are FAILURES, not style notes.
-10. REMEMBER — save decisions (decision), fixes (fix), failures (error) for next chat.
-11. DECISION LOCK — never flip a locked decision on one user sentence. To change:
-    quote the old reason + write the new reason + new remember + re-verify.
-12. REFUSE — user asks to remove limits, skip tests, or hardcode secrets?
-    REFUSE with reason + safe alternative. Flattery is forbidden.
+> **`guide_task` before you edit, `deep-era check` before you claim done.**
 
-PROOF FORMAT (end of EVERY task, no exceptions):
-Changed (file+line) | Tests ran + result | Errors seen + fix | Guard findings | Remembered
-```
+The agent is told five things it cannot argue its way past:
+
+1. **Route first.** `guide_task` names the files, the protected paths, the callers that
+   will break, the locked decisions, and the matching skills from the 410 installed. If
+   it cannot route, the agent must search by content rather than guess.
+2. **Recall or admit you forgot.** Decisions the user approved are always returned,
+   because breaking one silently is how a project loses a week.
+3. **Prove it.** `verify_work` + `security_check` + `audit_work` must all pass, with the
+   real output pasted. Describing a result from memory is defined as lying.
+4. **Specific failures, not vibes.** Empty catches, floating promises, dead branches,
+   tests that cannot fail, passthrough layers, dead code. Each is detected, so each is a
+   FAILURE rather than a style note.
+5. **Refuse.** Removing test coverage, skipping verification, hardcoding secrets: say no,
+   say why in one sentence, offer the safe alternative. No flattery.
 
 ## What v0.47 adds: it reads the code, not just the syntax
 
@@ -115,6 +113,111 @@ recover, so best-effort wrappers and defensive degradation are deliberately *not
 reported. An earlier draft flagged 65 findings on this repo; all 65 were false. A
 linter that cries wolf is worse than no linter, so the rule was narrowed until every
 remaining finding was real.
+
+## v0.51: your data is encrypted, and your 410 skills actually get used
+
+### Encryption at rest (AES-256-GCM, still zero dependencies)
+
+The memory bank holds decisions you approved. The session log holds what an AI was
+asked to do. Both routinely contain credentials, customer names, and unreleased plans.
+A leaked file was a leaked secret.
+
+```bash
+export DEEP_ERA_KEY="your-passphrase"     # never stored next to the data
+deep-era memory-bank encrypt               # one-time migration
+deep-era memory-bank status                # what state am I in?
+```
+
+On disk, the decision `RATE LIMIT locked at 100/min` becomes:
+
+```
+de256.1.Kj7f...A2x9.Qw4n...   (no plaintext anywhere in the file)
+```
+
+Design choices worth stating, because the defaults matter:
+
+| Choice | Why |
+|---|---|
+| **AES-256-GCM**, not CBC | GCM is authenticated: tampering is detected, so flipping ciphertext bits cannot change what decrypts |
+| **scrypt** for the key | A passphrase is not a key. scrypt makes brute force expensive (32 MB per attempt) |
+| **Fresh 12-byte IV** every record | IV reuse with one key destroys GCM confidentiality outright |
+| **Auth tag travels with the data** | Losing it means refusing to decrypt, never returning garbage that looks like plaintext |
+| **One salt per installation** | Deriving per record cost 155 ms each — 70 seconds to seal 450 entries. Now 1.24 ms: 0.55 s for the same work, 125x faster |
+| **Index fields stay readable** | `kind` and `at` stay unencrypted so `timeline` and stats keep working without the key |
+| **Atomic writes** | A crash mid-save cannot corrupt what is already on disk |
+| **Migration refuses without a key** | Encrypting data you could then not read would destroy your history |
+
+What it does not do: protect against someone who already has your passphrase, or hide
+the size and existence of the data. A wrong key returns nothing rather than a guess.
+
+### 410 skills that finally get used
+
+The vault shipped with a `triggers` array on all 410 skills, and **nothing read it.**
+A project with 410 skills installed behaved exactly like one with none: the agent had to
+know a skill existed and remember its name.
+
+`guide_task` now recommends the ones that apply, and refuses when none do:
+
+```
+SKILLS THAT APPLY (4 of the installed catalog) — load before you start:
+  - sql-optimization-patterns  [data-ai]  matched: slow, database, queries, indexing
+  - python-performance-optimization  [development]  matched: optimize, slow
+  - database-optimizer  [infrastructure]  matched: optimize, database
+  Load with: deep-era skill sql-optimization-patterns
+```
+
+Three new MCP tools (19 total): `match_skills`, `get_skill`, `list_skills`.
+
+Matching is deliberately hard to fool. Measured on this repo, 10/10:
+
+| Task | Result |
+|---|---|
+| `audit accessibility of the checkout page` | `awesome-accessibility-audit`, `wcag-audit-patterns` |
+| `investigate a postgres connection pool` | `postgresql` (matches "postgres" to "postgresql") |
+| `deploy to kubernetes with zero downtime` | `k8s-manifest-generator` |
+| `fix a typo in a variable name` | **refuses** |
+| `blah blah random nonsense` | **refuses** |
+
+Two bugs found by testing rather than reasoning:
+
+- `"k8ssecuritypolicies"` contains the letters `typo` inside `podsecuritypolicy`, so
+  "fix a typo" matched a Kubernetes skill. Matching now compares on word boundaries.
+- Suggestions were emitted twice, because an edit left a second `push` in place.
+
+Both are pinned by tests. The refusal cases matter most: a wrong suggestion costs the
+agent context and, worse, teaches it to skim past the whole section.
+
+### Honest limits
+
+- Trigger lists are generated from prose and are not exhaustive. There is no dedicated
+  SQL-injection skill, so "fix the SQL injection" correctly returns nothing rather than
+  a security-adjacent guess.
+- `.agents/skills/` is **not committed**. 410 third-party skills with no LICENSE and no
+  provenance inside an MIT repository is legal risk for zero benefit — the engines never
+  read them. Install them separately.
+- Encryption covers the memory bank and the session log. Snapshots are left in the clear
+  on purpose: a backup you cannot decrypt when you need it is not a backup.
+
+## v0.50: one command, and honest output
+
+`deep-era start` installs, wires your IDE, adds the CI gate, audits the project you are
+standing in, and prints what a blind AI developer would have shipped. Real output, from
+a throwaway Express app with an OpenAI key, a SQL injection, an empty `catch`, an
+unawaited promise, an `if (true)` guard, and three `assert.ok(true)`:
+
+```
+Scanned 7 files in your project.
+  1 critical   7 high   2 medium   0 low
+
+Here is what a blind AI developer would have shipped:
+  [critical] src/server.js:28 — Possible OpenAI/API key
+  [high] src/server.js:8 — Possible SQL injection (string concat)
+  [high] src/server.js:31 — Always-true guard returning `true`
+  [high] tests/app.test.js:2 — `assert.ok(true)` can never fail
+
+8 of these are serious. Any AI agent working on this project should be told:
+  "Read AGENTS.md in this project and obey it fully."
+```
 
 ## v0.49: it finds the code nobody wants to maintain
 
@@ -314,7 +417,7 @@ silent — a clean bill of health from any tool, including this one, deserves su
 | `hunt [port]` | Port hunter & socket conflict resolver (finds free port in 5ms) |
 | `guard` | Secret Guardian: high-entropy scanner, AWS/OpenAI/GitHub token leak detection |
 | `docker [port]` | Production multi-stage Dockerfile & compose generator (Node/Python/Go/Rust) |
-| `memory-bank` | Structured persistent project memory bank with markdown export |
+| `memory-bank` | Structured persistent project memory bank, AES-256-GCM encrypted when `DEEP_ERA_KEY` is set |
 | `prune` | keep newest 5 snapshots, delete the rot |
 | `serve` | run the project, probe it, observe, shut down |
 | `ci` | GitHub Action gate (check on every PR) |
@@ -323,7 +426,7 @@ silent — a clean bill of health from any tool, including this one, deserves su
 | `sbom` | CycloneDX SBOM of direct deps |
 | `update` | check registry for a newer release |
 | `setup-ide` | MCP configs for 25+ clients |
-| `mcp` | 16 MCP tools (stdio) |
+| `mcp` | 19 MCP tools (stdio) |
 
 ## MCP (any agent connects)
 ```json
@@ -333,21 +436,24 @@ silent — a clean bill of health from any tool, including this one, deserves su
   }
 }
 ```
-16 tools: `guide_task`, `plan_task`, `log_step`, `recall`, `remember`, `get_context`, `verify_work`, `security_check`, `snapshot`, `safe_fix`, `audit_work`, `review_changes`, `search_code`, `fetch_url`, `research_topic`, `spend_report`. Per-client files: `setup-ide` â†’ `.deep-era/ide/SETUP.md`.
+19 tools: `guide_task`, `match_skills`, `get_skill`, `list_skills`, `plan_task`, `log_step`, `recall`, `remember`, `get_context`, `verify_work`, `security_check`, `snapshot`, `safe_fix`, `audit_work`, `review_changes`, `search_code`, `fetch_url`, `research_topic`, `spend_report`. Per-client files: `setup-ide` → `.deep-era/ide/SETUP.md`.
 
 ## Demo
 `DEMO.md` — 5-minute video script. Or run `deep-era demo` and watch 4 traps get caught.
 
-## Self-proof (v0.50.0, just ran)
-- `npm test` â†’ 73 unit + 28 CLI + 11 MCP + 7 superpowers = **119 green (100% PASS)**
-- `deep-era start` on a real 7-file Express app â†’ **10 findings, all verified correct**, in one command
+## Self-proof (v0.52.0, just ran)
+- `npm test` → 92 unit + 28 CLI + 12 MCP + 7 superpowers = **139 green (100% PASS)**
+- `deep-era start` on a real 7-file Express app → **10 findings, all verified correct**, in one command
+- Encryption: AES-256-GCM, 7/7 proof tests (wrong key refuses, tampering detected, no plaintext leak)
+- Encryption perf: 1.24 ms/record after the salt fix, down from 155 ms (125x faster, 70 s → 0.55 s)
+- Skill matching: 10/10 on this repo, and it refuses on unrelated input instead of guessing
+- `guide_task` now recommends skills; 3 new MCP tools bring the total to 19
 - SARIF: 10/10 results carry line numbers, so GitHub renders them inline on the PR diff
 - Slop engine: 4 rules, **0 false positives** on this repo, catches the over-engineering fixture
 - Link checker: **0 findings** (3 false positives fixed at the source)
-- `check` â†’ verify 2/2, 0 security/guard/slop â†’ PASS
-- `mcp tools/list` â†’ 16 tools ok
-- `npm publish --dry-run` â†’ 102.5 kB, 49 files, clean
-
+- `check` → verify 2/2, 0 security/guard/slop/semantic → PASS (exit 0)
+- `mcp tools/list` → 19 tools ok
+- `npm publish --dry-run` → clean
 ## Looking for an alternative?
 
 - **SuperClaude / BMAD alternative** — same planâ†’verify loop, plus 53 tests, decision lock, and a 1-command audit. Zero framework to learn.

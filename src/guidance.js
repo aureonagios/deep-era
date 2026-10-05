@@ -229,6 +229,16 @@ function blockers(cwd, map) {
   return out;
 }
 
+// Which installed skills apply to this task? The catalog ships a `triggers` array on
+// every skill precisely so this is possible; nothing read it before, so a project with
+// 410 skills installed behaved as if it had none.
+function skillsForTask(cwd, taskText, limit = 4) {
+  try {
+    const { matchSkills } = require("./skills");
+    return matchSkills(taskText, limit, cwd);
+  } catch { return []; }
+}
+
 // --- the briefing the agent actually reads -----------------------------------
 function buildBrief(cwd, map, taskText) {
   const cls = classify(taskText);
@@ -238,6 +248,7 @@ function buildBrief(cwd, map, taskText) {
   const decisions = lockedDecisions(cwd);
   const errors = priorErrors(cwd);
   const block = blockers(cwd, map);
+  const skills = skillsForTask(cwd, taskText, 4);
 
   const lines = [];
   lines.push(`TASK CLASS: ${cls.kind}${cls.score === 0 ? " (no clear signal — ask the user before editing)" : ""}`);
@@ -264,6 +275,15 @@ function buildBrief(cwd, map, taskText) {
     for (const d of routed.dependents) lines.push(`  - ${d.file}  (${d.why})`);
   }
   lines.push("");
+
+  if (skills.length) {
+    lines.push(`SKILLS THAT APPLY (${skills.length} of the installed catalog) — load before you start:`);
+    for (const s of skills) {
+      lines.push(`  - ${s.id}  [${s.category}]  matched: ${s.matched.join(", ")}`);
+    }
+    lines.push(`  Load with: deep-era skill ${skills[0].id}`);
+    lines.push("");
+  }
 
   lines.push("DO NOT EDIT without an explicit instruction:");
   for (const f of forbiddenFiles()) lines.push(`  - ${f.pattern.source}  — ${f.why}`);
@@ -301,6 +321,7 @@ function buildBrief(cwd, map, taskText) {
     conventions: conv,
     likelyTouch: routed.primary,
     alsoAffected: routed.dependents,
+    skills,
     lockedDecisions: decisions,
     priorErrors: errors,
     blockers: block,

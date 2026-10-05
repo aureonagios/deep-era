@@ -9,14 +9,17 @@ const targetDir = process.argv[3] && !process.argv[3].startsWith("-") ? path.res
 async function main() {
   if (!cmd || cmd === "help" || cmd === "--help" || cmd === "-h") {
     console.log(`
-AI Deep Era v0.50.0 - give the blind AI developer eyes (no frontend, proof in your IDE)
+AI Deep Era v0.52.0 - give the blind AI developer eyes (no frontend, proof in your IDE)
 
 START HERE:
   npx deep-era start             Install, wire up, and audit this project in ONE command.
                                  Prints the real bugs in your code immediately.
+  npx deep-era prompt            The ONE paste that makes any AI agent route, remember,
+                                 verify and refuse. This is the highest-leverage command.
 
 Usage:
   deep-era start [dir]           Install + audit + show findings (start here)
+  deep-era prompt [--raw]        The one paste for your AI agent (--raw = no commentary)
   deep-era guide "<task>"        PRE-FLIGHT: where to work, what not to touch, locked decisions
   deep-era onboard               One shot: init + setup-ide + CI + skill
   deep-era global                Machine setup: wire MCP into 6 IDEs + skill, once per PC
@@ -65,7 +68,9 @@ Usage:
   deep-era guard               Secret Guardian: scan for leaked keys & tokens
   deep-era docker [port]       Generate multi-stage production Docker scaffold
   deep-era memory-bank [add]   Structured persistent project memory bank
-  deep-era mcp                 MCP server (stdio) - 15 tools
+  deep-era memory-bank status  Is the bank encrypted at rest?
+  deep-era memory-bank encrypt Encrypt an existing plaintext bank (needs DEEP_ERA_KEY)
+  deep-era mcp                 MCP server (stdio) - 16 tools
 `);
     return;
   }
@@ -333,6 +338,36 @@ Usage:
   if (cmd === "global") {
     const { runGlobal } = require("../src/global");
     runGlobal();
+    return;
+  }
+  if (cmd === "prompt") {
+    // The one paste that turns a generic agent into one that routes, remembers,
+    // verifies and refuses. Printed rather than hidden in a file so it can be piped
+    // straight into a clipboard or a chat box.
+    const fs2 = require("fs");
+    const path2 = require("path");
+    const candidates = [
+      path2.join(targetDir, "PROMPT.md"),
+      path2.join(__dirname, "..", "PROMPT.md"),
+    ];
+    let file = null;
+    for (const c of candidates) { if (fs2.existsSync(c)) { file = c; break; } }
+    if (!file) {
+      console.error("[deep-era] prompt: PROMPT.md not found (looked in the project and in the package).");
+      process.exitCode = 1;
+      return;
+    }
+    const raw = fs2.readFileSync(file, "utf8");
+    // `--raw` strips the fence and the surrounding prose so it can be piped into an
+    // agent verbatim. Default output is the whole file, which is what a human reads.
+    if (process.argv.includes("--raw")) {
+      const m = raw.match(/```\n([\s\S]*?)\n```/);
+      process.stdout.write((m ? m[1] : raw) + "\n");
+    } else {
+      process.stdout.write(raw + "\n");
+    }
+    console.error(`\n[deep-era] prompt: ${file} — paste the boxed text into your agent.`);
+    console.error(`[deep-era] for a clean copy with no commentary: deep-era prompt --raw`);
     return;
   }
   if (cmd === "start" || cmd === "try") {
@@ -636,8 +671,26 @@ if (cmd === "perf") {
     return;
   }
   if (cmd === "memory-bank" || cmd === "mb") {
-    const { searchMemories, addMemory, exportMarkdown, deleteMemory } = require("../src/memorybank");
+    const { searchMemories, addMemory, exportMarkdown, deleteMemory, bankSecurityStatus, migrateToEncrypted } = require("../src/memorybank");
     const sub = process.argv[3];
+    if (sub === "status") {
+      const s = bankSecurityStatus(process.cwd());
+      console.log(`[deep-era memory-bank] storage: ${s.state}`);
+      console.log(`  encrypted at rest: ${s.encrypted ? "yes (AES-256-GCM)" : "no"}`);
+      console.log(`  key available:      ${s.hasKey ? "yes (DEEP_ERA_KEY)" : "no"}`);
+      console.log(`  ${s.advice}`);
+      return;
+    }
+    if (sub === "encrypt" || sub === "migrate") {
+      const r = migrateToEncrypted(process.cwd());
+      if (r.migrated) {
+        console.log(`[deep-era memory-bank] encrypted ${r.entries} entries as AES-256-GCM.`);
+        console.log(`  Keep DEEP_ERA_KEY set or this data becomes unreadable.`);
+      } else {
+        console.log(`[deep-era memory-bank] not migrated: ${r.reason}`);
+      }
+      return;
+    }
     if (sub === "add") {
       const kind = process.argv[4] || "decision";
       const title = process.argv[5] || "Note";

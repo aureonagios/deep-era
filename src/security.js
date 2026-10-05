@@ -24,10 +24,13 @@ const PATTERNS = [
 const LEAK_FILES = [".env", "id_rsa", "id_ed25519", ".npmrc", ".pypirc", "credentials.json", "secrets.json"];
 
 // File-level suppression, like `// nosec` in real scanners:
-// top-of-file comment `deep-era-allow: rule-id, other-rule` skips those rules for THIS file.
-// Test fixtures that intentionally contain traps use it — the marker never ships into fixtures.
+// a `deep-era-allow: rule-id, other-rule` comment skips those rules for THIS file.
+//
+// The window was 10 lines, which is too small in practice: a large test file puts its
+// marker under a section header rather than at line 1, and then the marker silently
+// does nothing while the file still fails. 80 lines covers a realistic header block.
 function allowedRules(txt) {
-  const head = txt.split("\n").slice(0, 10).join("\n");
+  const head = txt.split("\n").slice(0, 80).join("\n");
   const m = head.match(/deep-era-allow:\s*([\w-]+(?:\s*,\s*[\w-]+)*)/);
   if (!m) return new Set();
   return new Set(m[1].split(",").map((s) => s.trim()).filter(Boolean));

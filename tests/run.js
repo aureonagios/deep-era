@@ -1,4 +1,8 @@
 // Self-test v0.6 for AI Deep Era (no deps)
+// deep-era-allow: secret-assign, entropy-secret
+// The encryption tests below use passphrase strings as fixtures. Those are test inputs,
+// not credentials, so the secret rule is suppressed for this file only. Everything else
+// in this file is still checked, which is the point of a scoped marker.
 process.env.DEEP_ERA_SELFTEST = "1";
 const assert = require("assert");
 const fs = require("fs");
@@ -16,6 +20,9 @@ const { semanticScan } = require("../src/semantics");
 const { verifyMany } = require("../src/tsparse");
 const { buildBrief, classify, forbiddenFiles } = require("../src/guidance");
 const { slopScan } = require("../src/slop");
+const crypt = require("../src/crypt");
+const mb = require("../src/memorybank");
+const { matchSkills, getCatalog: getSkillsCatalog } = require("../src/skills");
 const { remember, recall } = require("../src/memory");
 const { detectStack } = require("../src/map");
 const { packFor } = require("../src/stacks");
@@ -198,6 +205,243 @@ ok("verify-fails-on-broken-typescript", () => {
   assert(syntax, "no syntax check ran");
   assert(syntax.ok === false, "broken TypeScript was reported as PASS");
   assert(/app\.ts/.test(syntax.output), `error did not name the file: ${syntax.output}`);
+});
+
+// --- v0.51: the prompt is the product surface; it must stay true -------------
+
+ok("prompt-file-exists-and-is-complete", () => {
+  const f = path.join(path.resolve(__dirname, ".."), "PROMPT.md");
+  assert(fs.existsSync(f), "PROMPT.md missing — `deep-era prompt` would fail");
+  const txt = fs.readFileSync(f, "utf8");
+  // It is shipped in the npm tarball, or the command is broken for every user.
+  assert(require("../package.json").files.includes("PROMPT.md"), "PROMPT.md is not in package.json files");
+  assert(/```[\s\S]*```/.test(txt), "PROMPT.md has no fenced block to copy from");
+  assert(txt.length > 3000, `PROMPT.md is suspiciously short: ${txt.length} chars`);
+});
+
+ok("prompt-names-only-tools-that-exist", () => {
+  // A prompt that tells an agent to call a tool which does not exist is worse than no
+  // prompt: it teaches the agent to ignore the instructions. Every tool named in the
+  // paste must be in the MCP tool list or a real CLI command.
+  const txt = fs.readFileSync(path.join(path.resolve(__dirname, ".."), "PROMPT.md"), "utf8");
+  const { TOOLS } = require("../mcp/server");
+  const toolNames = new Set(TOOLS.map((t) => t.name));
+  const cli = fs.readFileSync(path.join(path.resolve(__dirname, ".."), "bin", "cli.js"), "utf8");
+
+  const called = [...txt.matchAll(/^\s{2}([a-z_]+)\(/gm)].map((m) => m[1]);
+  assert(called.length > 5, `only ${called.length} tool calls found in the prompt`);
+  for (const name of new Set(called)) {
+    if (toolNames.has(name)) continue;
+    // not an MCP tool: it must still be a real command in the CLI
+    assert(cli.includes(`"${name}"`), `prompt calls "${name}" which is neither an MCP tool nor a CLI command`);
+  }
+});
+
+ok("prompt-states-the-real-limits", () => {
+  // The prompt must not oversell. These are the exact boundaries of the engines, and
+  // an agent that does not know them will trust a clean bill of health too much.
+  const txt = fs.readFileSync(path.join(path.resolve(__dirname, ".."), "PROMPT.md"), "utf8");
+  assert(/does NOT type-check/i.test(txt), "prompt does not admit the lack of type checking");
+  assert(/deliberately NOT reported/i.test(txt), "prompt does not state which rules are intentionally absent");
+  assert(/clean bill of health/i.test(txt), "prompt does not warn against trusting a clean result");
+});
+
+ok("prompt-covers-the-detected-failures", () => {
+  const txt = fs.readFileSync(path.join(path.resolve(__dirname, ".."), "PROMPT.md"), "utf8");
+  for (const phrase of ["catch", "await", "assert.ok(true)", "dead", "dead code"]) {
+    assert(txt.toLowerCase().includes(phrase.toLowerCase()), `prompt never mentions "${phrase}"`);
+  }
+  // The two calls that carry the whole product.
+  assert(txt.includes("guide_task"), "prompt does not mention guide_task");
+  assert(txt.includes("deep-era check"), "prompt does not mention deep-era check");
+});
+
+ok("cli-prompt-prints-clean-copy", () => {
+  const { execFileSync } = require("child_process");
+  const root = path.resolve(__dirname, "..");
+  const raw = execFileSync(process.execPath, [path.join(root, "bin", "cli.js"), "prompt", "--raw"], { cwd: root }).toString();
+  assert(!raw.includes("Why this works"), "--raw leaked the surrounding commentary");
+  assert(raw.trim().startsWith("You have DEEP-ERA installed"), "--raw did not start with the paste");
+  assert(raw.includes("guide_task"), "--raw is missing the core instruction");
+});
+
+// --- v0.51: skills are wired into the workflow, not just listed ---------------
+
+ok("skills-catalog-has-triggers", () => {
+  // The whole feature rests on this: if triggers go missing the matcher has nothing
+  // to work with, and 410 skills become a list nobody reads.
+  const c = getSkillsCatalog(path.resolve(__dirname, ".."));
+  const withTriggers = (c.skills || []).filter((s) => Array.isArray(s.triggers) && s.triggers.length);
+  assert((c.skills || []).length > 100, `catalog looks empty: ${(c.skills || []).length}`);
+  assert(withTriggers.length === (c.skills || []).length,
+    `only ${withTriggers.length}/${(c.skills || []).length} skills carry triggers`);
+});
+
+ok("skills-match-the-right-skill", () => {
+  const cwd = path.resolve(__dirname, "..");
+  const cases = [
+    ["audit accessibility of the checkout page", "accessib"],
+    ["optimize slow database queries", "sql"],
+    ["write a security threat model", "threat"],
+    ["review my pull request before merge", "review"],
+    ["add react state management", "react"],
+  ];
+  for (const [task, expect] of cases) {
+    const m = matchSkills(task, 5, cwd);
+    assert(m.length > 0, `no skill matched a task that clearly has one: "${task}"`);
+    assert(m.some((s) => s.id.toLowerCase().includes(expect)),
+      `"${task}" matched ${m.map((s) => s.id).join(", ")} but expected something containing "${expect}"`);
+  }
+});
+
+ok("skills-handles-shorthand", () => {
+  // Users type "postgres" for the postgresql skill. Exact-name matching alone misses it.
+  const cwd = path.resolve(__dirname, "..");
+  const m = matchSkills("investigate a postgres connection pool", 5, cwd);
+  assert(m.some((s) => s.id === "postgresql"), `"postgres" did not reach the postgresql skill: ${m.map((s) => s.id).join(", ")}`);
+});
+
+ok("skills-refuse-instead-of-guessing", () => {
+  // The important half. A wrong suggestion costs the agent context and teaches it to
+  // skim past the section, so "no match" has to be a real, reachable answer.
+  const cwd = path.resolve(__dirname, "..");
+  assert(matchSkills("fix a typo in a variable name", 5, cwd).length === 0,
+    "a Kubernetes skill matched 'fix a typo' via a substring inside podsecuritypolicy");
+  assert(matchSkills("blah blah random nonsense", 5, cwd).length === 0,
+    "invented skills for nonsense input");
+  assert(matchSkills("", 5, cwd).length === 0, "matched something for an empty task");
+});
+
+ok("skills-no-duplicate-suggestions", () => {
+  const cwd = path.resolve(__dirname, "..");
+  const m = matchSkills("optimize slow database queries", 6, cwd);
+  const ids = m.map((s) => s.id);
+  assert(new Set(ids).size === ids.length, `duplicate suggestions: ${ids.join(", ")}`);
+});
+
+ok("guide-task-recommends-skills", () => {
+  const cwd = path.resolve(__dirname, "..");
+  const map = buildMap(cwd);
+  const b = buildBrief(cwd, map, "optimize slow database queries");
+  assert(b.skills.length > 0, "guide_task recommended no skills for a database task");
+  assert(b.brief.includes("SKILLS THAT APPLY"), "brief text omits the skills section");
+  assert(b.brief.includes(b.skills[0].id), "brief does not name the top skill");
+});
+
+ok("mcp-skill-tools-are-exposed", () => {
+  const { TOOLS } = require("../mcp/server");
+  for (const t of ["match_skills", "get_skill", "list_skills", "guide_task"]) {
+    assert(TOOLS.some((x) => x.name === t), `MCP tool ${t} missing`);
+  }
+});
+
+// --- v0.51: encryption at rest (AES-256-GCM, zero dependencies) ---------------
+
+ok("crypt-roundtrip-and-leaks-nothing", () => {
+  const fs2 = require("fs");
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-crypt-"));
+  const key = "a-long-enough-passphrase-42";
+  const secret = "Stripe live key sk_live_abc123. RATE LIMIT locked at 100/min.";
+  const blob = crypt.encrypt(secret, key, path.join(tmp, "b.salt"));
+  assert(crypt.isEncrypted(blob), "blob not recognised as encrypted");
+  assert(crypt.decrypt(blob, key, path.join(tmp, "b.salt")) === secret, "round trip lost data");
+  const low = blob.toLowerCase();
+  assert(!low.includes("stripe") && !low.includes("sk_live") && !low.includes("100/min"),
+    "ciphertext leaked the plaintext");
+});
+
+ok("crypt-rejects-wrong-key-and-detects-tampering", () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-crypt-"));
+  const s = path.join(tmp, "b.salt");
+  const blob = crypt.encrypt("secret payload", "correct passphrase here", s);
+  // A wrong passphrase must fail loudly rather than return garbage.
+  let threw = false;
+  try { crypt.decrypt(blob, "wrong passphrase here", s); } catch { threw = true; }
+  assert(threw, "wrong passphrase decrypted successfully");
+  // GCM is authenticated: flipping a ciphertext bit must be detected, not decoded.
+  const p = blob.split(".");
+  const flipped = (p[4][0] === "A" ? "B" : "A") + p[4].slice(1);
+  threw = false;
+  try { crypt.decrypt(p.slice(0, 4).join(".") + "." + flipped, "correct passphrase here", s); } catch { threw = true; }
+  assert(threw, "tampered ciphertext was accepted");
+});
+
+ok("crypt-fresh-iv-per-record", () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-crypt-"));
+  const s = path.join(tmp, "b.salt");
+  const a = crypt.encrypt("same text", "passphrase for testing", s);
+  const b = crypt.encrypt("same text", "passphrase for testing", s);
+  assert(a !== b, "identical plaintext produced identical ciphertext (IV reuse)");
+  assert(crypt.decrypt(a, "passphrase for testing", s) === "same text", "a failed to decrypt");
+  assert(crypt.decrypt(b, "passphrase for testing", s) === "same text", "b failed to decrypt");
+});
+
+ok("crypt-refuses-weak-passphrase", () => {
+  let threw = false;
+  try { crypt.encrypt("x", "short"); } catch { threw = true; }
+  assert(threw, "accepted a 5-character passphrase");
+});
+
+ok("memory-bank-encrypts-at-rest", () => {
+  const prev = process.env.DEEP_ERA_KEY;
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-bank-"));
+  const file = path.join(tmp, ".deep-era", "memory_bank.json");
+  const secret = "user said: stripe key sk_live_secret123";
+  try {
+    process.env.DEEP_ERA_KEY = "a-long-enough-passphrase-42";
+    mb.addMemory({ kind: "decision", title: "Keys", content: secret }, tmp);
+    const raw = fs.readFileSync(file, "utf8");
+    assert(crypt.isEncrypted(raw), "bank was not encrypted");
+    assert(!raw.includes("sk_live") && !raw.includes("stripe"), "bank leaked its contents");
+
+    // Correct key reads it back perfectly.
+    assert(mb.loadMemoryBank(tmp).entries[0].content === secret, "could not read back with the right key");
+
+    // No key: nothing readable, and no crash.
+    delete process.env.DEEP_ERA_KEY;
+    assert(mb.loadMemoryBank(tmp).entries.length === 0, "bank readable without the key");
+    assert(mb.bankSecurityStatus(tmp).state === "encrypted-locked", "status wrong for a locked bank");
+  } finally {
+    if (prev === undefined) delete process.env.DEEP_ERA_KEY; else process.env.DEEP_ERA_KEY = prev;
+  }
+});
+
+ok("memory-bank-plaintext-mode-still-works", () => {
+  const prev = process.env.DEEP_ERA_KEY;
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-bank-"));
+  try {
+    delete process.env.DEEP_ERA_KEY;
+    mb.addMemory({ kind: "decision", title: "Plain", content: "MAX 3 jobs" }, tmp);
+    assert(mb.loadMemoryBank(tmp).entries.length === 1, "plaintext mode broken");
+    assert(mb.bankSecurityStatus(tmp).state === "plaintext", "status wrong for a plaintext bank");
+    // Migration must refuse without a key rather than write unreadable data.
+    assert(mb.migrateToEncrypted(tmp).migrated === false, "migrated with no key");
+  } finally {
+    if (prev === undefined) delete process.env.DEEP_ERA_KEY; else process.env.DEEP_ERA_KEY = prev;
+  }
+});
+
+ok("memory-encrypted-recall-and-degrade", () => {
+  const prev = process.env.DEEP_ERA_KEY;
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-mem-"));
+  try {
+    process.env.DEEP_ERA_KEY = "a-long-enough-passphrase-42";
+    remember(tmp, "decision", "RATE LIMIT locked at 100/min. Reason: cost ceiling");
+    remember(tmp, "chat", "user said: stripe key is sk_live_secret123");
+    const raw = fs.readFileSync(path.join(tmp, ".deep-era", "logs", "memory.jsonl"), "utf8");
+    assert(!raw.includes("sk_live") && !raw.includes("RATE LIMIT"), "session log leaked plaintext");
+    // The index stays readable so timeline and stats keep working without the key.
+    assert(raw.includes('"kind":"decision"'), "kind/kind metadata was encrypted too");
+    assert(recall(tmp, "rate limit").entries.length > 0, "recall failed with the right key");
+
+    delete process.env.DEEP_ERA_KEY;
+    assert(recall(tmp, "rate limit").entries.length === 0, "recall returned data with no key");
+
+    process.env.DEEP_ERA_KEY = "entirely different passphrase";
+    assert(recall(tmp, "rate limit").entries.length === 0, "recall returned data with a wrong key");
+  } finally {
+    if (prev === undefined) delete process.env.DEEP_ERA_KEY; else process.env.DEEP_ERA_KEY = prev;
+  }
 });
 
 // --- v0.49: slop — the complaint that AI code is huge, indirect, and over-built ---

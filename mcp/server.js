@@ -11,6 +11,9 @@ const { logStep, readJson } = require("../src/logger");
 
 const TOOLS = [
   { name: "guide_task", description: "PRE-FLIGHT BRIEFING — call this BEFORE editing anything. Classifies the task, names the exact files to read, the files that must not be touched, the files that import what you are about to change, this project's locked decisions, prior failures, and the order of work. Prevents guessing the wrong location, which is where slop starts.", inputSchema: { type: "object", properties: { task: { type: "string" } }, required: ["task"] } },
+  { name: "match_skills", description: "Find the installed agent skills that apply to a task, ranked by their triggers. 410 skills ship with deep-era and this is how you discover which ones matter instead of guessing. Call it before starting work. Returns [] when nothing matches, which is a real answer, not a failure.", inputSchema: { type: "object", properties: { task: { type: "string" }, limit: { type: "number" } }, required: ["task"] } },
+  { name: "get_skill", description: "Load one skill's full SKILL.md content by id. Pair it with match_skills: match to find what applies, get_skill to read it.", inputSchema: { type: "object", properties: { id: { type: "string" } }, required: ["id"] } },
+  { name: "list_skills", description: "List installed skills by category with counts, so you know what is available before promising anything.", inputSchema: { type: "object", properties: {} } },
   { name: "plan_task", description: "Plan first, show it to the user. Blind work is forbidden.", inputSchema: { type: "object", properties: { goal: { type: "string" }, steps: { type: "array", items: { type: "string" } } }, required: ["goal"] } },
   { name: "log_step", description: "Log every important step to the transparency log.", inputSchema: { type: "object", properties: { message: { type: "string" } }, required: ["message"] } },
   { name: "recall", description: "Project memory: recall past chats/decisions/fixes. MANDATORY at task start — forget nothing, budget-capped.", inputSchema: { type: "object", properties: { query: { type: "string" } }, required: ["query"] } },
@@ -50,7 +53,7 @@ async function runMcp() {
       const { id, method, params } = msg;
       try {
         if (method === "initialize") {
-          reply(id, { protocolVersion: "2024-11-05", capabilities: { tools: {} }, serverInfo: { name: "deep-era", version: "0.50.0" } });
+          reply(id, { protocolVersion: "2024-11-05", capabilities: { tools: {} }, serverInfo: { name: "deep-era", version: "0.52.0" } });
         } else if (method === "notifications/initialized") {
         } else if (method === "tools/list") {
           reply(id, { tools: TOOLS });
@@ -65,6 +68,24 @@ async function runMcp() {
             const b = buildBrief(cwd, gmap, args.task || "");
             logStep(cwd, `guide [${b.taskClass}/${b.confidence}]: ${(args.task || "").slice(0, 80)} -> ${b.likelyTouch.map((x) => x.file).join(", ") || "no match"}`);
             reply(id, { content: [{ type: "text", text: b.brief }] });
+          } else if (name === "match_skills") {
+            const { matchSkills } = require("../src/skills");
+            const m = matchSkills(args.task || "", Math.min(args.limit || 5, 12), cwd);
+            logStep(cwd, `match_skills: "${(args.task || "").slice(0, 60)}" -> ${m.length} skills`);
+            reply(id, { content: [{ type: "text", text: m.length ? JSON.stringify(m, null, 2).slice(0, 6000) : "No installed skill matches this task. Do not guess one — proceed without a skill, or search the catalog with deep-era skills <query>." }] });
+          } else if (name === "get_skill") {
+            const { getSkill } = require("../src/skills");
+            const s = getSkill(args.id || "", cwd);
+            if (!s) {
+              reply(id, { content: [{ type: "text", text: `No skill with id "${args.id}". Use match_skills or deep-era skills <query> to find the right one.` }] });
+            } else {
+              logStep(cwd, `get_skill: ${s.id}`);
+              reply(id, { content: [{ type: "text", text: `# ${s.id}\n\n${s.content}`.slice(0, 12000) }] });
+            }
+          } else if (name === "list_skills") {
+            const { getCatalog, listCategories } = require("../src/skills");
+            const cat = getCatalog(cwd);
+            reply(id, { content: [{ type: "text", text: JSON.stringify({ total: (cat.skills || []).length, categories: listCategories(cwd) }, null, 2).slice(0, 4000) }] });
           } else if (name === "plan_task") {
             logStep(cwd, `plan: ${args.goal} | steps=${(args.steps || []).join(" > ").slice(0, 500)}`);
             reply(id, { content: [{ type: "text", text: `Plan logged: ${args.goal}. Now fetch relevant files via get_context — blind scanning is forbidden.` }] });
@@ -197,4 +218,4 @@ async function runMcp() {
   });
 }
 
-module.exports = { runMcp };
+module.exports = { runMcp, TOOLS };

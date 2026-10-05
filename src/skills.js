@@ -115,10 +115,131 @@ function listCategories(cwd = process.cwd()) {
   return counts;
 }
 
+// --- trigger matching --------------------------------------------------------
+// The catalog already carries a `triggers` array on every skill, generated from that
+// skill's own description. Nothing read it, which meant a project with 410 skills
+// installed still behaved as if it had none: the agent had to know a skill existed and
+// remember its name. Matching on triggers lets `guide_task` say "these skills apply to
+// what you are about to do" instead of leaving discovery to chance.
+
+// Words too common to carry signal. Without this filter a task like "fix the login bug"
+// ranks every skill whose blurb mentions "fix" or "the".
+const STOPWORDS = new Set([
+  "you", "are", "the", "and", "for", "with", "this", "that", "from", "use", "using",
+  "use", "when", "your", "their", "its", "into", "a", "an", "of", "to", "in", "on",
+  "by", "as", "at", "be", "is", "it", "or", "not", "but", "can", "will", "should",
+  "expert", "master", "specializing", "specializes", "pro", "who", "which", "every",
+  "must", "never", "always", "also", "then", "than", "them", "they", "we", "our",
+  // Generic verbs name an ACTION, not a SUBJECT. "fix a typo" must not rank an
+  // accessibility audit, and "review my PR" must not rank a landing-page audit. The
+  // subject noun is what identifies a skill; without this every task matched whatever
+  // skill happened to share its verb.
+  "fix", "add", "make", "get", "set", "run", "new", "change", "update", "remove",
+  "create", "build", "write", "read", "check", "test", "help", "need", "want", "do",
+  "implement", "refactor", "clean", "move", "handle", "start", "stop", "use-case",
+]);
+
+// A skill needs more than a generic verb to be a recommendation. Anything scoring only
+// on one weak token is noise that would teach the agent to ignore the whole section.
+const MIN_SCORE = 14;
+
+function taskTokens(taskText) {
+  return [...new Set(
+    String(taskText || "")
+      .toLowerCase()
+      .split(/[^a-z0-9+#.-]+/)
+      .filter((w) => w.length > 2 && !STOPWORDS.has(w))
+  )];
+}
+
+// Rank skills against a task using name, category, tags and triggers.
+// Returns [] rather than a weak match: telling an agent to load a skill that is only
+// loosely related costs it context and teaches it to ignore the suggestion.
+function matchSkills(taskText, limit = 5, cwd = process.cwd()) {
+  const catalog = getCatalog(cwd);
+  const tokens = taskTokens(taskText);
+  if (!tokens.length) return [];
+  const scored = [];
+  for (const s of catalog.skills || []) {
+    const name = String(s.name || s.id || "").toLowerCase();
+    const cat = String(s.category || "").toLowerCase();
+    const desc = String(s.description || "").toLowerCase();
+    const tags = (Array.isArray(s.tags) ? s.tags : []).map((t) => String(t).toLowerCase());
+    const triggers = (Array.isArray(s.triggers) ? s.triggers : []).map((t) => String(t).toLowerCase());
+    const triggerSet = new Set(triggers);
+    let score = 0;
+    const hits = [];
+    let strongHits = 0;   // name or exact-trigger matches, which are real intent
+    let nameStrong = 0;   // matched on the skill NAME, the most reliable identifier
+    for (const t of tokens) {
+      // An exact trigger hit is a strong signal the catalog offers.
+      if (triggerSet.has(t)) { score += 16; strongHits++; hits.push(t); continue; }
+      // The skill NAME is the most reliable identifier there is, so an exact or
+      // near-exact name match must outrank a trigger hit. Catalog trigger lists are
+      // derived from prose descriptions and are not exhaustive: the `postgresql`
+      // skill has no "postgres" trigger even though the name says it plainly.
+      const nameBare = name.replace(/[^a-z0-9]/g, "");
+      const tokenBare = t.replace(/[^a-z0-9]/g, "");
+      if (nameBare === tokenBare) { score += 20; strongHits += 2; nameStrong += 2; hits.push(t); continue; }
+      // Substring matching on a squashed name produces nonsense: "k8ssecuritypolicies"
+      // contains the letters "typo" inside "podsecuritypolicy", so "fix a typo" matched
+      // a Kubernetes skill. Compare on word boundaries instead, using the original
+      // hyphen/underscore/space separated name.
+      const nameWords = name.split(/[^a-z0-9]+/).filter(Boolean);
+      if (nameWords.some((w) => w === tokenBare) && tokenBare.length > 3) { score += 14; strongHits++; nameStrong++; hits.push(t); continue; }
+      // Prefix matching catches the common shorthand: users write "postgres" for the
+      // `postgresql` skill, "k8s" for `kubernetes-*`, "a11y" for accessibility. The
+      // longer string must be at least 4 characters and the shorter at least 3, or
+      // three-letter words collide with everything.
+      if (nameWords.some((w) => w.length >= 4 && tokenBare.length >= 3 && (w.startsWith(tokenBare) || tokenBare.startsWith(w)))) {
+        score += 14; strongHits++; nameStrong++; hits.push(t); continue;
+      }
+      if (nameWords.some((w) => w.length > 4 && (w.startsWith(tokenBare) || tokenBare.startsWith(w)))) { score += 10; strongHits++; nameStrong++; hits.push(t); continue; }
+      if (name.includes(t)) { score += 8; strongHits++; nameStrong++; hits.push(t); continue; }
+      if (tags.some((x) => x === t)) { score += 6; hits.push(t); continue; }
+      if (cat === t) { score += 5; hits.push(t); continue; }
+      if (cat.includes(t)) { score += 3; hits.push(t); continue; }
+      // Same boundary rule as the name: a trigger like "podsecuritypolicy" must not
+      // match the word "typo" hiding inside it.
+      const trigBare = triggers.map((x) => x.replace(/[^a-z0-9]/g, ""));
+      const tokenBare2 = t.replace(/[^a-z0-9]/g, "");
+      if (trigBare.some((x) => x === tokenBare2)) { score += 2; hits.push(t); continue; }
+      if (tags.some((x) => x.includes(t))) { score += 1; hits.push(t); continue; }
+      if (desc.includes(t)) { score += 1; }
+    }
+    // One incidental word is not a recommendation. Trigger lists are generated from
+    // prose, so a Kubernetes security skill legitimately contains the word "typo"
+    // somewhere in its description, and a secret-scanning skill contains "leak". Those
+    // A skill that only matched weakly is not a recommendation, and neither is one that
+    // matched a single incidental word. Trigger lists are generated from prose, so a
+    // Kubernetes security skill legitimately contains the word "leak" somewhere and a
+    // secret scanner contains "leak" too, without either being about a database pool.
+    //
+    // A suggestion is credible when any of these hold:
+    //   * two or more strong signals (name or exact-trigger matches),
+    //   * a very high score, meaning an exact skill-name match,
+    //   * one strong signal plus corroboration from a second task word, or
+    //   * three or more task words matched in total.
+    // `nameStrong` counts matches on the skill NAME specifically. A user who types
+    // "postgres" means the postgresql skill, and that has to survive the gate even
+    // though it is a single word.
+    const credible = strongHits >= 2 || score >= 20 || (strongHits >= 1 && hits.length >= 2)
+      || hits.length >= 3 || nameStrong >= 1;
+    if (score >= MIN_SCORE && credible) {
+      scored.push({ id: s.id, name: s.name, category: s.category, score, matched: [...new Set(hits)].slice(0, 5), description: s.description });
+    }
+  }
+  scored.sort((a, b) => b.score - a.score || String(a.id).localeCompare(String(b.id)));
+  return scored.slice(0, limit);
+}
+
 module.exports = {
   findCatalogPath,
   getCatalog,
   searchSkills,
   getSkill,
-  listCategories
+  listCategories,
+  matchSkills,
+  taskTokens,
+  STOPWORDS
 };

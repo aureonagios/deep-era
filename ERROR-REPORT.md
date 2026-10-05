@@ -1,12 +1,12 @@
 # ERROR-REPORT.md (AI Deep Era Doctor)
 
-Generated: 2026-10-05T10:53:02.977Z
-Stack: node | Files: 99
+Generated: 2026-10-05T15:28:42.579Z
+Stack: node | Files: 100
 
 ## 1. Terminal / build truth
-### `syntax-check (51 JS + 0 TS/JSX)` => PASS
+### `syntax-check (52 JS + 0 TS/JSX)` => PASS
 ```
-all 51 JS pass (single-process)
+all 52 JS pass (single-process)
 ```
 
 ### `npm test --silent` => PASS
@@ -18,7 +18,7 @@ PASS verify-deep-all-files
 PASS snapshot-create-restore
 PASS snapshot-restore-removes-new-files
 PASS init-creates-agents-md
-[deep-era] init ok -> C:\Users\Mustafa\AppData\Local\Temp\deep-era-VsnoHY
+[deep-era] init ok -> C:\Users\Mustafa\AppData\Local\Temp\deep-era-vLzSwF
   - AGENTS.md (universal rules, 25+ IDEs)
   - .deep-era/map.json (2 files, stack=unknown)
   - .deep-era/RULES.md + logs/
@@ -31,6 +31,20 @@ PASS semantic-respects-guard-patterns
 PASS tsparse-valid-typescript-passes
 PASS tsparse-catches-broken-typescript
 PASS verify-fails-on-broken-typescript
+PASS skills-catalog-has-triggers
+PASS skills-match-the-right-skill
+PASS skills-handles-shorthand
+PASS skills-refuse-instead-of-guessing
+PASS skills-no-duplicate-suggestions
+PASS guide-task-recommends-skills
+PASS mcp-skill-tools-are-exposed
+PASS crypt-roundtrip-and-leaks-nothing
+PASS crypt-rejects-wrong-key-and-detects-tampering
+PASS crypt-fresh-iv-per-record
+PASS crypt-refuses-weak-passphrase
+PASS memory-bank-encrypts-at-rest
+PASS memory-bank-plaintext-mode-still-works
+PASS memory-encrypted-recall-and-degrade
 PASS slop-catches-ai-over-engineering
 PASS slop-no-false-positives-on-clean-code
 PASS slop-no-false-positives-on-repo
@@ -52,18 +66,7 @@ Every push/PR will now run: deep-era check
 PASS ci-gate-generator
 PASS sarif-output-valid
 PASS dep-blocklist-critical
-PASS sinks-and-entropy-caught
-PASS py-ast-precision
-PASS recall-tfidf-ranks-rare-first
-PASS ide-22-clients-valid
-[deep-era] ARCHITECTURE.md: 2 modules, 1 edges (renders on GitHub)
-PASS graph-from-real-imports
-[deep-era] timeline (1 events):
-  2026-01-01T00:00 [step] init ok: 2 files
-PASS timeline-reads-logs
-[deep-era demo] planted 4 traps in C:\Users\Mustafa\AppData\Local\Temp\deep-era-demo-mSrYAH (SQL injection, new Function, hijacked dep, dummy stats)
-[deep-era demo] caught 5 critical/high in 9ms:
-  ! [high] app.js: Po
+PASS sinks-
 ```
 
 ## 2. Security findings (0)
@@ -100,25 +103,26 @@ None. Clean.
 - .github/ISSUE_TEMPLATE/feature_request.md (doc, 291b)
 - .github/PULL_REQUEST_TEMPLATE.md (doc, 239b)
 - .github/workflows/deep-era.yml (config, 279b)
-- .gitignore (other, 125b)
+- .gitignore (other, 465b)
 - .npmignore (other, 50b)
 - AGENTS.md (doc, 5191b)
 - ARCHITECTURE.md (doc, 2246b)
 - BENCH.md (doc, 6539b)
-- bin/cli.js (code-js, 33149b)
+- bin/cli.js (code-js, 34127b)
 - DEMO.md (doc, 1451b)
-- ERROR-REPORT.md (doc, 4484b)
+- ERROR-REPORT.md (doc, 4584b)
 - install.ps1 (other, 690b)
 - install.sh (other, 631b)
 - LICENSE (other, 73b)
 - llms.txt (other, 2184b)
-- mcp/server.js (code-js, 15474b)
-- package.json (config, 703b)
-- README.md (doc, 20288b)
+- mcp/server.js (code-js, 17829b)
+- package.json (config, 1208b)
+- README.md (doc, 25910b)
 - SECURITY.md (doc, 1305b)
 - src/browser.js (code-js, 1970b)
 - src/ci.js (code-js, 1874b)
 - src/context.js (code-js, 2100b)
+- src/crypt.js (code-js, 7234b)
 - src/cwe.js (code-js, 2019b)
 - src/dashboard.js (code-js, 30438b)
 - src/demo.js (code-js, 2506b)
@@ -130,19 +134,19 @@ None. Clean.
 - src/graph.js (code-js, 2971b)
 - src/guard.js (code-js, 14306b)
 - src/guardian.js (code-js, 3400b)
-- src/guidance.js (code-js, 15085b)
+- src/guidance.js (code-js, 15893b)
 - src/hook.js (code-js, 1826b)
 - src/hunt.js (code-js, 2737b)
 - src/init.js (code-js, 6321b)
 - src/links.js (code-js, 6418b)
 - src/logger.js (code-js, 886b)
 - src/map.js (code-js, 7924b)
-- src/memory.js (code-js, 10416b)
-- src/memorybank.js (code-js, 2983b)
-- src/net.js (code-js, 3331b)
+- src/memory.js (code-js, 12398b)
+- src/memorybank.js (code-js, 5838b)
 
 ## 4. Fix order for the AI
 All clean. Nothing to fix.
 
 ## 5. Progress vs last run
-First audited run — baseline locked.
+Fixed since last run (1): secret-assign@tests/run.js
+Newly broken (0): —
