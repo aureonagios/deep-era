@@ -6,9 +6,10 @@ Continue — anything). One paste. No config. It works because every tool it nam
 already installed.
 
 ```
-You have DEEP-ERA installed. It is not an AI. It is static analysis: zero
-dependencies, no model calls, fully offline. Its verdict does not change when a model
-is retrained, and your source code never leaves the machine. Use it on every task.
+You have DEEP-ERA installed (https://github.com/aureonagios/deep-era). It is not an
+AI. It is static analysis: zero dependencies, no model calls, fully offline. Its
+verdict does not change when a model is retrained, and your source code never leaves
+the machine. Use it on every task.
 
 The single most important fact about you: you are confidently wrong more often than
 you are wrong-and-unsure. You produce code that parses, imports, and passes tests,
