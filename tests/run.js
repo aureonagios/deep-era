@@ -12,6 +12,10 @@ const { createSnapshot, restoreSnapshot } = require("../src/snapshot");
 const { verifyProject } = require("../src/verify");
 const { safeFix } = require("../src/fix");
 const { guardScan } = require("../src/guard");
+const { semanticScan } = require("../src/semantics");
+const { verifyMany } = require("../src/tsparse");
+const { buildBrief, classify, forbiddenFiles } = require("../src/guidance");
+const { slopScan } = require("../src/slop");
 const { remember, recall } = require("../src/memory");
 const { detectStack } = require("../src/map");
 const { packFor } = require("../src/stacks");
@@ -60,6 +64,22 @@ ok("snapshot-create-restore", () => {
   assert(fs.readFileSync(path.join(tmp, "a.js"), "utf8") === "console.log(1)", "restore content wrong");
 });
 
+ok("snapshot-restore-removes-new-files", () => {
+  // A restore must undo what the agent ADDED, not just put back what it deleted.
+  // Copying files back alone left half-written garbage in the tree, which the next
+  // scan then picked up. Found by probing, now pinned.
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-"));
+  fs.mkdirSync(path.join(tmp, "src"));
+  fs.writeFileSync(path.join(tmp, "src", "keep.js"), "module.exports = 1;");
+  const s = createSnapshot(tmp, "before");
+  fs.writeFileSync(path.join(tmp, "src", "keep.js"), "BROKEN(((");
+  fs.writeFileSync(path.join(tmp, "src", "half-written.js"), "function (((");
+  const r = restoreSnapshot(tmp, s.id);
+  assert(fs.readFileSync(path.join(tmp, "src", "keep.js"), "utf8") === "module.exports = 1;", "original not restored");
+  assert(!fs.existsSync(path.join(tmp, "src", "half-written.js")), "file created after the snapshot survived the restore");
+  assert(r.removed >= 1, `restore did not report the removal (removed=${r.removed})`);
+});
+
 ok("init-creates-agents-md", () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-"));
   fs.writeFileSync(path.join(tmp, "a.js"), "console.log(1)");
@@ -94,6 +114,206 @@ ok("fixture-demo-caught", () => {
   assert(g.some((x) => x.rule === "sql-injection"), "SQL injection missed!");
   assert(g.some((x) => x.rule === "dummy-stats"), "dummy e.g.+98% missed!");
   assert(d.some((x) => x.rule === "dep-unpinned"), "unpinned dep missed!");
+});
+
+// --- v0.47: semantic bug detection (the bugs v0.46 passed silently) ------------
+
+ok("semantic-catches-ai-bugs", () => {
+  const fx = path.join(__dirname, "fixtures", "semantic-bugs");
+  const map = buildMap(fx);
+  const f = semanticScan(fx, map.files);
+  const rules = f.map((x) => x.rule);
+  assert(f.some((x) => x.rule === "swallowed-exception"), "empty .catch() handler missed!");
+  assert(f.some((x) => x.rule === "floating-promise"), "unawaited promise missed!");
+  assert(f.some((x) => x.rule === "dead-branch"), "always-true branch missed!");
+  assert(rules.includes("tautological-test"), "assert.ok(true) missed!");
+  assert(rules.includes("empty-test"), "assertion-free test file missed!");
+});
+
+ok("semantic-no-false-positives-on-repo", () => {
+  // The engine must stay quiet on real, defensive, idiomatic code. This repo is
+  // heavily defensive on purpose (every optional read is guarded), so it is the
+  // hardest available false-positive test.
+  const cwd = path.resolve(__dirname, "..");
+  const map = buildMap(cwd);
+  const f = semanticScan(cwd, map.files);
+  const noisy = f.filter((x) => x.rule === "swallowed-exception" || x.rule === "floating-promise" || x.rule === "dead-branch");
+  assert(noisy.length === 0, `false positives on own repo: ${noisy.map((x) => `${x.file}:${x.line} ${x.rule}`).join(", ")}`);
+});
+
+ok("semantic-respects-guard-patterns", () => {
+  // Defensive code that must NEVER be flagged.
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-"));
+  fs.writeFileSync(path.join(tmp, "ok.js"), [
+    "const fs = require('fs');",
+    "function readConfig(p) {",
+    "  try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch { return {}; }",
+    "}",
+    "function scan(dir) {",
+    "  for (const f of fs.readdirSync(dir)) {",
+    "    let txt = '';",
+    "    try { txt = fs.readFileSync(f, 'utf8'); } catch { continue; }",
+    "    console.log(txt.length);",
+    "  }",
+    "}",
+    "async function load(u) {",
+    "  try { return await fetch(u); } catch (e) { console.error('load failed', e); throw e; }",
+    "}",
+    "main().catch((e) => { console.error(e); process.exit(1); });",
+    "module.exports = { readConfig, scan, load };",
+  ].join("\n"));
+  const map = buildMap(tmp);
+  const f = semanticScan(tmp, map.files);
+  assert(f.length === 0, `guard patterns wrongly flagged: ${f.map((x) => `${x.rule}@${x.line}`).join(", ")}`);
+});
+
+ok("tsparse-valid-typescript-passes", () => {
+  // Generics, regex angle brackets, template interpolation, JSX and entities must
+  // not be mistaken for broken syntax.
+  const fx = path.join(__dirname, "fixtures", "semantic-valid");
+  const map = buildMap(fx);
+  const r = verifyMany(fx, map.files, 50);
+  assert(r.checked >= 2, `expected to check the TS/TSX fixtures, checked ${r.checked}`);
+  assert(r.bad.length === 0, `false positives on valid TS: ${r.bad.map((b) => `${b.file}:${b.line} ${b.err}`).join("; ")}`);
+});
+
+ok("tsparse-catches-broken-typescript", () => {
+  const fx = path.join(__dirname, "fixtures", "broken-ts");
+  const map = buildMap(fx);
+  const r = verifyMany(fx, map.files, 50);
+  assert(r.bad.length >= 2, `broken TypeScript passed: ${JSON.stringify(r.bad)}`);
+  assert(r.bad.some((b) => /unclosed|unterminated/.test(b.err)), `expected a structural error, got ${JSON.stringify(r.bad)}`);
+  assert(r.bad.every((b) => b.line > 0), "findings must carry a line number");
+});
+
+ok("verify-fails-on-broken-typescript", () => {
+  // The regression that started this: a broken .ts file used to be skipped entirely
+  // and `verify` reported PASS. It must now fail.
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-"));
+  fs.writeFileSync(path.join(tmp, "package.json"), JSON.stringify({ name: "t", version: "1.0.0" }));
+  fs.writeFileSync(path.join(tmp, "app.ts"), "const x: number = ; function (((");
+  const map = buildMap(tmp);
+  const res = verifyProject(tmp, map);
+  const syntax = res.find((r) => r.cmd.startsWith("syntax-check"));
+  assert(syntax, "no syntax check ran");
+  assert(syntax.ok === false, "broken TypeScript was reported as PASS");
+  assert(/app\.ts/.test(syntax.output), `error did not name the file: ${syntax.output}`);
+});
+
+// --- v0.49: slop — the complaint that AI code is huge, indirect, and over-built ---
+
+ok("slop-catches-ai-over-engineering", () => {
+  const fx = path.join(__dirname, "fixtures", "slop-bad");
+  const map = buildMap(fx);
+  const f = slopScan(fx, map.files);
+  const rules = f.map((x) => x.rule);
+  assert(f.some((x) => x.rule === "slop-passthrough"), "passthrough wrappers missed!");
+  assert(rules.includes("slop-chain"), "call chain missed!");
+  assert(f.length < 12, `too noisy even on a bad fixture: ${f.length}`);
+});
+
+ok("slop-no-false-positives-on-clean-code", () => {
+  // The fixture is legitimate code that superficially resembles slop: real argument
+  // transformation, standard iteration, meaningful nesting. Zero findings, or the
+  // rules are useless.
+  const fx = path.join(__dirname, "fixtures", "slop-clean");
+  const map = buildMap(fx);
+  const f = slopScan(fx, map.files);
+  assert(f.length === 0, `false positives on clean code: ${f.map((x) => `${x.rule}@${x.line}`).join(", ")}`);
+});
+
+ok("slop-no-false-positives-on-repo", () => {
+  // This repo is large, idiomatic, and deliberately varied. It is the hardest
+  // available test: a slop rule that cries wolf here is unusable in anger.
+  const cwd = path.resolve(__dirname, "..");
+  const map = buildMap(cwd);
+  const f = slopScan(cwd, map.files);
+  assert(f.length === 0, `slop false positives on own repo: ${f.map((x) => `${x.rule} ${x.file}:${x.line}`).join(", ")}`);
+});
+
+ok("slop-does-not-flag-literal-initialisers", () => {
+  // `let closed = false` declares state, it does not alias a variable. An early draft
+  // reported 14 of these across this repo before the literal guard was added.
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-"));
+  fs.writeFileSync(path.join(tmp, "a.js"), [
+    "function f(items) {",
+    "  let closed = false;",
+    "  let dirty = false;",
+    "  let out = null;",
+    "  for (const i of items) {",
+    "    if (i) closed = true;",
+    "    if (i > 2) dirty = true;",
+    "  }",
+    "  return { closed, dirty, out };",
+    "}",
+    "module.exports = { f };",
+  ].join("\n"));
+  const map = buildMap(tmp);
+  const f = slopScan(tmp, map.files);
+  const bad = f.filter((x) => x.rule === "slop-indirection");
+  assert(bad.length === 0, `literal initialisers wrongly flagged: ${bad.map((x) => x.msg).join("; ")}`);
+});
+
+// --- v0.48: guidance — telling the agent WHERE to work, not just checking after ---
+
+ok("guidance-classifies-task", () => {
+  assert(classify("fix the crash in billing").kind === "bugfix", "bugfix not detected");
+  assert(classify("add a new export endpoint").kind === "feature", "feature not detected");
+  assert(classify("this is an sql injection hole").kind === "security", "security not detected");
+  assert(classify("the page is slow, optimize latency").kind === "performance", "performance not detected");
+  assert(classify("write a readme").kind === "docs", "docs not detected");
+});
+
+ok("guidance-routes-to-right-file", () => {
+  const cwd = path.resolve(__dirname, "..");
+  const map = buildMap(cwd);
+  const b = buildBrief(cwd, map, "fix the broken link checker");
+  const files = b.likelyTouch.map((x) => x.file);
+  assert(files.some((f) => f.includes("links")), `did not route to the link module: ${files.join(", ")}`);
+  // The project's own name must not hijack routing.
+  const b2 = buildBrief(cwd, map, "fix the broken link checker in deep era");
+  const files2 = b2.likelyTouch.map((x) => x.file);
+  assert(files2.some((f) => f.includes("links")), `project name hijacked routing: ${files2.join(", ")}`);
+  // Dependents must be surfaced, or the agent breaks callers it never looked at.
+  assert(b.alsoAffected.length > 0, "no dependent files reported");
+});
+
+ok("guidance-never-points-at-fixtures", () => {
+  const cwd = path.resolve(__dirname, "..");
+  const map = buildMap(cwd);
+  for (const t of ["fix the broken link checker", "fix broken typescript", "add rate limiting to the mcp server"]) {
+    const b = buildBrief(cwd, map, t);
+    const hit = b.likelyTouch.find((x) => /fixtures?\//.test(x.file));
+    assert(!hit, `pointed the agent at a fixture for "${t}": ${hit && hit.file}`);
+  }
+});
+
+ok("guidance-says-stop-when-it-cannot-route", () => {
+  const cwd = path.resolve(__dirname, "..");
+  const map = buildMap(cwd);
+  // Nothing in this repo relates to submarines: the honest answer is "search", not
+  // six plausible-looking files that would send the agent to edit the wrong thing.
+  const b = buildBrief(cwd, map, "fix the submarine reactor");
+  assert(b.likelyTouch.length === 0, `invented files for an unrelated task: ${b.likelyTouch.map((x) => x.file).join(", ")}`);
+  assert(/search/i.test(b.brief), "brief did not tell the agent to search instead of guessing");
+});
+
+ok("guidance-surfaces-locked-decisions", () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-"));
+  fs.writeFileSync(path.join(tmp, "package.json"), '{"name":"g","version":"1.0.0"}');
+  fs.writeFileSync(path.join(tmp, "index.js"), "module.exports = 1;");
+  remember(tmp, "decision", "RATE LIMIT locked at 100/min. Reason: infra cost ceiling");
+  const map = buildMap(tmp);
+  const b = buildBrief(tmp, map, "add rate limiting");
+  assert(b.lockedDecisions.some((d) => d.includes("100/min")), "locked decision not surfaced to the agent");
+  assert(b.brief.includes("100/min"), "locked decision missing from the brief text");
+});
+
+ok("guidance-forbids-generated-and-lockfiles", () => {
+  const rules = forbiddenFiles();
+  assert(rules.some((r) => /lock/.test(r.pattern.source)), "lockfiles not protected");
+  assert(rules.some((r) => /node_modules/.test(r.pattern.source)), "vendored code not protected");
+  assert(rules.some((r) => /dist|build/.test(r.pattern.source)), "build output not protected");
 });
 
 ok("memory-no-chat-forgotten", () => {
@@ -551,7 +771,28 @@ ok("announce-rule-in-template", () => {
   assert(AGENTS_MD.includes("Deep-Era session started:") && AGENTS_MD.includes("Deep-Era session done:"), "announce rule missing!");
 });
 
-ok("universal-stacks-detected", () => {
+ok("links-catch-dead-url", async () => {
+  const http = require("http");
+  const { auditLinks, extractUrls } = require("../src/links");
+  const srv = http.createServer((req, res) => {
+    if (req.url === "/gone") { res.writeHead(404); res.end("no"); }
+    else { res.writeHead(200); res.end("yes"); }
+  });
+  await new Promise((r) => srv.listen(0, r));
+  const port = srv.address().port;
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-"));
+  fs.writeFileSync(path.join(tmp, "DOCS.md"), `See http://127.0.0.1:${port}/ok and http://127.0.0.1:${port}/gone and http://localhost:9/none\n`);
+  const map = buildMap(tmp);
+  const urls = extractUrls(tmp, map.files);
+  assert([...urls.keys()].some((u) => u.endsWith("/gone")), "extraction missed!");
+  assert(![...urls.keys()].some((u) => u.includes("localhost")), "localhost not skipped!");
+  const found = await auditLinks(tmp, map.files);
+  srv.close();
+  assert(found.some((f) => f.rule === "broken-link" && f.file === "DOCS.md"), "dead link missed!");
+  assert(!found.some((f) => f.msg.includes("/ok ")), "live link flagged!");
+});
+
+ok("stack-detection", () => {
   const kinds = [
     [[{ file: "go.mod" }], "go"],
     [[{ file: "Cargo.toml" }], "rust"],

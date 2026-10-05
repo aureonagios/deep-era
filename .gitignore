@@ -3,5 +3,13 @@ node_modules/
 .deep-era/snapshots/
 .deep-era/logs/
 .deep-era/ide/
+.deep-era/report.sarif
 *.tgz
 tests/perf-result.json
+tests/.deep-era/
+
+# 410 third-party agent skills (8.1 MB) live here.
+# They carry no LICENSE and no provenance in catalog.json, so committing them into an
+# MIT-licensed repo is a legal risk with no benefit: the audit engines do not read them.
+# Install them separately if you want them: see .agents/INSTALL.md
+.agents/skills/

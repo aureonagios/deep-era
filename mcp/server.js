@@ -10,16 +10,17 @@ const { remember, recall } = require("../src/memory");
 const { logStep, readJson } = require("../src/logger");
 
 const TOOLS = [
+  { name: "guide_task", description: "PRE-FLIGHT BRIEFING — call this BEFORE editing anything. Classifies the task, names the exact files to read, the files that must not be touched, the files that import what you are about to change, this project's locked decisions, prior failures, and the order of work. Prevents guessing the wrong location, which is where slop starts.", inputSchema: { type: "object", properties: { task: { type: "string" } }, required: ["task"] } },
   { name: "plan_task", description: "Plan first, show it to the user. Blind work is forbidden.", inputSchema: { type: "object", properties: { goal: { type: "string" }, steps: { type: "array", items: { type: "string" } } }, required: ["goal"] } },
   { name: "log_step", description: "Log every important step to the transparency log.", inputSchema: { type: "object", properties: { message: { type: "string" } }, required: ["message"] } },
   { name: "recall", description: "Project memory: recall past chats/decisions/fixes. MANDATORY at task start — forget nothing, budget-capped.", inputSchema: { type: "object", properties: { query: { type: "string" } }, required: ["query"] } },
   { name: "remember", description: "Project memory: save what matters (kind=chat|decision|fix|error|note). Set global=true for a lesson EVERY project recalls. MANDATORY at task end.", inputSchema: { type: "object", properties: { kind: { type: "string" }, text: { type: "string" }, global: { type: "boolean" } }, required: ["text"] } },
   { name: "get_context", description: "Token saver: never read the whole codebase. Query and get only relevant files + imports.", inputSchema: { type: "object", properties: { query: { type: "string" }, limit: { type: "number" } }, required: ["query"] } },
-  { name: "verify_work", description: "Terminal truth: run syntax (all files) + build + tests.", inputSchema: { type: "object", properties: {} } },
+  { name: "verify_work", description: "Terminal truth: run syntax (all JS + structural TS/TSX/JSX) + build + tests.", inputSchema: { type: "object", properties: {} } },
   { name: "security_check", description: "Scan for secrets / dangerous code / dependency leaks.", inputSchema: { type: "object", properties: {} } },
   { name: "snapshot", description: "Backup first, restore on breakage. action=create|restore, id required for restore.", inputSchema: { type: "object", properties: { action: { type: "string" }, id: { type: "string" }, label: { type: "string" } } } },
   { name: "safe_fix", description: "SAFE auto-fix: gitignore guard + map refresh. Never touches code logic, snapshots first.", inputSchema: { type: "object", properties: {} } },
-  { name: "audit_work", description: "GENERIC audit: dummy-proof + injection + missing tests + non-English code. Audit any AI work, any project.", inputSchema: { type: "object", properties: {} } },
+  { name: "audit_work", description: "GENERIC audit: dummy-proof + injection + missing tests + non-English code + SEMANTIC BUGS (swallowed errors, floating promises, dead branches, fake tests). Audit any AI work, any project.", inputSchema: { type: "object", properties: {} } },
   { name: "review_changes", description: "Scoped review: audit ONLY git-changed files. Judge the diff, not legacy code.", inputSchema: { type: "object", properties: {} } },
   { name: "search_code", description: "Ranked code search: find files by name + content + import hubs. Returns top files with hit counts.", inputSchema: { type: "object", properties: { query: { type: "string" } }, required: ["query"] } },
   { name: "fetch_url", description: "Fetch a docs/API URL to capped text (stdlib, offline-safe). Use to verify APIs against official docs — never invent them.", inputSchema: { type: "object", properties: { url: { type: "string" } }, required: ["url"] } },
@@ -49,14 +50,22 @@ async function runMcp() {
       const { id, method, params } = msg;
       try {
         if (method === "initialize") {
-          reply(id, { protocolVersion: "2024-11-05", capabilities: { tools: {} }, serverInfo: { name: "deep-era", version: "0.46.0" } });
+          reply(id, { protocolVersion: "2024-11-05", capabilities: { tools: {} }, serverInfo: { name: "deep-era", version: "0.50.0" } });
         } else if (method === "notifications/initialized") {
         } else if (method === "tools/list") {
           reply(id, { tools: TOOLS });
         } else if (method === "tools/call") {
           const name = params && params.name;
           const args = (params && params.arguments) || {};
-          if (name === "plan_task") {
+          if (name === "guide_task") {
+            const { buildBrief } = require("../src/guidance");
+            const { buildMap: bm3 } = require("../src/map");
+            let gmap = readJson(cwd, "map.json", null);
+            if (!gmap) gmap = bm3(cwd);
+            const b = buildBrief(cwd, gmap, args.task || "");
+            logStep(cwd, `guide [${b.taskClass}/${b.confidence}]: ${(args.task || "").slice(0, 80)} -> ${b.likelyTouch.map((x) => x.file).join(", ") || "no match"}`);
+            reply(id, { content: [{ type: "text", text: b.brief }] });
+          } else if (name === "plan_task") {
             logStep(cwd, `plan: ${args.goal} | steps=${(args.steps || []).join(" > ").slice(0, 500)}`);
             reply(id, { content: [{ type: "text", text: `Plan logged: ${args.goal}. Now fetch relevant files via get_context — blind scanning is forbidden.` }] });
           } else if (name === "log_step") {
@@ -116,19 +125,20 @@ async function runMcp() {
             const { buildMap: bm2 } = require("../src/map");
             const { verifyProject: vp2 } = require("../src/verify");
             const { securityScan: ss2 } = require("../src/security");
-            const { guardScan: gs2 } = require("../src/guard");
-            const { changedFiles } = require("../src/review");
-            const changed = changedFiles(cwd);
-            if (changed === null) {
-              reply(id, { content: [{ type: "text", text: "Not a git repo — use verify_work + security_check + audit_work instead." }] });
-            } else if (!changed.length) {
-              reply(id, { content: [{ type: "text", text: "Working tree clean — nothing to review." }] });
-            } else {
-              let map2 = readJson(cwd, "map.json", null);
-              if (!map2) map2 = bm2(cwd);
-              const names2 = new Set(changed);
-              const res = vp2(cwd, { ...map2, files: map2.files.filter((f) => names2.has(f.file)) });
-              const findings = [...ss2(cwd, map2.files), ...gs2(cwd, map2.files)].filter((x) => names2.has(x.file));
+              const { guardScan: gs2 } = require("../src/guard");
+              const { semanticScan: ss3 } = require("../src/semantics");
+              const { changedFiles } = require("../src/review");
+              const changed = changedFiles(cwd);
+              if (changed === null) {
+                reply(id, { content: [{ type: "text", text: "Not a git repo — use verify_work + security_check + audit_work instead." }] });
+              } else if (!changed.length) {
+                reply(id, { content: [{ type: "text", text: "Working tree clean — nothing to review." }] });
+              } else {
+                let map2 = readJson(cwd, "map.json", null);
+                if (!map2) map2 = bm2(cwd);
+                const names2 = new Set(changed);
+                const res = vp2(cwd, { ...map2, files: map2.files.filter((f) => names2.has(f.file)) });
+                const findings = [...ss2(cwd, map2.files), ...gs2(cwd, map2.files), ...ss3(cwd, map2.files)].filter((x) => names2.has(x.file));
               logStep(cwd, `review: ${changed.length} files, ${findings.length} findings`);
               reply(id, { content: [{ type: "text", text: JSON.stringify({ changed, verify: res, findings }, null, 2).slice(0, 8000) }] });
             }
@@ -136,9 +146,12 @@ async function runMcp() {
             let map = readJson(cwd, "map.json", null);
             if (!map) map = buildMap(cwd);
             const { auditDeps, auditOsv, auditLicenses } = require("../src/deps");
-            const findings = [...guardScan(cwd, map.files), ...auditDeps(cwd), ...(await Promise.resolve(auditOsv(cwd)).catch(() => [])), ...(await Promise.resolve(auditLicenses(cwd)).catch(() => []))];
+            const { auditLinks } = require("../src/links");
+            const { semanticScan } = require("../src/semantics");
+            const { slopScan } = require("../src/slop");
+            const findings = [...guardScan(cwd, map.files), ...semanticScan(cwd, map.files), ...slopScan(cwd, map.files), ...auditDeps(cwd), ...(await Promise.resolve(auditOsv(cwd)).catch(() => [])), ...(await Promise.resolve(auditLicenses(cwd)).catch(() => [])), ...(await Promise.resolve(auditLinks(cwd, map.files)).catch(() => []))];
             logStep(cwd, `audit: ${findings.length} findings`);
-            reply(id, { content: [{ type: "text", text: findings.length ? JSON.stringify(findings, null, 2).slice(0, 8000) : "Clean. No dummy proof, injection, missing tests, or non-English code." }] });
+            reply(id, { content: [{ type: "text", text: findings.length ? JSON.stringify(findings, null, 2).slice(0, 8000) : "Clean. No dummy proof, injection, missing tests, non-English code, swallowed errors, floating promises, dead branches, fake tests, or over-engineering." }] });
           } else if (name === "search_code") {
             let smap = readJson(cwd, "map.json", null);
             if (!smap) smap = buildMap(cwd);

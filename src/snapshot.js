@@ -76,9 +76,52 @@ function listSnapshots(cwd) {
   } catch { return []; }
 }
 
-function restoreSnapshot(cwd, id) {  const src = path.join(snapDir(cwd), id);
+function restoreSnapshot(cwd, id) {
+  const src = path.join(snapDir(cwd), id);
   if (!fs.existsSync(src)) throw new Error(`snapshot not found: ${id}`);
   let count = 0;
+  let removed = 0;
+
+  // Collect what the snapshot contains so we can tell "new since snapshot" apart
+  // from "part of the backup".
+  const backed = new Set();
+  function collect(rel) {
+    let entries = [];
+    try { entries = fs.readdirSync(path.join(src, rel), { withFileTypes: true }); } catch { return; }
+    for (const e of entries) {
+      if (e.name === ".snapshot.json") continue;
+      const r = rel ? path.join(rel, e.name) : e.name;
+      if (e.isDirectory()) collect(r);
+      else backed.add(r);
+    }
+  }
+  collect("");
+
+  // A restore must also undo files the agent CREATED after the backup. Copying
+  // files back alone left half-written garbage in the tree, which then got
+  // imported by the next scan and confused the agent further.
+  function prune(rel) {
+    const full = path.join(cwd, rel);
+    let entries = [];
+    try { entries = fs.readdirSync(full, { withFileTypes: true }); } catch { return; }
+    for (const e of entries) {
+      if (e.name === ".git" || e.name === "node_modules" || e.name === ".deep-era") continue;
+      const r = rel ? path.join(rel, e.name) : e.name;
+      if (e.isDirectory()) {
+        prune(r);
+        // remove the directory only if the backup did not have it and it is now empty
+        if (!backed.has(r) && !existsSyncSafe(path.join(src, r))) {
+          try {
+            if (fs.readdirSync(path.join(cwd, r)).length === 0) { fs.rmdirSync(path.join(cwd, r)); removed++; }
+          } catch {}
+        }
+      } else if (!backed.has(r)) {
+        try { fs.unlinkSync(path.join(cwd, r)); removed++; } catch {}
+      }
+    }
+  }
+  prune("");
+
   function walk(rel) {
     const full = path.join(src, rel);
     let entries = [];
@@ -97,7 +140,11 @@ function restoreSnapshot(cwd, id) {  const src = path.join(snapDir(cwd), id);
     }
   }
   walk("");
-  return { id, restored: count };
+  return { id, restored: count, removed };
+}
+
+function existsSyncSafe(p) {
+  try { return fs.existsSync(p); } catch { return false; }
 }
 
 // Diff a snapshot against NOW: added / removed / modified (sha1).

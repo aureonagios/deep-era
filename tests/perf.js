@@ -11,6 +11,8 @@ const { securityScan } = require("../src/security");
 const { verifyProject } = require("../src/verify");
 const { getRelevant, readSnippets } = require("../src/context");
 const { recall, remember } = require("../src/memory");
+const { semanticScan } = require("../src/semantics");
+const { verifyMany: verifyManyTs } = require("../src/tsparse");
 
 function timed(name, fn) {
   const t0 = process.hrtime.bigint();
@@ -46,6 +48,8 @@ async function main() {
   rows.push(timed("guardScan + dupScan", () => guardScan(own, ownMap.files)));
   rows.push(timed("securityScan", () => securityScan(own, ownMap.files)));
   rows.push(timed("verifyProject", () => verifyProject(own, ownMap)));
+  rows.push(timed("semanticScan (new in v0.47)", () => semanticScan(own, ownMap.files)));
+  rows.push(timed("tsparse TS/TSX/JSX (new in v0.47)", () => verifyManyTs(own, ownMap.files, 120)));
   const rel = getRelevant(own, ownMap, "mcp server tools", 8);
   const ctx = timed("get_context + snippets", () => readSnippets(own, rel));
   rows.push(ctx);
@@ -67,11 +71,14 @@ async function main() {
   const bigRel = getRelevant(big, bigMap, "handler calc total", 8);
   const pack = readSnippets(big, bigRel);
   const t4 = process.hrtime.bigint();
+  semanticScan(big, bigMap.files);
+  const t5 = process.hrtime.bigint();
   const M = (a, b) => Number(b - a) / 1e6;
   rows.push({ name: `BIG map (300 files)`, ms: M(t0, t1) });
   rows.push({ name: `BIG guard+dup`, ms: M(t1, t2) });
   rows.push({ name: `BIG security`, ms: M(t2, t3) });
   rows.push({ name: `BIG context`, ms: M(t3, t4) });
+  rows.push({ name: `BIG semantic (new)`, ms: M(t4, t5) });
 
   console.log("\n=== DEEP-ERA PERF (ms) ===");
   for (const r of rows) console.log(`${r.ms.toFixed(1).padStart(9)} ms  ${r.name}`);

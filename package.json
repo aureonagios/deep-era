@@ -1,7 +1,7 @@
 {
   "name": "deep-era",
-  "version": "0.46.0",
-  "description": "AI Deep Era - universal layer that gives any AI agent eyes: map, terminal truth, verify, security proof",
+  "version": "0.50.0",
+  "description": "Give any AI agent eyes: route it to the right files before it edits, then verify what it wrote. Zero dependencies, offline, no AI inside.",
   "type": "commonjs",
   "main": "./src/map.js",
   "bin": {
@@ -15,9 +15,38 @@
     "README.md",
     "LICENSE"
   ],
-  "keywords": ["ai", "mcp", "coding-agent", "verify", "security", "cursor", "antigravity", "opencode"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aureonagios/deep-era.git"
+  },
+  "bugs": {
+    "url": "https://github.com/aureonagios/deep-era/issues"
+  },
+  "homepage": "https://github.com/aureonagios/deep-era#readme",
+  "keywords": [
+    "ai",
+    "mcp",
+    "ai-code-review",
+    "coding-agent",
+    "static-analysis",
+    "code-quality",
+    "security",
+    "saas-security",
+    "cursor",
+    "claude-code",
+    "copilot",
+    "antigravity",
+    "windsurf",
+    "opencode",
+    "vibe-coding",
+    "guardrails",
+    "semantic-bugs",
+    "technical-debt",
+    "zero-dependencies",
+    "offline"
+  ],
   "scripts": {
-    "test": "node tests/run.js && node tests/cli.js && node tests/mcp.js"
+    "test": "node tests/run.js && node tests/cli.js && node tests/mcp.js && node tests/superpowers.js"
   },
   "engines": {
     "node": ">=18"

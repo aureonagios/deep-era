@@ -1,9 +1,12 @@
 {
-  "at": "2026-09-12T18:28:07.514Z",
+  "at": "2026-10-05T10:53:02.978Z",
   "failed": 0,
   "security": 0,
   "guard": 0,
+  "semantic": 0,
+  "slop": 0,
   "deps": 0,
+  "links": 0,
   "sigs": [],
   "fixed": 0,
   "broken": 0

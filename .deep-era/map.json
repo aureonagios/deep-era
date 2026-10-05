@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-09-12T18:26:09.247Z",
+  "generatedAt": "2026-10-05T10:51:19.015Z",
   "stack": {
     "kind": "node",
     "run": null,
@@ -8,10 +8,45 @@
     "test": "npm test"
   },
   "counts": {
-    "total": 67,
+    "total": 99,
     "truncated": false
   },
   "files": [
+    {
+      "file": ".agents/catalog.json",
+      "role": "config",
+      "size": 502509,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": ".agents/router.py",
+      "role": "code-py",
+      "size": 1483,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": ".agents/rules/agi-self-correction-verification.md",
+      "role": "doc",
+      "size": 1899,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": ".agents/rules/autonomous-skills.md",
+      "role": "doc",
+      "size": 22878,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": ".deep-eraignore",
+      "role": "other",
+      "size": 85,
+      "imports": [],
+      "importedBy": []
+    },
     {
       "file": ".github/FUNDING.yml",
       "role": "config",
@@ -50,7 +85,7 @@
     {
       "file": ".gitignore",
       "role": "other",
-      "size": 107,
+      "size": 125,
       "imports": [],
       "importedBy": []
     },
@@ -64,7 +99,7 @@
     {
       "file": "AGENTS.md",
       "role": "doc",
-      "size": 3926,
+      "size": 5191,
       "imports": [],
       "importedBy": []
     },
@@ -78,14 +113,14 @@
     {
       "file": "BENCH.md",
       "role": "doc",
-      "size": 1714,
+      "size": 6539,
       "imports": [],
       "importedBy": []
     },
     {
       "file": "bin/cli.js",
       "role": "code-js",
-      "size": 22705,
+      "size": 33149,
       "imports": [
         "src/init.js",
         "src/doctor.js",
@@ -95,18 +130,18 @@
         "src/guard.js",
         "src/deps.js",
         "src/logger.js",
+        "src/links.js",
         "src/spend.js",
         "src/fix.js",
         "src/setupIde.js",
         "src/context.js",
+        "src/guidance.js",
         "src/memory.js",
         "src/graph.js",
         "src/timeline.js",
         "src/snapshot.js",
         "src/review.js",
-        "src/receipt.js",
-        "src/demo.js",
-        "src/stacks.js"
+        "src/receipt.js"
       ],
       "importedBy": []
     },
@@ -120,7 +155,7 @@
     {
       "file": "ERROR-REPORT.md",
       "role": "doc",
-      "size": 4144,
+      "size": 4484,
       "imports": [],
       "importedBy": []
     },
@@ -155,7 +190,7 @@
     {
       "file": "mcp/server.js",
       "role": "code-js",
-      "size": 13797,
+      "size": 15474,
       "imports": [
         "src/map.js",
         "src/verify.js",
@@ -165,10 +200,14 @@
         "src/snapshot.js",
         "src/memory.js",
         "src/logger.js",
+        "src/guidance.js",
         "src/spend.js",
         "src/fix.js",
+        "src/semantics.js",
         "src/review.js",
         "src/deps.js",
+        "src/links.js",
+        "src/slop.js",
         "src/net.js"
       ],
       "importedBy": []
@@ -176,16 +215,17 @@
     {
       "file": "package.json",
       "role": "config",
-      "size": 650,
+      "size": 703,
       "imports": [],
       "importedBy": [
+        "src/sarif.js",
         "src/sbom.js"
       ]
     },
     {
       "file": "README.md",
       "role": "doc",
-      "size": 7963,
+      "size": 20288,
       "imports": [],
       "importedBy": []
     },
@@ -206,7 +246,7 @@
     {
       "file": "src/ci.js",
       "role": "code-js",
-      "size": 1020,
+      "size": 1874,
       "imports": [],
       "importedBy": [
         "tests/run.js"
@@ -235,6 +275,26 @@
       ]
     },
     {
+      "file": "src/dashboard.js",
+      "role": "code-js",
+      "size": 30438,
+      "imports": [
+        "src/map.js",
+        "src/verify.js",
+        "src/security.js",
+        "src/guard.js",
+        "src/logger.js",
+        "src/skills.js",
+        "src/hunt.js",
+        "src/guardian.js",
+        "src/memorybank.js",
+        "src/spend.js"
+      ],
+      "importedBy": [
+        "tests/superpowers.js"
+      ]
+    },
+    {
       "file": "src/demo.js",
       "role": "code-js",
       "size": 2506,
@@ -245,10 +305,7 @@
         "src/guard.js",
         "src/deps.js"
       ],
-      "importedBy": [
-        "bin/cli.js",
-        "tests/run.js"
-      ]
+      "importedBy": []
     },
     {
       "file": "src/deps.js",
@@ -265,15 +322,27 @@
       ]
     },
     {
+      "file": "src/docker.js",
+      "role": "code-js",
+      "size": 4522,
+      "imports": [],
+      "importedBy": [
+        "tests/superpowers.js"
+      ]
+    },
+    {
       "file": "src/doctor.js",
       "role": "code-js",
-      "size": 4782,
+      "size": 6145,
       "imports": [
         "src/map.js",
         "src/verify.js",
         "src/security.js",
         "src/guard.js",
         "src/deps.js",
+        "src/links.js",
+        "src/semantics.js",
+        "src/slop.js",
         "src/cwe.js",
         "src/logger.js",
         "src/sarif.js"
@@ -317,8 +386,7 @@
         "src/map.js"
       ],
       "importedBy": [
-        "bin/cli.js",
-        "tests/run.js"
+        "bin/cli.js"
       ]
     },
     {
@@ -332,10 +400,35 @@
       "importedBy": [
         "bin/cli.js",
         "mcp/server.js",
+        "src/dashboard.js",
         "src/demo.js",
         "src/doctor.js",
         "src/review.js",
         "tests/perf.js",
+        "tests/run.js"
+      ]
+    },
+    {
+      "file": "src/guardian.js",
+      "role": "code-js",
+      "size": 3400,
+      "imports": [],
+      "importedBy": [
+        "src/dashboard.js",
+        "tests/superpowers.js"
+      ]
+    },
+    {
+      "file": "src/guidance.js",
+      "role": "code-js",
+      "size": 15085,
+      "imports": [
+        "src/memory.js",
+        "src/semantics.js"
+      ],
+      "importedBy": [
+        "bin/cli.js",
+        "mcp/server.js",
         "tests/run.js"
       ]
     },
@@ -347,9 +440,19 @@
       "importedBy": []
     },
     {
+      "file": "src/hunt.js",
+      "role": "code-js",
+      "size": 2737,
+      "imports": [],
+      "importedBy": [
+        "src/dashboard.js",
+        "tests/superpowers.js"
+      ]
+    },
+    {
       "file": "src/init.js",
       "role": "code-js",
-      "size": 5032,
+      "size": 6321,
       "imports": [
         "src/map.js",
         "src/stacks.js",
@@ -362,6 +465,17 @@
       ]
     },
     {
+      "file": "src/links.js",
+      "role": "code-js",
+      "size": 6418,
+      "imports": [],
+      "importedBy": [
+        "bin/cli.js",
+        "mcp/server.js",
+        "src/doctor.js"
+      ]
+    },
+    {
       "file": "src/logger.js",
       "role": "code-js",
       "size": 886,
@@ -369,6 +483,7 @@
       "importedBy": [
         "bin/cli.js",
         "mcp/server.js",
+        "src/dashboard.js",
         "src/doctor.js",
         "src/fix.js",
         "src/init.js"
@@ -382,6 +497,7 @@
       "importedBy": [
         "bin/cli.js",
         "mcp/server.js",
+        "src/dashboard.js",
         "src/demo.js",
         "src/doctor.js",
         "src/fix.js",
@@ -402,9 +518,20 @@
       "importedBy": [
         "bin/cli.js",
         "mcp/server.js",
+        "src/guidance.js",
         "src/receipt.js",
         "tests/perf.js",
         "tests/run.js"
+      ]
+    },
+    {
+      "file": "src/memorybank.js",
+      "role": "code-js",
+      "size": 2983,
+      "imports": [],
+      "importedBy": [
+        "src/dashboard.js",
+        "tests/superpowers.js"
       ]
     },
     {
@@ -450,12 +577,13 @@
     {
       "file": "src/review.js",
       "role": "code-js",
-      "size": 2473,
+      "size": 2557,
       "imports": [
         "src/map.js",
         "src/verify.js",
         "src/security.js",
-        "src/guard.js"
+        "src/guard.js",
+        "src/semantics.js"
       ],
       "importedBy": [
         "bin/cli.js",
@@ -465,9 +593,10 @@
     {
       "file": "src/sarif.js",
       "role": "code-js",
-      "size": 1450,
+      "size": 2118,
       "imports": [
-        "src/cwe.js"
+        "src/cwe.js",
+        "package.json"
       ],
       "importedBy": [
         "src/doctor.js",
@@ -486,15 +615,30 @@
     {
       "file": "src/security.js",
       "role": "code-js",
-      "size": 6220,
+      "size": 6572,
       "imports": [
         "src/pyast.js"
       ],
       "importedBy": [
         "bin/cli.js",
         "mcp/server.js",
+        "src/dashboard.js",
         "src/demo.js",
         "src/doctor.js",
+        "src/review.js",
+        "tests/perf.js",
+        "tests/run.js"
+      ]
+    },
+    {
+      "file": "src/semantics.js",
+      "role": "code-js",
+      "size": 22660,
+      "imports": [],
+      "importedBy": [
+        "mcp/server.js",
+        "src/doctor.js",
+        "src/guidance.js",
         "src/review.js",
         "tests/perf.js",
         "tests/run.js"
@@ -527,9 +671,30 @@
       ]
     },
     {
+      "file": "src/skills.js",
+      "role": "code-js",
+      "size": 3760,
+      "imports": [],
+      "importedBy": [
+        "src/dashboard.js",
+        "tests/superpowers.js"
+      ]
+    },
+    {
+      "file": "src/slop.js",
+      "role": "code-js",
+      "size": 11869,
+      "imports": [],
+      "importedBy": [
+        "mcp/server.js",
+        "src/doctor.js",
+        "tests/run.js"
+      ]
+    },
+    {
       "file": "src/snapshot.js",
       "role": "code-js",
-      "size": 4914,
+      "size": 6668,
       "imports": [],
       "importedBy": [
         "bin/cli.js",
@@ -547,6 +712,7 @@
       "importedBy": [
         "bin/cli.js",
         "mcp/server.js",
+        "src/dashboard.js",
         "src/receipt.js"
       ]
     },
@@ -556,7 +722,6 @@
       "size": 1519,
       "imports": [],
       "importedBy": [
-        "bin/cli.js",
         "src/init.js",
         "tests/run.js"
       ]
@@ -567,18 +732,31 @@
       "size": 1515,
       "imports": [],
       "importedBy": [
-        "bin/cli.js",
+        "bin/cli.js"
+      ]
+    },
+    {
+      "file": "src/tsparse.js",
+      "role": "code-js",
+      "size": 11452,
+      "imports": [],
+      "importedBy": [
+        "src/verify.js",
+        "tests/perf.js",
         "tests/run.js"
       ]
     },
     {
       "file": "src/verify.js",
       "role": "code-js",
-      "size": 6621,
-      "imports": [],
+      "size": 7054,
+      "imports": [
+        "src/tsparse.js"
+      ],
       "importedBy": [
         "bin/cli.js",
         "mcp/server.js",
+        "src/dashboard.js",
         "src/demo.js",
         "src/doctor.js",
         "src/review.js",
@@ -589,7 +767,7 @@
     {
       "file": "TEST-REPORT.md",
       "role": "doc",
-      "size": 2877,
+      "size": 3879,
       "imports": [],
       "importedBy": []
     },
@@ -626,6 +804,62 @@
       "importedBy": []
     },
     {
+      "file": "tests/fixtures/broken-ts/broken.ts",
+      "role": "code-js",
+      "size": 319,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": "tests/fixtures/broken-ts/unclosed.ts",
+      "role": "code-js",
+      "size": 86,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": "tests/fixtures/semantic-bugs/bugs.js",
+      "role": "code-js",
+      "size": 843,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": "tests/fixtures/semantic-bugs/empty.test.js",
+      "role": "code-js",
+      "size": 109,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": "tests/fixtures/semantic-bugs/fake.test.js",
+      "role": "code-js",
+      "size": 219,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": "tests/fixtures/semantic-valid/tsconfig.json",
+      "role": "config",
+      "size": 70,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": "tests/fixtures/semantic-valid/valid.ts",
+      "role": "code-js",
+      "size": 1785,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": "tests/fixtures/semantic-valid/valid.tsx",
+      "role": "code-js",
+      "size": 824,
+      "imports": [],
+      "importedBy": []
+    },
+    {
       "file": "tests/fixtures/serve-app/package.json",
       "role": "config",
       "size": 43,
@@ -654,6 +888,20 @@
       "importedBy": []
     },
     {
+      "file": "tests/fixtures/slop-bad/generated.js",
+      "role": "code-js",
+      "size": 1491,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": "tests/fixtures/slop-clean/clean.js",
+      "role": "code-js",
+      "size": 1196,
+      "imports": [],
+      "importedBy": []
+    },
+    {
       "file": "tests/lib/report.js",
       "role": "code-js",
       "size": 3188,
@@ -661,13 +909,14 @@
       "importedBy": [
         "tests/cli.js",
         "tests/mcp.js",
-        "tests/run.js"
+        "tests/run.js",
+        "tests/superpowers.js"
       ]
     },
     {
       "file": "tests/mcp.js",
       "role": "code-js",
-      "size": 7043,
+      "size": 8068,
       "imports": [
         "tests/lib/report.js"
       ],
@@ -676,28 +925,30 @@
     {
       "file": "tests/perf-result.json",
       "role": "config",
-      "size": 710,
+      "size": 936,
       "imports": [],
       "importedBy": []
     },
     {
       "file": "tests/perf.js",
       "role": "code-js",
-      "size": 4468,
+      "size": 4917,
       "imports": [
         "src/map.js",
         "src/guard.js",
         "src/security.js",
         "src/verify.js",
         "src/context.js",
-        "src/memory.js"
+        "src/memory.js",
+        "src/semantics.js",
+        "src/tsparse.js"
       ],
       "importedBy": []
     },
     {
       "file": "tests/run.js",
       "role": "code-js",
-      "size": 28441,
+      "size": 40957,
       "imports": [
         "src/map.js",
         "src/security.js",
@@ -706,6 +957,10 @@
         "src/verify.js",
         "src/fix.js",
         "src/guard.js",
+        "src/semantics.js",
+        "src/tsparse.js",
+        "src/guidance.js",
+        "src/slop.js",
         "src/memory.js",
         "src/stacks.js",
         "tests/lib/report.js",
@@ -713,11 +968,58 @@
         "src/ci.js",
         "src/sarif.js",
         "src/pyast.js",
-        "src/setupIde.js",
-        "src/graph.js",
-        "src/timeline.js",
-        "src/demo.js"
+        "src/setupIde.js"
       ],
+      "importedBy": []
+    },
+    {
+      "file": "tests/superpowers.js",
+      "role": "code-js",
+      "size": 4641,
+      "imports": [
+        "tests/lib/report.js",
+        "src/skills.js",
+        "src/hunt.js",
+        "src/guardian.js",
+        "src/docker.js",
+        "src/memorybank.js",
+        "src/dashboard.js"
+      ],
+      "importedBy": []
+    },
+    {
+      "file": "tools/docker_scaffold.py",
+      "role": "code-py",
+      "size": 2858,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": "tools/memory_bank.py",
+      "role": "code-py",
+      "size": 2179,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": "tools/port_hunter.py",
+      "role": "code-py",
+      "size": 1271,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": "tools/secret_guardian.py",
+      "role": "code-py",
+      "size": 2090,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": "tools/smoke_tester.py",
+      "role": "code-py",
+      "size": 3220,
+      "imports": [],
       "importedBy": []
     }
   ]

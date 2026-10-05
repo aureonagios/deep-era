@@ -5,6 +5,9 @@ const { verifyProject } = require("./verify");
 const { securityScan } = require("./security");
 const { guardScan } = require("./guard");
 const { auditDeps, auditOsv, auditLicenses } = require("./deps");
+const { auditLinks } = require("./links");
+const { semanticScan } = require("./semantics");
+const { slopScan } = require("./slop");
 const { tagSuffix } = require("./cwe");
 const { ensureDeepDir, writeJson, logStep } = require("./logger");
 
@@ -16,8 +19,11 @@ async function runDoctor(cwd) {
   const verify = verifyProject(cwd, map);
   const security = securityScan(cwd, map.files);
   const guard = guardScan(cwd, map.files);
+  const semantic = semanticScan(cwd, map.files);
+  const slop = slopScan(cwd, map.files);
   const deps = [...auditDeps(cwd), ...(await Promise.resolve(auditOsv(cwd)).catch(() => [])), ...(await Promise.resolve(auditLicenses(cwd)).catch(() => []))];
-  const allFindings = [...security, ...guard, ...deps];
+  const links = await Promise.resolve(auditLinks(cwd, map.files)).catch(() => []);
+  const allFindings = [...security, ...guard, ...semantic, ...slop, ...deps, ...links];
 
   const failed = verify.filter((v) => !v.ok);
   const bad = allFindings.filter((g) => g.sev === "critical" || g.sev === "high");
@@ -38,11 +44,17 @@ async function runDoctor(cwd) {
     `## 1. Terminal / build truth\n` +
     (verify.length ? verify.map((v) => `### \`${v.cmd}\` => ${v.ok ? "PASS" : "FAIL"}\n\`\`\`\n${v.output.slice(0, 2000)}\n\`\`\`\n`).join("\n") : "No checks.\n") +
     `\n## 2. Security findings (${security.length})\n` +
-    (security.length ? security.map((s) => `- [${s.sev}] ${s.file}: ${s.msg} (${s.rule})${tagSuffix(s.rule)}`).join("\n") : "None. Clean.\n") +
-    `\n\n## 2b. Guard / audit (${guard.length})\n` +
-    (guard.length ? guard.map((g) => `- [${g.sev}] ${g.file}: ${g.msg} (${g.rule})${tagSuffix(g.rule)}`).join("\n") : "None. Clean.\n") +
+    (security.length ? security.map((s) => `- [${s.sev}] ${s.file}${s.line ? ":" + s.line : ""}: ${s.msg} (${s.rule})${tagSuffix(s.rule)}`).join("\n") : "None. Clean.\n") +
+    `\n## 2b. Guard / audit (${guard.length})\n` +
+    (guard.length ? guard.map((g) => `- [${g.sev}] ${g.file}${g.line ? ":" + g.line : ""}: ${g.msg} (${g.rule})${tagSuffix(g.rule)}`).join("\n") : "None. Clean.\n") +
+    `\n\n## 2b2. Semantic bugs (${semantic.length})\n` +
+    (semantic.length ? semantic.map((s) => `- [${s.sev}] ${s.file}:${s.line || "?"}: ${s.msg} (${s.rule})`).join("\n") : "None. No swallowed errors, floating promises, dead branches, or fake tests.\n") +
+    `\n\n## 2b3. Slop / over-engineering (${slop.length})\n` +
+    (slop.length ? slop.map((s) => `- [${s.sev}] ${s.file}:${s.line || "?"}: ${s.msg} (${s.rule})`).join("\n") : "None. No passthrough layers, dead code, or pointless indirection.\n") +
     `\n\n## 2c. Dependency audit (${deps.length})\n` +
     (deps.length ? deps.map((g) => `- [${g.sev}] ${g.file}: ${g.msg} (${g.rule})${tagSuffix(g.rule)}`).join("\n") : "None. Clean.\n") +
+    `\n\n## 2d. Link check (${links.length})\n` +
+    (links.length ? links.map((g) => `- [${g.sev}] ${g.file}: ${g.msg} (${g.rule})`).join("\n") : "None. Clean.\n") +
     `\n\n## 3. File map (top 50)\n` +
     map.files.slice(0, 50).map((f) => `- ${f.file} (${f.role}, ${f.size}b)`).join("\n") +
     `\n\n## 4. Fix order for the AI\n` +
@@ -52,14 +64,14 @@ async function runDoctor(cwd) {
 
   fs.writeFileSync(path.join(cwd, ".deep-era", "ERROR-REPORT.md"), report);
   fs.writeFileSync(path.join(cwd, "ERROR-REPORT.md"), report);
-  writeJson(cwd, "last-doctor.json", { at: new Date().toISOString(), failed: failed.length, security: security.length, guard: guard.length, deps: deps.length, sigs: [...now], fixed: fixed.length, broken: broken.length });
-  logStep(cwd, `doctor: ${failed.length} fails, ${security.length} security, ${guard.length} guard, ${deps.length} deps, fixed ${fixed.length}, broken ${broken.length}`);
+  writeJson(cwd, "last-doctor.json", { at: new Date().toISOString(), failed: failed.length, security: security.length, guard: guard.length, semantic: semantic.length, slop: slop.length, deps: deps.length, links: links.length, sigs: [...now], fixed: fixed.length, broken: broken.length });
+  logStep(cwd, `doctor: ${failed.length} fails, ${security.length} security, ${guard.length} guard, ${semantic.length} semantic, ${slop.length} slop, ${deps.length} deps, ${links.length} links, fixed ${fixed.length}, broken ${broken.length}`);
 
-  console.log(`[deep-era] doctor done: ${failed.length} FAIL, ${security.length} security, ${guard.length} guard, ${deps.length} deps`);
+  console.log(`[deep-era] doctor done: ${failed.length} FAIL, ${security.length} security, ${guard.length} guard, ${semantic.length} semantic, ${slop.length} slop, ${deps.length} deps, ${links.length} links`);
   console.log(`  progress: ${fixed.length} fixed, ${broken.length} newly broken`);
   console.log(`  -> ERROR-REPORT.md`);
   if (process.argv.includes("--json")) {
-    console.log(JSON.stringify({ result: failed.length || bad.length ? "FAIL" : "PASS", failed: failed.length, security: security.length, guard: guard.length, deps: deps.length, fixed: fixed.length, broken: broken.length }));
+    console.log(JSON.stringify({ result: failed.length || bad.length ? "FAIL" : "PASS", failed: failed.length, security: security.length, guard: guard.length, semantic: semantic.length, slop: slop.length, deps: deps.length, links: links.length, fixed: fixed.length, broken: broken.length }));
   }
   if (process.argv.includes("--sarif")) {
     const { writeSarif } = require("./sarif");

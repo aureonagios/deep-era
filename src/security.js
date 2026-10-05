@@ -55,7 +55,7 @@ function entropyScan(txt, file, findings) {
     if (/test|example|placeholder|xxx|1234|abcd/i.test(s)) continue;
     if (shannon(s) > 4.5 && n < 3) {
       n++;
-      findings.push({ file, rule: "entropy-secret", sev: "medium", msg: `High-entropy string (${s.length} chars) in assignment — possible secret, verify it.` });
+      findings.push({ file, rule: "entropy-secret", sev: "medium", line: txt.slice(0, m.index).split("\n").length, msg: `High-entropy string (${s.length} chars) in assignment — possible secret, verify it.` });
     }
   }
 }
@@ -78,7 +78,13 @@ function securityScan(cwd, files) {
     const allowed = allowedRules(txt);
     for (const p of PATTERNS) {
       try {
-        if (!allowed.has(p.id) && p.re.test(txt)) findings.push({ file: f.file, rule: p.id, sev: p.sev, msg: p.msg });
+        if (allowed.has(p.id)) continue;
+        const m = p.re.exec(txt);
+        if (!m) continue;
+        // Report WHERE, not just what. A finding without a line forces the reader to
+        // hunt for it, and on a 3000-line file that is how real issues get missed.
+        const line = txt.slice(0, m.index).split("\n").length;
+        findings.push({ file: f.file, rule: p.id, sev: p.sev, line, msg: p.msg });
       } catch {}
     }
     if (!allowed.has("entropy-secret")) { try { entropyScan(txt, f.file, findings); } catch {} }

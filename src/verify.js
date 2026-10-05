@@ -2,6 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const vm = require("vm");
 const { execSync, execFileSync } = require("child_process");
+const { verifyMany } = require("./tsparse");
 
 function runCmd(cwd, cmd, timeoutMs = 90000) {
   try {
@@ -25,9 +26,10 @@ function esmOk(txt) {
 function nodeCheckAll(cwd, files) {
   // Check EVERY checkable JS file in ONE process (no 250ms spawn per file).
   // Tier 1: vm parse (CJS). Tier 2 for failures: ESM stdin check. Either passes = OK.
-  // .ts/.tsx/.jsx need tsc/babel — skipped here, flagged for CI (no false FAILs).
+  // Tier 3: TypeScript/TSX/JSX get a structural parse (src/tsparse.js). Node cannot
+  // parse TS and tsc is often absent, so skipping them was a FALSE PASS: an AI could
+  // ship a .ts file that does not even parse and `check` stayed green.
   const js = files.filter((f) => /\.(js|mjs|cjs)$/.test(f.file) && f.size < 200000 && !f.file.startsWith("tests/fixtures/")).slice(0, 80);
-  const skippedTs = files.filter((f) => /\.(ts|tsx|jsx)$/.test(f.file)).length;
   const bad = [];
   for (const f of js) {
     let txt = "";
@@ -41,9 +43,15 @@ function nodeCheckAll(cwd, files) {
     }
   }
   let note = `all ${js.length} JS pass (single-process)`;
-  if (skippedTs) note += `, ${skippedTs} ts/tsx/jsx need tsc in CI`;
-  if (!bad.length) return { cmd: `syntax-check (${js.length} files)`, ok: true, output: note };
-  return { cmd: `syntax-check (${js.length} files)`, ok: false, output: bad.map((b) => `${b.file}: ${b.err}`).join("\n").slice(0, 6000) };
+
+  // Tier 3: TypeScript / TSX / JSX structural verification.
+  const ts = verifyMany(cwd, files, 120);
+  if (ts.checked) note += `, ${ts.checked} TS/TSX/JSX structurally verified`;
+  for (const b of ts.bad) bad.push({ file: b.file, err: `line ${b.line}:${b.col} ${b.err}` });
+
+  if (ts.checked) note += " (types still need tsc)";
+  if (!bad.length) return { cmd: `syntax-check (${js.length} JS + ${ts.checked} TS/JSX)`, ok: true, output: note };
+  return { cmd: `syntax-check (${js.length} JS + ${ts.checked} TS/JSX)`, ok: false, output: bad.map((b) => `${b.file}: ${b.err}`).join("\n").slice(0, 6000) };
 }
 
 function pyCompileAll(cwd, files) {

@@ -50,7 +50,9 @@ ok("mcp-initialize-and-list", async () => {
   const init = await s.send("initialize", {});
   assert(init.result.serverInfo.name === "deep-era", "wrong server");
   const list = await s.send("tools/list", {});
-  assert(list.result.tools.length === 15, `expected 15 tools, got ${list.result.tools.length}`);
+  assert(list.result.tools.length === 16, `expected 16 tools, got ${list.result.tools.length}`);
+// The routing tool is the one that stops an agent guessing, so it must be present.
+assert(list.result.tools.some((t) => t.name === "guide_task"), "guide_task missing from tools/list");
   s.stop();
 });
 
@@ -73,6 +75,21 @@ ok("mcp-plan-log-context", async () => {
   assert(l.result.content[0].text.includes("Logged"), "log broke");
   const c = await s.send("tools/call", { name: "get_context", arguments: { query: "handler" } });
   assert(c.result.content[0].text.includes("handler.js"), "context broke");
+  s.stop();
+});
+
+ok("mcp-guide-task-routes", async () => {
+  // The routing tool over the wire: it must classify the task and name the file.
+  const s = session(sandbox());
+  await s.send("initialize", {});
+  const r = await s.send("tools/call", { name: "guide_task", arguments: { task: "fix the broken handler" } });
+  const text = r.result.content[0].text;
+  assert(text.includes("TASK CLASS"), "no task class in brief");
+  assert(text.includes("handler.js"), `did not route to handler.js:\n${text}`);
+  assert(text.includes("DO NOT EDIT"), "no do-not-edit section");
+  // An unrelated task must not invent a location.
+  const r2 = await s.send("tools/call", { name: "guide_task", arguments: { task: "fix the submarine reactor" } });
+  assert(r2.result.content[0].text.includes("search"), "unroutable task did not fall back to search");
   s.stop();
 });
 

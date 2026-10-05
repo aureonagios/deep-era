@@ -1,12 +1,12 @@
 # ERROR-REPORT.md (AI Deep Era Doctor)
 
-Generated: 2026-09-12T18:28:07.513Z
-Stack: node | Files: 67
+Generated: 2026-10-05T10:53:02.977Z
+Stack: node | Files: 99
 
 ## 1. Terminal / build truth
-### `syntax-check (39 files)` => PASS
+### `syntax-check (51 JS + 0 TS/JSX)` => PASS
 ```
-all 39 JS pass (single-process)
+all 51 JS pass (single-process)
 ```
 
 ### `npm test --silent` => PASS
@@ -16,14 +16,31 @@ PASS security-runs-deep
 PASS context-saves-tokens
 PASS verify-deep-all-files
 PASS snapshot-create-restore
+PASS snapshot-restore-removes-new-files
 PASS init-creates-agents-md
-[deep-era] init ok -> C:\Users\Mustafa\AppData\Local\Temp\deep-era-UTwpBa
+[deep-era] init ok -> C:\Users\Mustafa\AppData\Local\Temp\deep-era-VsnoHY
   - AGENTS.md (universal rules, 25+ IDEs)
   - .deep-era/map.json (2 files, stack=unknown)
   - .deep-era/RULES.md + logs/
 Next: deep-era doctor  (full health check)
 PASS guard-generic-no-trading
 PASS fixture-demo-caught
+PASS semantic-catches-ai-bugs
+PASS semantic-no-false-positives-on-repo
+PASS semantic-respects-guard-patterns
+PASS tsparse-valid-typescript-passes
+PASS tsparse-catches-broken-typescript
+PASS verify-fails-on-broken-typescript
+PASS slop-catches-ai-over-engineering
+PASS slop-no-false-positives-on-clean-code
+PASS slop-no-false-positives-on-repo
+PASS slop-does-not-flag-literal-initialisers
+PASS guidance-classifies-task
+PASS guidance-routes-to-right-file
+PASS guidance-never-points-at-fixtures
+PASS guidance-says-stop-when-it-cannot-route
+PASS guidance-surfaces-locked-decisions
+PASS guidance-forbids-generated-and-lockfiles
 PASS memory-no-chat-forgotten
 PASS english-only-code-enforced
 PASS memory-dedupe-saves-tokens
@@ -44,83 +61,85 @@ PASS graph-from-real-imports
 [deep-era] timeline (1 events):
   2026-01-01T00:00 [step] init ok: 2 files
 PASS timeline-reads-logs
-[deep-era demo] planted 4 traps in C:\Users\Mustafa\AppData\Local\Temp\deep-era-demo-gPWe1O (SQL injection, new Function, hijacked dep, dummy stats)
-[deep-era demo] caught 5 critical/high in 2645ms:
-  ! [high] app.js: Possible SQL injection (string concat) (sql-concat)
-  ! [high] app.js: new Function(string) — code from string, injection risk (new-function)
-  ! [critical] app.js: String-concatenated SQL — parameterized queries are mandatory. (sql-injection)
-  ! [high] REPORT.md: e.g. + 9x% claim looks like example numbers. Paste real command output. (dummy-stats)
-  ! [critical] package.json: event-stream@3.3.6 BLOCKED — hijacked 2018 — steals bitcoin keys. Remove now. (dep-blocklist)
-[deep-era demo] verdict: CAUGHT — a blind AI would ship this
-PASS allowlist-suppression
-PASS snapshot-diff-tracks-ai
-PASS recall-synonym-finds-bug
-[deep-era] skill pack ready: deep-era-a
+[deep-era demo] planted 4 traps in C:\Users\Mustafa\AppData\Local\Temp\deep-era-demo-mSrYAH (SQL injection, new Function, hijacked dep, dummy stats)
+[deep-era demo] caught 5 critical/high in 9ms:
+  ! [high] app.js: Po
 ```
 
 ## 2. Security findings (0)
 None. Clean.
 
-
 ## 2b. Guard / audit (0)
 None. Clean.
+
+
+## 2b2. Semantic bugs (0)
+None. No swallowed errors, floating promises, dead branches, or fake tests.
+
+
+## 2b3. Slop / over-engineering (0)
+None. No passthrough layers, dead code, or pointless indirection.
 
 
 ## 2c. Dependency audit (0)
 None. Clean.
 
 
+## 2d. Link check (0)
+None. Clean.
+
+
 ## 3. File map (top 50)
+- .agents/catalog.json (config, 502509b)
+- .agents/router.py (code-py, 1483b)
+- .agents/rules/agi-self-correction-verification.md (doc, 1899b)
+- .agents/rules/autonomous-skills.md (doc, 22878b)
+- .deep-eraignore (other, 85b)
 - .github/FUNDING.yml (config, 20b)
 - .github/ISSUE_TEMPLATE/bug_report.md (doc, 336b)
 - .github/ISSUE_TEMPLATE/feature_request.md (doc, 291b)
 - .github/PULL_REQUEST_TEMPLATE.md (doc, 239b)
 - .github/workflows/deep-era.yml (config, 279b)
-- .gitignore (other, 107b)
+- .gitignore (other, 125b)
 - .npmignore (other, 50b)
-- AGENTS.md (doc, 3926b)
+- AGENTS.md (doc, 5191b)
 - ARCHITECTURE.md (doc, 2246b)
-- BENCH.md (doc, 1714b)
-- bin/cli.js (code-js, 22705b)
+- BENCH.md (doc, 6539b)
+- bin/cli.js (code-js, 33149b)
 - DEMO.md (doc, 1451b)
-- ERROR-REPORT.md (doc, 4144b)
+- ERROR-REPORT.md (doc, 4484b)
 - install.ps1 (other, 690b)
 - install.sh (other, 631b)
 - LICENSE (other, 73b)
 - llms.txt (other, 2184b)
-- mcp/server.js (code-js, 13797b)
-- package.json (config, 650b)
-- README.md (doc, 7963b)
+- mcp/server.js (code-js, 15474b)
+- package.json (config, 703b)
+- README.md (doc, 20288b)
 - SECURITY.md (doc, 1305b)
 - src/browser.js (code-js, 1970b)
-- src/ci.js (code-js, 1020b)
+- src/ci.js (code-js, 1874b)
 - src/context.js (code-js, 2100b)
 - src/cwe.js (code-js, 2019b)
+- src/dashboard.js (code-js, 30438b)
 - src/demo.js (code-js, 2506b)
 - src/deps.js (code-js, 9377b)
-- src/doctor.js (code-js, 4782b)
+- src/docker.js (code-js, 4522b)
+- src/doctor.js (code-js, 6145b)
 - src/fix.js (code-js, 1701b)
 - src/global.js (code-js, 3199b)
 - src/graph.js (code-js, 2971b)
 - src/guard.js (code-js, 14306b)
+- src/guardian.js (code-js, 3400b)
+- src/guidance.js (code-js, 15085b)
 - src/hook.js (code-js, 1826b)
-- src/init.js (code-js, 5032b)
+- src/hunt.js (code-js, 2737b)
+- src/init.js (code-js, 6321b)
+- src/links.js (code-js, 6418b)
 - src/logger.js (code-js, 886b)
 - src/map.js (code-js, 7924b)
 - src/memory.js (code-js, 10416b)
+- src/memorybank.js (code-js, 2983b)
 - src/net.js (code-js, 3331b)
-- src/projects.js (code-js, 1722b)
-- src/pyast.js (code-js, 3007b)
-- src/receipt.js (code-js, 3103b)
-- src/review.js (code-js, 2473b)
-- src/sarif.js (code-js, 1450b)
-- src/sbom.js (code-js, 2287b)
-- src/security.js (code-js, 6220b)
-- src/serve.js (code-js, 4432b)
-- src/setupIde.js (code-js, 8662b)
-- src/skill.js (code-js, 9781b)
-- src/snapshot.js (code-js, 4914b)
-- src/spend.js (code-js, 1372b)
 
 ## 4. Fix order for the AI
 All clean. Nothing to fix.

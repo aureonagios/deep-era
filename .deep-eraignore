@@ -1,0 +1,6 @@
+# Deep-Era Ignore Patterns
+.agents/skills/
+tools/__pycache__/
+dist/
+build/
+coverage/

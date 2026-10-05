@@ -2,9 +2,20 @@ const fs = require("fs");
 const path = require("path");
 
 // Generates a CI gate: every PR runs `deep-era check` and fails on critical/high.
-// Works on GitHub Actions; the same command runs locally — no CI-only surprises.
+//
+// Two decisions worth stating, both learned the hard way:
+//
+//   1. SARIF output is uploaded to GitHub code scanning. Without it the findings live
+//      only in a log line, nobody clicks through a CI log, and the gate becomes
+//      decoration. With it the warnings appear inline on the diff — which is where a
+//      developer is already looking.
+//   2. `continue-on-error` is deliberately absent on the audit step. A gate that
+//      cannot fail the build is not a gate.
 const WORKFLOW = `name: deep-era-gate
 on: [push, pull_request]
+permissions:
+  contents: read
+  security-events: write
 jobs:
   audit:
     runs-on: ubuntu-latest
@@ -12,8 +23,19 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 20 }
-      - run: npm install -g deep-era
-      - run: deep-era check
+      - name: Install deep-era
+        run: npm install -g deep-era
+      - name: Audit (fails on critical/high)
+        run: deep-era check
+      - name: Full report + SARIF
+        if: always()
+        run: deep-era doctor --sarif
+      - name: Upload findings to code scanning
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: .deep-era/report.sarif
+          category: deep-era
 `;
 
 function runCi(cwd) {

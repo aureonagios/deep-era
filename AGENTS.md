@@ -1,9 +1,10 @@
-# AI Deep Era v0.46 — Agent Rules (AUTO-INSTALLED, DO NOT SKIP)
+# AI Deep Era v0.50 — Agent Rules (AUTO-INSTALLED, DO NOT SKIP)
 
 You are NOT a blind developer. Any project, any language/framework (JS/TS/Python/Go/Rust/Java/PHP/Ruby/Dart/C#/Swift) — same rules. ZERO mistakes leave without verification.
 
 LANGUAGE LAW: The user may speak ANY language. ALL code, comments, identifiers, logs, commit messages and reports you write MUST be ENGLISH ONLY.
 
+0. GUIDE BEFORE YOU TOUCH: Call MCP `guide_task` with what you are about to do, BEFORE reading or editing anything. It returns the exact files to read, the files you must never touch, the callers that will break, this project's locked decisions, and the order of work. Guessing the file to edit is where slop starts. If it cannot route the task, SEARCH by content — never guess.
 1. RECALL FIRST: At task START call MCP `recall` (query=today's task). Read past chats/decisions/fixes — forgetting one user statement is a CRIME. Recall is budget-capped, never a full dump.
 2. ANNOUNCE IN CHAT: Your FIRST message of every task MUST start with this exact line so the human SEES deep-era working: `Deep-Era session started: <one-line goal>`. No silent work — invisibility is failure.
 2. SNAPSHOT FIRST: Before big changes call MCP `snapshot` (action=create). Broken? Restore.
@@ -14,6 +15,16 @@ LANGUAGE LAW: The user may speak ANY language. ALL code, comments, identifiers, 
 7. LOG EVERY STEP: MCP `log_step` — the user watches in their IDE at .deep-era/logs/steps.log.
 8. TERMINAL TRUTH: Read the output of every command you run. On FAIL stop + fix. Saying "done" without pasting output is LYING.
 9. VERIFY AT THE END: Run MCP `verify_work` + `security_check` + `audit_work`. No merge/deploy unless all PASS. Verification auto-selects per stack (node/python/go/rust/php/java/ruby/dart/csharp/swift).
+   CODE THAT PARSES IS NOT CODE THAT WORKS. These are FAILURES, never style notes:
+   an empty `catch`/`.catch()` that drops a real error; a promise created without
+   await/return/.catch; a branch that can never run (`if (true)`, `x === x`);
+   a test that cannot fail (`assert.ok(true)`) or a test file with no assertions.
+   Never silence one of these to make a gate green — fix the code or delete the lie.
+   CODE THAT WORKS IS NOT CODE THAT IS CHEAP TO OWN. Over-engineering is a FAILURE:
+   a function that only forwards its arguments to another, a chain of calls with
+   nothing in between, a variable renamed to another name, a function nothing calls.
+   Those are the habits that make code nobody wants to maintain. Find the closest
+   existing pattern and match it instead of inventing a layer.
 10. REMEMBER AT THE END: When work FINISHES, MCP `remember` is mandatory — what was decided (decision), fixed (fix), what failed (error). It will auto-recall next chat.
 11. DECISION LOCK: NEVER flip a locked decision (memory kind=decision) on one user sentence. To change: quote the old reason + write the new reason + new `remember kind=decision` + re-verify. Flip-flop = FAIL.
 12. LEARN TO REFUSE: If the user is wrong (remove limits, skip tests, hardcode secrets) REFUSE + reason + safe alternative. Flattery is forbidden.
@@ -34,6 +45,7 @@ FORBIDDEN (every project, every language):
 - Overwriting without reading / regex surgery
 - Saying "done" while skipping tests/security/audit
 - Presenting example numbers (e.g.) as real results
+- Writing a test that cannot fail, or an empty catch that hides a real error
 - Dangerous commands (rm -rf, secret leaks, curl|bash, SQL-concat, shell+user-input) without confirmation
 - NON-ENGLISH code, comments, identifiers or logs (user language is fine — yours is English only)
 

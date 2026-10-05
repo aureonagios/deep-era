@@ -9,30 +9,36 @@ const targetDir = process.argv[3] && !process.argv[3].startsWith("-") ? path.res
 async function main() {
   if (!cmd || cmd === "help" || cmd === "--help" || cmd === "-h") {
     console.log(`
-AI Deep Era v0.46.0 - give the blind AI developer eyes (no frontend, proof in your IDE)
+AI Deep Era v0.50.0 - give the blind AI developer eyes (no frontend, proof in your IDE)
+
+START HERE:
+  npx deep-era start             Install, wire up, and audit this project in ONE command.
+                                 Prints the real bugs in your code immediately.
 
 Usage:
-  deep-era onboard             One shot: init + setup-ide + CI + skill
-  deep-era global              Machine setup: wire MCP into 6 IDEs + skill, once per PC
-  deep-era init [dir]          Install into a project (map + AGENTS.md + rules)
-  deep-era doctor [dir]        Full scan + tests + guard + deps + ERROR-REPORT.md
-  deep-era check               1-COMMAND AUDIT: tests+security+guard+deps in 30s
-  deep-era heal                End-to-end: snapshot + safe-fix + re-check
-  deep-era review              Audit ONLY changed files (git diff scope)
-  deep-era demo                Self-proof: catch planted bugs live
-  deep-era receipt             ONE-file proof of the last session
-  deep-era status              Whole platform state, one screen
-  deep-era recall <query>      Project memory: recall past chats/decisions
-  deep-era remember <k> <txt>  Project memory: save (k=chat|decision|fix|error|note)
+  deep-era start [dir]           Install + audit + show findings (start here)
+  deep-era guide "<task>"        PRE-FLIGHT: where to work, what not to touch, locked decisions
+  deep-era onboard               One shot: init + setup-ide + CI + skill
+  deep-era global                Machine setup: wire MCP into 6 IDEs + skill, once per PC
+  deep-era init [dir]            Install into a project (map + AGENTS.md + rules)
+  deep-era doctor [dir]          Full scan + tests + guard + deps + ERROR-REPORT.md
+  deep-era check                 1-COMMAND AUDIT: tests+security+guard+deps in 30s
+  deep-era heal                  End-to-end: snapshot + safe-fix + re-check
+  deep-era review                Audit ONLY changed files (git diff scope)
+  deep-era demo                  Self-proof: catch planted bugs live
+  deep-era receipt               ONE-file proof of the last session
+  deep-era status                Whole platform state, one screen
+  deep-era recall <query>        Project memory: recall past chats/decisions
+  deep-era remember <k> <txt>    Project memory: save (k=chat|decision|fix|error|note)
   deep-era remember --global <txt>  Lesson for ALL projects (recalled everywhere)
-  deep-era projects [dir]      All deep-era projects + health, one screen
-  deep-era context <query>     Token saver: show only relevant files
-  deep-era search <query>      Ranked code search (names + content + hubs)
-  deep-era fix                 SAFE auto-fix (snapshot+gitignore+map) — never touches logic
-  deep-era setup-ide [dir]     MCP configs for 25+ clients (.deep-era/ide/)
-  deep-era snapshot [label]    Take a backup (restore if broken)
-  deep-era snapshots           List backups
-  deep-era prune               Keep newest 5 snapshots, delete the rot
+  deep-era projects [dir]        All deep-era projects + health, one screen
+  deep-era context <query>       Token saver: show only relevant files
+  deep-era search <query>        Ranked code search (names + content + hubs)
+  deep-era fix                   SAFE auto-fix (snapshot+gitignore+map) - never touches logic
+  deep-era setup-ide [dir]       MCP configs for 25+ clients (.deep-era/ide/)
+  deep-era snapshot [label]      Take a backup (restore if broken)
+  deep-era snapshots             List backups
+  deep-era prune                 Keep newest 5 snapshots, delete the rot
   deep-era diff <id>           What changed since snapshot <id>
   deep-era restore <id>        Restore a snapshot
   deep-era rules               Show the checklist pack for this project's stack
@@ -46,12 +52,19 @@ Usage:
   deep-era hook                Install git pre-commit hook running check (blocks bad commits)
   deep-era watch               Re-run check on every file change
   deep-era perf [dir]          Engine speed table (ms)
+  deep-era links               Check all URLs in docs/code (online best-effort)
   deep-era browser             Playwright MCP bridge for browser-driven verify
   deep-era sbom                CycloneDX SBOM of direct deps (.deep-era/sbom.json)
   deep-era update              Check npm registry for a newer deep-era (best-effort)
   deep-era serve               Run the project, probe it, observe, shut down
   deep-era fetch <url>         Fetch a docs URL to text (stdlib, capped)
   deep-era research <query>    Instant-answer research (best-effort, honest)
+  deep-era ui [port]           Live Autonomous Command Center & Web Dashboard
+  deep-era skills [query]      Search the 410 Autonomous Agent Skills vault
+  deep-era hunt [port]         Port hunter & socket conflict resolver
+  deep-era guard               Secret Guardian: scan for leaked keys & tokens
+  deep-era docker [port]       Generate multi-stage production Docker scaffold
+  deep-era memory-bank [add]   Structured persistent project memory bank
   deep-era mcp                 MCP server (stdio) - 15 tools
 `);
     return;
@@ -83,21 +96,23 @@ Usage:
     const s = securityScan(cwd0, map.files);
     const g = guardScan(cwd0, map.files);
     const d = [...auditDeps(cwd0), ...(await Promise.resolve(auditOsv(cwd0)).catch(() => [])), ...(await Promise.resolve(auditLicenses(cwd0)).catch(() => []))];
+    const { auditLinks } = require("../src/links");
+    const li = await Promise.resolve(auditLinks(cwd0, map.files)).catch(() => []);
     const vf = v.filter((x) => !x.ok).length;
     const bad = [...s, ...g, ...d].filter((x) => x.sev === "critical" || x.sev === "high").length;
     if (process.argv.includes("--json")) {
-      console.log(JSON.stringify({ result: vf || bad ? "FAIL" : "PASS", verifyPass: v.length - vf, verifyTotal: v.length, security: s.length, guard: g.length, deps: d.length }));
+      console.log(JSON.stringify({ result: vf || bad ? "FAIL" : "PASS", verifyPass: v.length - vf, verifyTotal: v.length, security: s.length, guard: g.length, deps: d.length, links: li.length }));
       if (vf || bad) process.exitCode = 1;
       return;
     }
-    console.log(`[deep-era check] verify: ${v.length - vf}/${v.length} pass | security: ${s.length} | guard: ${g.length} | deps: ${d.length}${map.counts.truncated ? " | map TRUNCATED (see .deep-eraignore)" : ""}`);
+    console.log(`[deep-era check] verify: ${v.length - vf}/${v.length} pass | security: ${s.length} | guard: ${g.length} | deps: ${d.length} | links: ${li.length}${map.counts.truncated ? " | map TRUNCATED (see .deep-eraignore)" : ""}`);
     try {
       const { spendReport } = require("../src/spend");
       const sp = spendReport(cwd0);
       console.log(`[deep-era check] AI spend so far: ${sp.tokens.toLocaleString()} tokens (~${Object.values(sp.estimate)[1]} at standard rate)`);
     } catch {}
     v.filter((x) => !x.ok).forEach((x) => console.log(`  ! FAIL ${x.cmd}\n${(x.output || "").slice(0, 600)}`));
-    [...g, ...s, ...d].slice(0, 12).forEach((x) => console.log(`  ! [${x.sev}] ${x.file}: ${x.msg}`));
+    [...g, ...s, ...d, ...li].slice(0, 12).forEach((x) => console.log(`  ! [${x.sev}] ${x.file}: ${x.msg}`));
     if (vf || bad) { console.log(`RESULT: FAIL — do not accept the AI's work. Open ERROR-REPORT.md.`); process.exitCode = 1; }
     else console.log(`RESULT: PASS — work is clean.`);
     return;
@@ -127,6 +142,28 @@ Usage:
     const pack = readSnippets(cwd0, rel);
     console.log(`[deep-era] context "${query}" -> ${rel.length} files, ${pack.chars} chars (no full scan, tokens saved)`);
     rel.forEach((r) => console.log(`  - ${r.file} (${(r.imports || []).length} imports, ${((r.importedBy || []).length)} used-by)`));
+    return;
+  }
+  if (cmd === "guide") {
+    // The pre-flight briefing: where to look, what not to touch, what this project
+    // already decided. Run this BEFORE letting an agent start editing.
+    const task = process.argv.slice(3).join(" ");
+    const cwd0 = process.cwd();
+    const { buildMap } = require("../src/map");
+    const { buildBrief } = require("../src/guidance");
+    const { readJson } = require("../src/logger");
+    const { logStep } = require("../src/logger");
+    let map = readJson(cwd0, "map.json", null);
+    if (!map) map = buildMap(cwd0);
+    if (!task) {
+      console.log('[deep-era] guide: say what you are about to do. Example:\n  deep-era guide "add rate limiting to the mcp server"');
+      process.exitCode = 1;
+      return;
+    }
+    const b = buildBrief(cwd0, map, task);
+    console.log(b.brief);
+    logStep(cwd0, `guide [${b.taskClass}/${b.confidence}]: ${task.slice(0, 80)} -> ${b.likelyTouch.map((x) => x.file).join(", ") || "no match"}`);
+    if (b.taskClass === "unknown" || b.likelyTouch.length === 0) process.exitCode = 1;
     return;
   }
   if (cmd === "search") {
@@ -298,6 +335,69 @@ Usage:
     runGlobal();
     return;
   }
+  if (cmd === "start" || cmd === "try") {
+    // THE CONVERSION MOMENT. A new user should not have to read the README to get
+    // value: install, wire up, audit, and print the findings in one command. If this
+    // prints real bugs on their code in under a second, they stay. If it prints
+    // nothing, they leave — so it must never overstate what it found.
+    const { runInit } = require("../src/init");
+    const { runSetupIde } = require("../src/setupIde");
+    const { runCi } = require("../src/ci");
+    console.log("[deep-era] setting up (rules + IDE wiring + CI gate)...");
+    await runInit(targetDir);
+    runSetupIde(targetDir);
+    runCi(targetDir);
+    console.log("");
+    console.log("[deep-era] auditing your project now...");
+    console.log("");
+    const { buildMap } = require("../src/map");
+    const { securityScan } = require("../src/security");
+    const { guardScan } = require("../src/guard");
+    const { semanticScan } = require("../src/semantics");
+    const { slopScan } = require("../src/slop");
+    const { verifyProject } = require("../src/verify");
+    const map = buildMap(targetDir);
+    const verify = verifyProject(targetDir, map);
+    const findings = [
+      ...securityScan(targetDir, map.files),
+      ...guardScan(targetDir, map.files),
+      ...semanticScan(targetDir, map.files),
+      ...slopScan(targetDir, map.files),
+    ];
+    const vf = verify.filter((v) => !v.ok).length;
+    const bySev = { critical: 0, high: 0, medium: 0, low: 0 };
+    for (const f of findings) if (bySev[f.sev] !== undefined) bySev[f.sev]++;
+    const real = bySev.critical + bySev.high;
+
+    console.log(`Scanned ${map.counts.total} files in your project.`);
+    console.log(`  ${bySev.critical} critical   ${bySev.high} high   ${bySev.medium} medium   ${bySev.low} low`);
+    console.log("");
+    if (findings.length) {
+      console.log("Here is what a blind AI developer would have shipped:");
+      for (const f of findings.slice(0, 12)) {
+        console.log(`  [${f.sev}] ${f.file}${f.line ? ":" + f.line : ""} — ${f.msg.slice(0, 90)}`);
+      }
+      if (findings.length > 12) console.log(`  ...and ${findings.length - 12} more (run \`deep-era doctor\` for all)`);
+      console.log("");
+    }
+    if (real > 0) {
+      console.log(`${real} of these are serious. Any AI agent working on this project should be told:`);
+      console.log('  "Read AGENTS.md in this project and obey it fully."');
+      console.log("");
+    } else if (findings.length > 0) {
+      console.log("No critical or high findings. Worth wiring into CI anyway — it costs ~0.4s.");
+      console.log("");
+    } else {
+      console.log("Nothing found. Either your code is clean, or deep-era does not see this");
+      console.log("stack yet. Be suspicious of a clean bill of health from any tool, including this one.");
+      console.log("");
+    }
+    console.log("Next:");
+    console.log('  deep-era guide "<what you are about to build>"   tell your agent where to work');
+    console.log("  deep-era check                                one-command audit from now on");
+    console.log("  deep-era doctor                               full report with fixes");
+    return;
+  }
   if (cmd === "onboard") {
     const { runInit } = require("../src/init");
     const { runSetupIde } = require("../src/setupIde");
@@ -382,22 +482,32 @@ Usage:
     runBrowser(process.cwd());
     return;
   }
-  if (cmd === "perf") {
-    process.env.DEEP_ERA_SELFTEST = "1"; // engine speed only — no nested test-suite run
-    const dir = targetDir;
+  if (cmd === "links") {
+    const { buildMap } = require("../src/map");
+    const { auditLinks } = require("../src/links");
+    const { readJson } = require("../src/logger");
+    let lmap = readJson(process.cwd(), "map.json", null);
+    if (!lmap) lmap = buildMap(process.cwd());
+    const found = await auditLinks(process.cwd(), lmap.files);
+    if (!found.length) console.log("[deep-era] links: all clean (or offline — re-run online).");
+    found.forEach((x) => console.log(`  ! [${x.sev}] ${x.file}: ${x.msg}`));
+    return;
+  }
+if (cmd === "perf") {
+    process.env.DEEP_ERA_SELFTEST = "1"; // engine speed only - no nested test-suite run
     const { buildMap } = require("../src/map");
     const { guardScan } = require("../src/guard");
     const { securityScan } = require("../src/security");
     const { verifyProject } = require("../src/verify");
     const { getRelevant, readSnippets } = require("../src/context");
     const T = (fn) => { const t = process.hrtime.bigint(); const o = fn(); return { ms: Number(process.hrtime.bigint() - t) / 1e6, o }; };
-    const m = T(() => buildMap(dir)); const map = m.o;
-    const g = T(() => guardScan(dir, map.files));
-    const s = T(() => securityScan(dir, map.files));
-    const v = T(() => verifyProject(dir, map));
-    const rel = getRelevant(dir, map, process.argv[4] || "main", 8);
-    const c = T(() => readSnippets(dir, rel));
-    console.log(`[deep-era perf] ${dir} (${map.counts.total} files)`);
+    const m = T(() => buildMap(targetDir)); const map = m.o;
+    const g = T(() => guardScan(targetDir, map.files));
+    const s = T(() => securityScan(targetDir, map.files));
+    const v = T(() => verifyProject(targetDir, map));
+    const rel = getRelevant(targetDir, map, process.argv[4] || "main", 8);
+    const c = T(() => readSnippets(targetDir, rel));
+    console.log(`[deep-era perf] ${targetDir} (${map.counts.total} files)`);
     for (const [n, r] of [["map", m], ["guard+dup", g], ["security", s], ["verify", v], ["context", c]]) {
       console.log(`${r.ms.toFixed(1).padStart(9)} ms  ${n}`);
     }
@@ -408,6 +518,15 @@ Usage:
       const { addSkill } = require("../src/skill");
       addSkill(process.cwd(), process.argv[4]);
       return;
+    }
+    if (process.argv[3] && !process.argv[3].startsWith("-")) {
+      const { getSkill } = require("../src/skills");
+      const s = getSkill(process.argv[3], targetDir);
+      if (s) {
+        console.log(`\n=== SKILL: ${s.name || s.id} [${s.category}] ===\n`);
+        console.log(s.content || s.description);
+        return;
+      }
     }
     const { runSkill } = require("../src/skill");
     runSkill(process.cwd());
@@ -469,6 +588,112 @@ Usage:
     const r = restoreSnapshot(process.cwd(), id);
     console.log(`[deep-era] restored ${r.restored} files from ${r.id}`);
     return;
+  }
+  if (cmd === "hunt") {
+    const { scanCommonPorts, isPortAvailable, findAvailablePort, getProcessOnPort, killProcessOnPort } = require("../src/hunt");
+    const pArg = process.argv[3];
+    if (pArg) {
+      const port = parseInt(pArg, 10);
+      if (process.argv[4] === "--kill") {
+        const k = killProcessOnPort(port);
+        console.log(`[deep-era hunt] kill port ${port}:`, k);
+        return;
+      }
+      const avail = await isPortAvailable(port);
+      const proc = !avail ? getProcessOnPort(port) : null;
+      console.log(`[deep-era hunt] port ${port}: ${avail ? "AVAILABLE" : "OCCUPIED"}${proc ? ` (PID ${proc.pid})` : ""}`);
+      return;
+    }
+    const ports = await scanCommonPorts();
+    console.log(`[deep-era hunt] port scan:`);
+    for (const p of ports) {
+      console.log(`  ${p.port}: ${p.status}${p.pid ? ` (PID: ${p.pid})` : ""}`);
+    }
+    const nextFree = await findAvailablePort(3000);
+    console.log(`\nNext recommended free port: ${nextFree}`);
+    return;
+  }
+  if (cmd === "guard-secrets" || cmd === "guard") {
+    const { scanDirectorySecrets } = require("../src/guardian");
+    const findings = scanDirectorySecrets(targetDir);
+    if (!findings.length) {
+      console.log(`[deep-era guard] 100% CLEAN — zero leaked secrets found.`);
+    } else {
+      console.log(`[deep-era guard] FOUND ${findings.length} POTENTIAL SECRETS:`);
+      for (const f of findings) {
+        console.log(`  ! [${f.sev.toUpperCase()}] ${f.file}:${f.line}:${f.col} -> ${f.name} (${f.snippet})`);
+      }
+      if (findings.some((f) => f.sev === "critical")) process.exitCode = 1;
+    }
+    return;
+  }
+  if (cmd === "docker") {
+    const { writeDockerFiles } = require("../src/docker");
+    const port = parseInt(process.argv[3], 10) || 3000;
+    const r = writeDockerFiles(process.cwd(), port);
+    console.log(`[deep-era docker] Generated production Docker scaffold for ${r.stack.toUpperCase()}:`);
+    for (const f of r.files) console.log(`  + ${f}`);
+    return;
+  }
+  if (cmd === "memory-bank" || cmd === "mb") {
+    const { searchMemories, addMemory, exportMarkdown, deleteMemory } = require("../src/memorybank");
+    const sub = process.argv[3];
+    if (sub === "add") {
+      const kind = process.argv[4] || "decision";
+      const title = process.argv[5] || "Note";
+      const content = process.argv.slice(6).join(" ") || "";
+      const item = addMemory({ kind, title, content, tags: [kind] }, process.cwd());
+      console.log(`[deep-era memory-bank] saved ${item.id} [${item.kind}]: ${item.title}`);
+      return;
+    }
+    if (sub === "export") {
+      console.log(exportMarkdown(process.cwd()));
+      return;
+    }
+    if (sub === "del") {
+      const id = process.argv[4];
+      const ok = deleteMemory(id, process.cwd());
+      console.log(`[deep-era memory-bank] delete ${id}: ${ok ? "OK" : "NOT FOUND"}`);
+      return;
+    }
+    const q = process.argv[3] || "";
+    const results = searchMemories(q, null, process.cwd());
+    console.log(`[deep-era memory-bank] ${results.length} memories:`);
+    for (const m of results) {
+      console.log(`  - [${m.kind}] ${m.title} (${m.id})`);
+      if (m.content) console.log(`    ${m.content.slice(0, 100)}`);
+    }
+    return;
+  }
+  if (cmd === "skills") {
+    const { searchSkills, listCategories, getCatalog } = require("../src/skills");
+    const q = process.argv.slice(3).join(" ");
+    if (!q) {
+      const cat = getCatalog(process.cwd());
+      const categories = listCategories(process.cwd());
+      console.log(`[deep-era skills] 410 skills vault loaded (${cat.skills.length} available):`);
+      for (const [k, count] of Object.entries(categories)) {
+        console.log(`  - ${k.padEnd(16)} : ${count} skills`);
+      }
+      console.log(`\nUsage: deep-era skills <query>   (e.g. deep-era skills docker)`);
+      console.log(`       deep-era skill <name>     (e.g. deep-era skill tailwind-design-system)`);
+      return;
+    }
+    const results = searchSkills(q, 15, process.cwd());
+    console.log(`[deep-era skills] search "${q}" (${results.length} matches):`);
+    for (const s of results) {
+      console.log(`  * ${s.id.padEnd(35)} [${s.category}] - ${s.description.slice(0, 80)}...`);
+    }
+    return;
+  }
+  if (cmd === "ui" || cmd === "dashboard") {
+    const { startDashboardServer } = require("../src/dashboard");
+    const portPref = parseInt(process.argv[3], 10) || 8300;
+    const { port, url } = await startDashboardServer(process.cwd(), portPref);
+    console.log(`\n[deep-era dashboard] 🚀 Autonomous Command Center running at:`);
+    console.log(`  --> ${url}`);
+    console.log(`  (Press Ctrl+C to stop)\n`);
+    return new Promise(() => {});
   }
   if (cmd === "mcp") {
     const { runMcp } = require("../mcp/server");

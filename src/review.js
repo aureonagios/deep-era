@@ -34,12 +34,13 @@ function runReview(cwd) {
   const { verifyProject } = require("./verify");
   const { securityScan } = require("./security");
   const { guardScan } = require("./guard");
+  const { semanticScan } = require("./semantics");
   const map = buildMap(cwd);
   const names = new Set(changed);
   // Full scan for correct cross-file answers (imports, tests), then filter to the diff.
   // Judging only scoped files against a scoped map would cry wolf on unchanged neighbors.
   const v = verifyProject(cwd, { ...map, files: map.files.filter((f) => names.has(f.file)) });
-  const findings = [...securityScan(cwd, map.files), ...guardScan(cwd, map.files)].filter((x) => names.has(x.file));
+  const findings = [...securityScan(cwd, map.files), ...guardScan(cwd, map.files), ...semanticScan(cwd, map.files)].filter((x) => names.has(x.file));
   const vf = v.filter((x) => !x.ok).length;
   const bad = findings.filter((x) => x.sev === "critical" || x.sev === "high").length;
   console.log(`[deep-era] review: ${changed.length} changed file(s)`);
