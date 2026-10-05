@@ -3,6 +3,19 @@
 > The README shows only the latest version. Everything else lives here, newest first.
 > Older than this file: `git log --oneline`.
 
+## v0.54: one-command IDE wiring + self-update that works
+
+`deep-era ide` detects which IDEs are actually installed (markers on disk, never
+guesses), writes each one's MCP config into the project (merging with a backup, never
+overwriting), and prints the agent brief: stack, files, rules location, last audit
+verdict, memory count, and the loop.
+
+And `deep-era update` finally works: the package was never published to npm, so the
+old registry check 404'd forever while stale installs ran in silence. The source of
+truth is now the GitHub repo itself — `update` checks it, `--apply` reinstalls from
+it, and `start`/`check` print a one-line notice when a newer release exists. Nothing
+installs without `--apply`, and the `check` gate never touches the network.
+
 ## v0.53: secret scanning runs everywhere, placeholders stop crying wolf
 
 `guardian.js` (entropy scan, provider tokens, exact `line:col`) used to live behind one

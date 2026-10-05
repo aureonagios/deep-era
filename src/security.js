@@ -9,7 +9,11 @@ const PATTERNS = [
   { id: "discord-webhook", re: /discord(app)?\.com\/api\/webhooks\//i, sev: "critical", msg: "Discord webhook URL leaked" },
   { id: "passwd-assign", re: /password\s*=\s*["'][^"']+["']/i, sev: "high", msg: "Hardcoded password" },
   { id: "secret-assign", re: /(api[_-]?key|secret|token)\s*=\s*["'][^"']{4,}["']/i, sev: "high", msg: "Hardcoded secret/token" },
-  { id: "rm-rf", re: /rm\s+-rf\s+\//, sev: "high", msg: "Dangerous rm -rf /" },
+  // rm-rf matches BARE root/home/unquoted-var only. `rm -rf /var/lib/apt/lists/*`
+  // is standard Dockerfile hygiene, not danger — an earlier version of this pattern
+  // matched any `rm -rf /...` and cried wolf on every Dockerfile. Proven false on a
+  // real project; narrowed until only the filesystem-ending shapes match.
+  { id: "rm-rf", re: /\brm\s+(?:-[A-Za-z]*[rR](?:[A-Za-z]*[fF])?|--recursive)(?:\s+--?[A-Za-z-]+)*\s+(\/(\s|$|["';])|\/\*|\~(\/)?(\s|$|["';])|\$[A-Za-z_]\w*)/, sev: "high", msg: "Dangerous rm -rf /" },
   { id: "curl-bash", re: /curl .*\| *(sudo )?bash/, sev: "high", msg: "curl|bash pipe (supply-chain risk)" },
   { id: "child-exec", re: /child_process.*exec.*\+|exec\(.*req\.(body|query|params)/, sev: "high", msg: "Command injection risk (exec + user input)" },
   { id: "sql-concat", re: /query\s*\(.*\+.*req\.|SELECT .*\+/, sev: "high", msg: "Possible SQL injection (string concat)" },

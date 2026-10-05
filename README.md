@@ -1,4 +1,4 @@
-# AI Deep Era v0.54.0 — give the blind AI developer eyes
+# AI Deep Era v0.55.0 — give the blind AI developer eyes
 
 > ## Paste this into your AI agent
 > ```
@@ -15,7 +15,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/Node-%3E%3D18-blue.svg)](package.json)
-[![Tests](https://img.shields.io/badge/Tests-152%20passing-brightgreen.svg)](tests/run.js)
+[![Tests](https://img.shields.io/badge/Tests-157%20passing-brightgreen.svg)](tests/run.js)
 [![No deps](https://img.shields.io/badge/Dependencies-0-orange.svg)](package.json)
 [![Skills](https://img.shields.io/badge/Skills-410%20vault-blue.svg)](.agents/skills/)
 [![MCP](https://img.shields.io/badge/MCP-19%20tools-purple.svg)](mcp/server.js)
@@ -80,32 +80,30 @@ The agent is told five things it cannot argue its way past:
 5. **Refuse.** Removing test coverage, skipping verification, hardcoding secrets: say no,
    say why in one sentence, offer the safe alternative. No flattery.
 
-## What v0.54 does (latest)
+## What v0.55 does (latest)
 
-**One command wires any IDE end to end — and the tool now notices when it is stale.**
+**The audit stopped crying wolf twice — and `start` is now truly one command.**
 
-`deep-era ide` detects which IDEs are actually installed (markers on disk, never
-guesses), writes each one's MCP config into the project (merging with a backup, never
-overwriting), and prints the agent brief: stack, files, rules location, last audit
-verdict, memory count, and the loop. What it cannot wire safely, it prints as an
-exact manual step:
+Proven on a real project (2 High + 8 Medium in one scan): `rm -rf /var/lib/apt/lists/*`
+is standard Dockerfile hygiene, not danger — the old pattern matched any `rm -rf /...`
+and flagged it High. Now only bare root, home, `/*`, and unquoted variables match
+(14-case matrix pinned by tests). Same scan also proved `import ssl` is stdlib, so it
+joined the never-flag set.
+
+Also fixed in the same pass: a bare third-party import with zero manifests anywhere is
+no longer called "hallucinated" — it may simply be undeclared, so it gets its own
+honest low-severity rule (`unlisted-dependency`) instead of the accusation.
+
+And one command sets up everything by itself: `deep-era start` now wires detected
+IDEs into the project and points at the agent paste, `deep-era --version` answers the
+question every agent asks first, and the PROMPT carries install/setup/update steps so
+no one is told anything twice:
 
 ```
-[deep-era] ide: 6 IDE client(s) detected on this machine.
-  + Cursor: created (.cursor/mcp.json)
-  + VS Code / Copilot: created (.vscode/mcp.json)
-  ...
---- AGENT BRIEF: everything an IDE needs, end to end ---
-Project: ... | stack: node | files: 110
-Rules: AGENTS.md (installed — obey it)
-Paste: PROMPT.md (or: deep-era prompt --raw)
+If `deep-era --version` fails:  npm i -g github:aureonagios/deep-era
+If a newer release exists:      deep-era update --apply
+In the project, once:           deep-era start
 ```
-
-And `deep-era update` finally works: the package was never published to npm, so the
-old registry check 404'd forever while stale installs ran in silence. The source of
-truth is now the GitHub repo itself — `update` checks it, `--apply` reinstalls from
-it, and `start`/`check` print a one-line notice when a newer release exists. Nothing
-installs without `--apply`, and the `check` gate never touches the network.
 
 Full history: [CHANGELOG.md](CHANGELOG.md)
 
@@ -203,6 +201,8 @@ silent — a clean bill of health from any tool, including this one, deserves su
 | `sbom` | CycloneDX SBOM of direct deps |
 | `update [--apply]` | check github:aureonagios/deep-era for a newer release (--apply installs it) |
 | `setup-ide` | MCP configs for 25+ clients |
+| `ide [name]` | ONE command: detect IDEs, wire MCP into project, print end-to-end brief |
+| `--version` | print installed version (agents check freshness this way) |
 | `mcp` | 19 MCP tools (stdio) |
 
 ## MCP (any agent connects)
@@ -218,8 +218,8 @@ silent — a clean bill of health from any tool, including this one, deserves su
 ## Demo
 `DEMO.md` — 5-minute video script. Or run `deep-era demo` and watch 4 traps get caught.
 
-## Self-proof (v0.54.0, just ran)
-- `npm test` → 102 unit + 31 CLI + 12 MCP + 7 superpowers = **152 green (100% PASS)**
+## Self-proof (v0.55.0, just ran)
+- `npm test` → 105 unit + 33 CLI + 12 MCP + 7 superpowers = **157 green (100% PASS)**
 - `deep-era start` on a real 7-file Express app → **10 findings, all verified correct**, in one command
 - Encryption: AES-256-GCM, 7/7 proof tests (wrong key refuses, tampering detected, no plaintext leak)
 - Encryption perf: 1.24 ms/record after the salt fix, down from 155 ms (125x faster, 70 s → 0.55 s)
@@ -233,7 +233,7 @@ silent — a clean bill of health from any tool, including this one, deserves su
 - `npm publish --dry-run` → clean
 ## Looking for an alternative?
 
-- **SuperClaude / BMAD alternative** — same plan→verify loop, plus a 152-test suite, decision lock, and a 1-command audit. Zero framework to learn.
+- **SuperClaude / BMAD alternative** — same plan→verify loop, plus a 157-test suite, decision lock, and a 1-command audit. Zero framework to learn.
 - **CodeRabbit / Snyk alternative (offline)** — dep blocklist, OSV.dev CVEs, entropy secrets, SARIF output. No cloud, no per-seat bill.
 - **Semgrep / CodeQL alternative (offline)** — reads the code, not just the syntax: swallowed exceptions, floating promises, dead branches, and tests that cannot fail. Zero deps, milliseconds, no query language to learn.
 - **"Un-spaghettify" cost reducer** — finds the passthrough layers, dead code, and pointless indirection that make AI-written code expensive to own. Catches the complaint that syntax checkers structurally cannot.

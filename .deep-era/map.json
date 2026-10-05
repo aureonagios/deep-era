@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-10-05T18:12:34.363Z",
+  "generatedAt": "2026-10-05T18:58:34.371Z",
   "stack": {
     "kind": "node",
     "run": null,
@@ -120,8 +120,9 @@
     {
       "file": "bin/cli.js",
       "role": "code-js",
-      "size": 36326,
+      "size": 37091,
       "imports": [
+        "package.json",
         "src/init.js",
         "src/doctor.js",
         "src/map.js",
@@ -140,15 +141,14 @@
         "src/memory.js",
         "src/graph.js",
         "src/timeline.js",
-        "src/snapshot.js",
-        "src/review.js"
+        "src/snapshot.js"
       ],
       "importedBy": []
     },
     {
       "file": "CHANGELOG.md",
       "role": "doc",
-      "size": 14518,
+      "size": 15281,
       "imports": [],
       "importedBy": []
     },
@@ -227,23 +227,25 @@
       "size": 1245,
       "imports": [],
       "importedBy": [
+        "bin/cli.js",
         "src/sarif.js",
         "src/sbom.js",
         "src/selfupdate.js",
+        "tests/cli.js",
         "tests/run.js"
       ]
     },
     {
       "file": "PROMPT.md",
       "role": "doc",
-      "size": 9114,
+      "size": 9745,
       "imports": [],
       "importedBy": []
     },
     {
       "file": "README.md",
       "role": "doc",
-      "size": 13780,
+      "size": 13917,
       "imports": [],
       "importedBy": []
     },
@@ -420,7 +422,7 @@
     {
       "file": "src/guard.js",
       "role": "code-js",
-      "size": 14306,
+      "size": 15837,
       "imports": [
         "src/map.js",
         "src/init.js"
@@ -633,7 +635,6 @@
         "src/semantics.js"
       ],
       "importedBy": [
-        "bin/cli.js",
         "mcp/server.js"
       ]
     },
@@ -661,7 +662,7 @@
     {
       "file": "src/security.js",
       "role": "code-js",
-      "size": 7086,
+      "size": 7542,
       "imports": [
         "src/pyast.js"
       ],
@@ -827,18 +828,19 @@
     {
       "file": "TEST-REPORT.md",
       "role": "doc",
-      "size": 5105,
+      "size": 5277,
       "imports": [],
       "importedBy": []
     },
     {
       "file": "tests/cli.js",
       "role": "code-js",
-      "size": 16867,
+      "size": 18472,
       "imports": [
         "tests/lib/report.js",
         "src/global.js",
-        "src/deps.js"
+        "src/deps.js",
+        "package.json"
       ],
       "importedBy": []
     },
@@ -1008,7 +1010,7 @@
     {
       "file": "tests/run.js",
       "role": "code-js",
-      "size": 62765,
+      "size": 65051,
       "imports": [
         "src/map.js",
         "src/security.js",

@@ -9,7 +9,7 @@ const targetDir = process.argv[3] && !process.argv[3].startsWith("-") ? path.res
 async function main() {
   if (!cmd || cmd === "help" || cmd === "--help" || cmd === "-h") {
     console.log(`
-AI Deep Era v0.54.0 - give the blind AI developer eyes (no frontend, proof in your IDE)
+AI Deep Era v0.55.0 - give the blind AI developer eyes (no frontend, proof in your IDE)
 
 START HERE:
   npx deep-era start             Install, wire up, and audit this project in ONE command.
@@ -23,6 +23,7 @@ Usage:
   deep-era guide "<task>"        PRE-FLIGHT: where to work, what not to touch, locked decisions
   deep-era onboard               One shot: init + setup-ide + CI + skill
   deep-era global                Machine setup: wire MCP into 6 IDEs + skill, once per PC
+  deep-era ide [name]            ONE command: detect IDEs, wire MCP into project, print end-to-end brief
   deep-era ide [name]            ONE command: detect IDEs, wire MCP into project, print end-to-end brief
   deep-era init [dir]            Install into a project (map + AGENTS.md + rules)
   deep-era doctor [dir]          Full scan + tests + guard + deps + ERROR-REPORT.md
@@ -73,6 +74,12 @@ Usage:
   deep-era memory-bank encrypt Encrypt an existing plaintext bank (needs DEEP_ERA_KEY)
   deep-era mcp                 MCP server (stdio) - 16 tools
 `);
+    return;
+  }
+  if (cmd === "--version" || cmd === "-v" || cmd === "version") {
+    // Agents check versions this way. No --version flag existed, so every agent
+    // asking "is this install fresh?" got "Unknown command" instead of an answer.
+    console.log(require("../package.json").version);
     return;
   }
   if (cmd === "init") {
@@ -402,6 +409,12 @@ Usage:
     await runInit(targetDir);
     runSetupIde(targetDir);
     runCi(targetDir);
+    try {
+      // One command sets up everything: wire detected IDEs into the project too,
+      // so the agent's editor speaks MCP without a manual copy-paste round.
+      const { runIde } = require("../src/ide");
+      runIde(targetDir, {});
+    } catch {}
     console.log("");
     console.log("[deep-era] auditing your project now...");
     console.log("");
@@ -451,6 +464,7 @@ Usage:
     console.log('  deep-era guide "<what you are about to build>"   tell your agent where to work');
     console.log("  deep-era check                                one-command audit from now on");
     console.log("  deep-era doctor                               full report with fixes");
+    console.log("  deep-era prompt --raw                         the one paste for your AI agent");
     try {
       const { stalenessNotice } = require("../src/selfupdate");
       const note = await stalenessNotice();

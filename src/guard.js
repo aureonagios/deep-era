@@ -186,7 +186,9 @@ function guardScan(cwd, files) {
   }
 
   // Python stdlib top-level modules — importing these is never a hallucination.
-const PY_STDLIB = new Set(("os sys re json datetime time math random pathlib collections itertools functools typing argparse logging unittest hashlib hmac secrets string io csv sqlite3 threading multiprocessing queue socket http urllib email html xml subprocess shutil glob tempfile asyncio concurrent pdb traceback warnings weakref copy pickle struct array enum dataclasses statistics decimal fractions zoneinfo contextlib abc operator importlib inspect dis site builtins keyword tokenize ast").split(" "));
+  // Grows only by proven misses: `ssl` was flagged on a real project (stdlib import
+  // reported as hallucinated) because it was absent here. socket/threading were present.
+const PY_STDLIB = new Set(("os sys re json datetime time math random pathlib collections itertools functools typing argparse logging unittest hashlib hmac secrets string io csv sqlite3 ssl threading multiprocessing queue socket http urllib email html xml subprocess shutil glob tempfile asyncio concurrent pdb traceback warnings weakref copy pickle struct array enum dataclasses statistics decimal fractions zoneinfo contextlib abc operator importlib inspect dis site builtins keyword tokenize ast").split(" "));
 
 // Declared third-party deps (requirements.txt + package.json) — also not hallucinations.
 function declaredDeps(cwd) {
@@ -224,10 +226,19 @@ function declaredDeps(cwd) {
   // Broken imports: AI imports a path that does not exist — caught before runtime.
   // Skips tests/: test files legitimately contain fake imports, mocks and fixtures.
   // Skips stdlib + declared dependencies: `import os` is NOT a hallucination.
+  // A bare third-party-looking name with NO manifest anywhere (no requirements.txt,
+  // pyproject.toml, or package.json) is a different, weaker signal: it may be an
+  // undeclared dependency rather than an invented one, so it gets its own low-severity
+  // rule instead of the "hallucinated" accusation. Proven on a real project where
+  // `gradio` (a real PyPI package, guarded import, zero manifests) was reported as
+  // hallucinated.
   try {
     const { parseImports } = require("./map");
     const names = new Set(files.map((f) => f.file));
     const declared = declaredDeps(cwd);
+    const hasManifest = ["requirements.txt", "pyproject.toml", "package.json"].some((m) => {
+      try { fs.accessSync(path.join(cwd, m)); return true; } catch { return false; }
+    });
     let n = 0;
     for (const f of codeFiles.slice(0, 120)) {
       if (f.file.startsWith("tests/fixtures/") || f.file.startsWith("tests/")) continue;
@@ -236,6 +247,16 @@ function declaredDeps(cwd) {
         if (resolveDep(names, d)) continue;
         const first = d.split("/")[0].toLowerCase().replace(/-/g, "_");
         if (PY_STDLIB.has(first) || declared.has(first)) continue;
+        // Bare-name case is Python-only: JS/Go/Ruby imports only reach here as
+        // explicit relative paths (`./ghost-module`), which are genuine path claims
+        // and stay broken-import. A bare `import gradio` with zero manifests is the
+        // weaker undeclared-or-invented signal.
+        const looksBare = /\.py$/.test(f.file) && !d.includes("/") && !d.startsWith(".");
+        if (looksBare && !hasManifest && n < 8) {
+          n++;
+          push("low", "unlisted-dependency", f.file, `"${d}" is imported but declared nowhere (no requirements.txt/pyproject.toml/package.json) and no such file exists — undeclared dependency, or hallucinated name?`);
+          continue;
+        }
         if (n < 8) {
           n++;
           push("medium", "broken-import", f.file, `Imports "${d}" but no such file — hallucinated path? Fix the import.`);

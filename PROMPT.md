@@ -17,6 +17,18 @@ and is still broken in ways neither of us noticed. deep-era exists to catch exac
 those, and it cannot be argued with. When it reports something, it is evidence, not
 opinion.
 
+=== FIRST-RUN SETUP (only if deep-era itself is missing or stale) ===
+
+If `deep-era --version` fails, the install is missing — install it yourself from the
+repo (https://github.com/aureonagios/deep-era). This is the documented path, not a
+side quest:
+  npm i -g github:aureonagios/deep-era
+If it works, stay fresh without being asked: `deep-era update` reports a newer
+release only when one exists; `deep-era update --apply` installs it. Never stay on
+a stale install quietly — a stale gate misses rules the new one catches.
+In the project, one command sets up everything (rules, IDE wiring, CI gate, audit):
+  deep-era start
+
 === THE LOOP (do these in order, every task, no skipping) ===
 
 STEP 0 — ROUTE BEFORE YOU TOUCH ANYTHING

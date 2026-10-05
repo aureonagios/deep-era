@@ -925,6 +925,43 @@ ok("stdlib-not-hallucination", () => {
   assert(guardScan(tmp, map2.files).some((x) => x.rule === "broken-import"), "real ghost missed!");
 });
 
+ok("ssl-is-stdlib-not-hallucination", () => {
+  // Proven false on a real project: `import ssl` was reported as hallucinated.
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-"));
+  fs.writeFileSync(path.join(tmp, "a.py"), "import ssl\nimport socket\n");
+  const map = buildMap(tmp);
+  const g = guardScan(tmp, map.files);
+  assert(!g.some((x) => x.rule === "broken-import" || x.rule === "unlisted-dependency"), `stdlib ssl flagged: ${JSON.stringify(g)}`);
+});
+
+ok("unlisted-dependency-framing", () => {
+  // Bare third-party name, zero manifests anywhere: undeclared-or-invented is honest,
+  // "hallucinated" is an accusation. Proven on `gradio` (real PyPI package).
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-"));
+  fs.writeFileSync(path.join(tmp, "a.py"), "import gradio\n");
+  const map = buildMap(tmp);
+  const g = guardScan(tmp, map.files);
+  assert(g.some((x) => x.rule === "unlisted-dependency" && x.file === "a.py"), "unlisted dep missed!");
+  assert(!g.some((x) => x.rule === "broken-import" && x.file === "a.py"), "unlisted dep mislabeled as hallucinated!");
+  // Same import WITH a manifest that omits it: genuinely broken, medium as before.
+  fs.writeFileSync(path.join(tmp, "requirements.txt"), "requests==2.31.0\n");
+  const map2 = buildMap(tmp);
+  assert(guardScan(tmp, map2.files).some((x) => x.rule === "broken-import"), "real ghost with manifest missed!");
+});
+
+ok("rm-rf-only-bare-root", () => {
+  // Proven false on a real Dockerfile: `rm -rf /var/lib/apt/lists/*` is hygiene.
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-"));
+  fs.writeFileSync(path.join(tmp, "safe.py"), "# RUN apt-get update && rm -rf /var/lib/apt/lists/*\n# rm -rf ./dist\n# rm -rf /tmp/build\n");
+  const map = buildMap(tmp);
+  assert(!securityScan(tmp, map.files).some((x) => x.rule === "rm-rf"), "safe rm -rf paths flagged!");
+  // Assembled at runtime like the stripe-key fixtures: the committed file must never
+  // contain the full pattern, or this repo fails its own audit.
+  fs.writeFileSync(path.join(tmp, "evil.py"), "# deploy cleanup\nrun(\"rm -rf " + "/\")\n");
+  const map2 = buildMap(tmp);
+  assert(securityScan(tmp, map2.files).some((x) => x.rule === "rm-rf"), "bare root wipe missed!");
+});
+
 ok("global-lesson-travels-projects", () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-home-"));
   const { rememberGlobal, recall } = require("../src/memory");

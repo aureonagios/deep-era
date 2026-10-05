@@ -339,6 +339,34 @@ ok("cli-ide-detects-wires-briefs", () => {
   assert(/not detected/i.test(out2), `unknown IDE not refused honestly: ${out2.slice(0, 200)}`);
 });
 
+ok("cli-version-answers", () => {
+  // Agents check versions with --version. No flag existed, so every such check got
+  // "Unknown command" instead of an answer.
+  const { execFileSync } = require("child_process");
+  const v = execFileSync(process.execPath, [CLI, "--version"], { timeout: 30000 }).toString().trim();
+  assert(/^\d+\.\d+\.\d+$/.test(v), `bad version output: ${v}`);
+  assert(v === require("../package.json").version, "version does not match package.json!");
+});
+
+ok("cli-start-wires-ide-and-points-at-prompt", () => {
+  // start = one command sets up everything. With an empty HOME no IDE is detected,
+  // which keeps this deterministic on any machine — but the prompt pointer must
+  // always print, because that is the agent's next step.
+  const { execFileSync } = require("child_process");
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-home-"));
+  const tmp = sandbox({ "package.json": "{}" });
+  // Fake HOME keeps project writes out of the real machine; PATH binaries may still
+  // detect, which is correct behavior on a machine that has them. Assert the parts
+  // that are deterministic everywhere: the audit ran and the prompt pointer printed.
+  const out = execFileSync(process.execPath, [CLI, "start"], {
+    cwd: tmp, timeout: 180000,
+    env: { ...process.env, DEEP_ERA_HOME: home },
+  }).toString();
+  assert(out.includes("AGENT BRIEF"), "start printed no agent brief!");
+  assert(out.includes("deep-era prompt --raw"), "start does not point at the paste!");
+  assert(out.includes("Scanned"), "start printed no audit!");
+});
+
 ok("cli-suite-reported", async () => {
   await finish();
   const { readReport } = require("./lib/report");

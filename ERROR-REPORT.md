@@ -1,24 +1,27 @@
 # ERROR-REPORT.md (AI Deep Era Doctor)
 
-Generated: 2026-10-05T16:57:34.473Z
-Stack: node | Files: 101
+Generated: 2026-10-05T19:00:29.689Z
+Stack: node | Files: 104
 
 ## 1. Terminal / build truth
-### `syntax-check (52 JS + 0 TS/JSX)` => PASS
+### `syntax-check (54 JS + 0 TS/JSX)` => PASS
 ```
-all 52 JS pass (single-process)
+all 54 JS pass (single-process)
 ```
 
 ### `npm test --silent` => PASS
 ```
 PASS map-builds-with-imports
 PASS security-runs-deep
+PASS guardian-skips-placeholders
+PASS guardian-catches-real-secrets
+PASS guardian-merge-keeps-worst-finding
 PASS context-saves-tokens
 PASS verify-deep-all-files
 PASS snapshot-create-restore
 PASS snapshot-restore-removes-new-files
 PASS init-creates-agents-md
-[deep-era] init ok -> C:\Users\Mustafa\AppData\Local\Temp\deep-era-jy3LjA
+[deep-era] init ok -> C:\Users\Mustafa\AppData\Local\Temp\deep-era-t8lglD
   - AGENTS.md (universal rules, 25+ IDEs)
   - .deep-era/map.json (2 files, stack=unknown)
   - .deep-era/RULES.md + logs/
@@ -62,15 +65,11 @@ PASS guidance-surfaces-locked-decisions
 PASS guidance-forbids-generated-and-lockfiles
 PASS memory-no-chat-forgotten
 PASS english-only-code-enforced
-PASS memory-dedupe-saves-tokens
-PASS duplication-caught-offline
-PASS verify-fast-two-tier
-PASS stack-packs-cover-al
+PASS me
 ```
 
-## 2. Security findings (0)
-None. Clean.
-
+## 2. Security findings (1)
+- [high] tests/run.js:962: Dangerous rm -rf / (rm-rf) [CWE-78/A03:2021]
 ## 2b. Guard / audit (0)
 None. Clean.
 
@@ -107,17 +106,18 @@ None. Clean.
 - AGENTS.md (doc, 5191b)
 - ARCHITECTURE.md (doc, 2246b)
 - BENCH.md (doc, 6539b)
-- bin/cli.js (code-js, 35720b)
+- bin/cli.js (code-js, 37091b)
+- CHANGELOG.md (doc, 15281b)
 - DEMO.md (doc, 1451b)
-- ERROR-REPORT.md (doc, 4662b)
+- ERROR-REPORT.md (doc, 4515b)
 - install.ps1 (other, 690b)
 - install.sh (other, 631b)
 - LICENSE (other, 73b)
 - llms.txt (other, 2184b)
 - mcp/server.js (code-js, 18083b)
-- package.json (config, 1225b)
-- PROMPT.md (doc, 9072b)
-- README.md (doc, 25303b)
+- package.json (config, 1245b)
+- PROMPT.md (doc, 9745b)
+- README.md (doc, 13917b)
 - SECURITY.md (doc, 1305b)
 - src/browser.js (code-js, 1970b)
 - src/ci.js (code-js, 1874b)
@@ -132,20 +132,20 @@ None. Clean.
 - src/fix.js (code-js, 1701b)
 - src/global.js (code-js, 3199b)
 - src/graph.js (code-js, 2971b)
-- src/guard.js (code-js, 14306b)
-- src/guardian.js (code-js, 6432b)
+- src/guard.js (code-js, 15837b)
+- src/guardian.js (code-js, 6973b)
 - src/guidance.js (code-js, 15893b)
 - src/hook.js (code-js, 1826b)
 - src/hunt.js (code-js, 2737b)
+- src/ide.js (code-js, 12571b)
 - src/init.js (code-js, 6321b)
 - src/links.js (code-js, 6418b)
 - src/logger.js (code-js, 886b)
-- src/map.js (code-js, 7924b)
-- src/memory.js (code-js, 12398b)
 
 ## 4. Fix order for the AI
-All clean. Nothing to fix.
+1. Fix findings above
+2. Then re-run doctor
 
 ## 5. Progress vs last run
-Fixed since last run (2): passwd-assign@src/guardian.js, todo-fixme@src/guardian.js
-Newly broken (0): —
+Fixed since last run (0): —
+Newly broken (1): rm-rf@tests/run.js
