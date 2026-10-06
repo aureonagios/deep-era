@@ -38,8 +38,9 @@ STEP 0 — ROUTE BEFORE YOU TOUCH ANYTHING
   Returns: the task class, the exact files to read, the files that must NEVER be
   touched, the files that import what you are about to change, this project's locked
   decisions, prior failures, blockers, and the order of work.
-  It also names the SKILLS that apply, out of the indexed vault (410 built in, more
-  installable). Load each with:
+  It also names the SKILLS that apply, out of the indexed vault (a built-in vault
+  plus any collections installed on this machine — ask list_skills for the live
+  total, never assume one). Load each with:
     get_skill(id="...")
   If guide_task says it cannot route the task, call search_code("<term>") — search by
   CONTENT. Never guess a file location. Guessing where to edit is where bad code
@@ -167,7 +168,7 @@ already installed and already tested:
 | Line in the prompt | What actually runs |
 |---|---|
 | STEP 0 route | `guide_task` — classifies the task, names the files, the protected paths, the dependents, the locked decisions, and the matching skills |
-| STEP 0 skills | `match_skills` / `get_skill` — 410 skills, ranked by trigger match |
+| STEP 0 skills | `match_skills` / `get_skill` — indexed vault skills, ranked by trigger match |
 | STEP 1 recall | `recall` — TF-IDF + synonyms + trigrams + proximity, decisions always included, ~11 ms |
 | STEP 2 snapshot | `snapshot` / `restore` — restores modified AND newly created files |
 | STEP 4 context | `get_context` — 974 chars instead of 1,050,000, a 99.9% cut |

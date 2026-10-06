@@ -9,7 +9,7 @@ const targetDir = process.argv[3] && !process.argv[3].startsWith("-") ? path.res
 async function main() {
   if (!cmd || cmd === "help" || cmd === "--help" || cmd === "-h") {
     console.log(`
-AI Deep Era v0.58.0 - give the blind AI developer eyes (no frontend, proof in your IDE)
+AI Deep Era v0.58.1 - give the blind AI developer eyes (no frontend, proof in your IDE)
 
 START HERE:
   npx deep-era start             Install, wire up, and audit this project in ONE command.
@@ -65,7 +65,7 @@ Usage:
   deep-era fetch <url>         Fetch a docs URL to text (stdlib, capped)
   deep-era research <query>    Instant-answer research (best-effort, honest)
   deep-era ui [port]           Live Autonomous Command Center & Web Dashboard
-  deep-era skills [query]      Search the 410 Autonomous Agent Skills vault
+  deep-era skills [query]      Search the skills vault (built-in + installed collections)
   deep-era hunt [port]         Port hunter & socket conflict resolver
   deep-era guard               Secret Guardian: scan for leaked keys & tokens
   deep-era docker [port]       Generate multi-stage production Docker scaffold

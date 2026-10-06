@@ -11,7 +11,7 @@ const { logStep, readJson } = require("../src/logger");
 
 const TOOLS = [
   { name: "guide_task", description: "PRE-FLIGHT BRIEFING — call this BEFORE editing anything. Classifies the task, names the exact files to read, the files that must not be touched, the files that import what you are about to change, this project's locked decisions, prior failures, and the order of work. Prevents guessing the wrong location, which is where slop starts.", inputSchema: { type: "object", properties: { task: { type: "string" } }, required: ["task"] } },
-  { name: "match_skills", description: "Find the installed agent skills that apply to a task, ranked by their triggers. 410 skills ship with deep-era and this is how you discover which ones matter instead of guessing. Call it before starting work. Returns [] when nothing matches, which is a real answer, not a failure.", inputSchema: { type: "object", properties: { task: { type: "string" }, limit: { type: "number" } }, required: ["task"] } },
+  { name: "match_skills", description: "Find the installed agent skills that apply to a task, ranked by their triggers. The vault ships hundreds of skills and more install as collections — this is how you discover which ones matter instead of guessing. Call it before starting work. Returns [] when nothing matches, which is a real answer, not a failure.", inputSchema: { type: "object", properties: { task: { type: "string" }, limit: { type: "number" } }, required: ["task"] } },
   { name: "get_skill", description: "Load one skill's full SKILL.md content by id. Pair it with match_skills: match to find what applies, get_skill to read it.", inputSchema: { type: "object", properties: { id: { type: "string" } }, required: ["id"] } },
   { name: "list_skills", description: "List installed skills by category with counts, so you know what is available before promising anything.", inputSchema: { type: "object", properties: {} } },
   { name: "plan_task", description: "Plan first, show it to the user. Blind work is forbidden.", inputSchema: { type: "object", properties: { goal: { type: "string" }, steps: { type: "array", items: { type: "string" } } }, required: ["goal"] } },
@@ -53,7 +53,7 @@ async function runMcp() {
       const { id, method, params } = msg;
       try {
         if (method === "initialize") {
-          reply(id, { protocolVersion: "2024-11-05", capabilities: { tools: {} }, serverInfo: { name: "deep-era", version: "0.58.0" } });
+          reply(id, { protocolVersion: "2024-11-05", capabilities: { tools: {} }, serverInfo: { name: "deep-era", version: "0.58.1" } });
         } else if (method === "notifications/initialized") {
         } else if (method === "tools/list") {
           reply(id, { tools: TOOLS });

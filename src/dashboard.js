@@ -373,7 +373,7 @@ function getDashboardHtml() {
     </div>
     <div class="nav-tabs">
       <button class="nav-tab active" onclick="switchTab('tab-overview')">Overview</button>
-      <button class="nav-tab" onclick="switchTab('tab-skills')">Skills Vault (410)</button>
+      <button class="nav-tab" onclick="switchTab('tab-skills')">Skills Vault</button>
       <button class="nav-tab" onclick="switchTab('tab-secrets')">Secret Guardian</button>
       <button class="nav-tab" onclick="switchTab('tab-ports')">Port Hunter</button>
       <button class="nav-tab" onclick="switchTab('tab-memory')">Memory Bank</button>
@@ -392,7 +392,7 @@ function getDashboardHtml() {
       </div>
       <div class="stat-card">
         <span class="stat-label">Skills Vault</span>
-        <span class="stat-value" id="statSkills">410</span>
+        <span class="stat-value" id="statSkills">…</span>
       </div>
       <div class="stat-card">
         <span class="stat-label">Total Files Mapped</span>
@@ -419,8 +419,8 @@ function getDashboardHtml() {
     <div id="tab-skills" class="tab-pane">
       <div class="card">
         <div class="card-header">
-          <span class="card-title">410 Autonomous Agent Skills Vault</span>
-          <span class="tag" id="skillsCount">410 loaded</span>
+          <span class="card-title">Autonomous Agent Skills Vault</span>
+          <span class="tag" id="skillsCount">…</span>
         </div>
         <div class="search-bar">
           <input type="text" id="skillSearch" class="search-input" placeholder="Search by name, capability (e.g. docker, react, security, quant, e2e)..." oninput="filterSkills()">
@@ -516,6 +516,7 @@ function getDashboardHtml() {
         const data = await res.json();
         document.getElementById('statFiles').textContent = data.fileCount || '--';
         document.getElementById('statSpend').textContent = (data.spendTokens || 0).toLocaleString();
+        document.getElementById('statSkills').textContent = (data.skillsCount ?? '--').toString();
         
         let html = '<table><thead><tr><th>Test / Guard</th><th>Status</th><th>Detail</th></tr></thead><tbody>';
         for (const item of data.verifications || []) {
@@ -777,7 +778,8 @@ function startDashboardServer(dir = process.cwd(), preferredPort = 8300) {
           verifications: v,
           securityCount: s.length,
           guardCount: g.length,
-          spendTokens: sp.tokens
+          spendTokens: sp.tokens,
+          skillsCount: getCatalog(dir).skills.length
         }));
         return;
       }

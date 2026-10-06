@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-10-06T13:15:09.114Z",
+  "generatedAt": "2026-10-06T17:47:14.288Z",
   "stack": {
     "kind": "node",
     "run": null,
@@ -120,7 +120,7 @@
     {
       "file": "bin/cli.js",
       "role": "code-js",
-      "size": 38976,
+      "size": 38990,
       "imports": [
         "package.json",
         "src/init.js",
@@ -162,7 +162,7 @@
     {
       "file": "ERROR-REPORT.md",
       "role": "doc",
-      "size": 4547,
+      "size": 4596,
       "imports": [],
       "importedBy": []
     },
@@ -197,7 +197,7 @@
     {
       "file": "mcp/server.js",
       "role": "code-js",
-      "size": 18083,
+      "size": 18120,
       "imports": [
         "src/map.js",
         "src/verify.js",
@@ -238,7 +238,7 @@
     {
       "file": "PROMPT.md",
       "role": "doc",
-      "size": 9955,
+      "size": 10057,
       "imports": [],
       "importedBy": []
     },
@@ -306,7 +306,7 @@
     {
       "file": "src/dashboard.js",
       "role": "code-js",
-      "size": 30438,
+      "size": 30574,
       "imports": [
         "src/map.js",
         "src/verify.js",
@@ -497,7 +497,7 @@
     {
       "file": "src/init.js",
       "role": "code-js",
-      "size": 6336,
+      "size": 6338,
       "imports": [
         "src/map.js",
         "src/stacks.js",
@@ -843,7 +843,7 @@
     {
       "file": "TEST-REPORT.md",
       "role": "doc",
-      "size": 5898,
+      "size": 5930,
       "imports": [],
       "importedBy": []
     },
@@ -1047,7 +1047,7 @@
     {
       "file": "tests/run.js",
       "role": "code-js",
-      "size": 79511,
+      "size": 80710,
       "imports": [
         "src/map.js",
         "src/security.js",

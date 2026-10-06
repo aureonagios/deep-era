@@ -1,4 +1,4 @@
-# AI Deep Era v0.58.0 — give the blind AI developer eyes
+# AI Deep Era v0.58.1 — give the blind AI developer eyes
 
 > ## Paste this into your AI agent
 > ```
@@ -15,7 +15,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/Node-%3E%3D18-blue.svg)](package.json)
-[![Tests](https://img.shields.io/badge/Tests-173%20passing-brightgreen.svg)](tests/run.js)
+[![Tests](https://img.shields.io/badge/Tests-174%20passing-brightgreen.svg)](tests/run.js)
 [![No deps](https://img.shields.io/badge/Dependencies-0-orange.svg)](package.json)
 [![Skills](https://img.shields.io/badge/Skills-410%2B-indexed-blue.svg)](.agents/skills/)
 [![MCP](https://img.shields.io/badge/MCP-19%20tools-purple.svg)](mcp/server.js)
@@ -84,21 +84,21 @@ The agent is told five things it cannot argue its way past:
 5. **Refuse.** Removing test coverage, skipping verification, hardcoding secrets: say no,
    say why in one sentence, offer the safe alternative. No flattery.
 
-## What v0.58 does (latest)
+## What v0.58.1 does (latest)
 
-**Use-cases for all 1228 skills — measured, not claimed: 0 orphans on both vaults.**
+**No hardcoded skill counts anywhere an agent looks — plus the dead code this session's own audit found.**
 
-Installing 818 more skills tripled the corpus, which broke matching quality in two
-places the 410-vault never exposed: generic words ("name", "variable", "leak") claimed
-by hundreds of trigger lists dragged unrelated skills over the bar, and near-miss
-prefixes ("typo" inside "typosquatting", "post" inside "postgres") ranked nonsense.
-Three fixes, each pinned by tests: trigger hits are now IDF-weighted (rare words hit
-at full strength, common words need corroboration), prefixes require 80% length
-overlap, and task tokens split on hyphens so hyphenated ids self-match.
+`match_skills` told agents "410 skills ship with deep-era", the dashboard flashed
+"410 loaded", and help said "Search the 410 vault" — all stale the moment any
+collection gets installed. Every surface now counts live (dashboard reads
+`/api/overview`, MCP/help/paste carry no numbers), pinned by a test that fails on any
+new hardcoded count.
 
-Stated limit, not hidden: "fix a typo" can still surface a typosquatting skill on a
-large corpus — lexically adjacent, semantically off, and no word statistic can see
-the difference. Nonsense still refuses everywhere; agents verify before loading.
+Same audit also removed dead code the engines can't see (unused params and helpers
+don't match any finding shape): `blank()`/`tstack`/`jsxText` in tsparse.js,
+`catchBody` in semantics.js, `why` in links.js — plus plaintext memory is no longer
+tracked in git, the tarball claim is re-measured (137 kB), and `check` no longer
+advertises a 30-second audit it can't keep (measured: ~1s engines + your suite).
 
 Full history: [CHANGELOG.md](CHANGELOG.md)
 
@@ -216,8 +216,8 @@ silent — a clean bill of health from any tool, including this one, deserves su
 ## Demo
 `DEMO.md` — 5-minute video script. Or run `deep-era demo` and watch 4 traps get caught.
 
-## Self-proof (v0.58.0, just ran)
-- `npm test` → 118 unit + 36 CLI + 12 MCP + 7 superpowers = **173 green (100% PASS)**
+## Self-proof (v0.58.1, just ran)
+- `npm test` → 119 unit + 36 CLI + 12 MCP + 7 superpowers = **174 green (100% PASS)**
 - Skill coverage: new audit engine proves every installed skill reachable (was 76 orphans before the fix)
 - `deep-era start` on a real 7-file Express app → **10 findings, all verified correct**, in one command
 - Encryption: AES-256-GCM, 7/7 proof tests (wrong key refuses, tampering detected, no plaintext leak)

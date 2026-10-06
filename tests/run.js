@@ -339,6 +339,25 @@ ok("readme-install-is-honest", () => {
   assert(/not on the npm registry/i.test(txt), "README never states the registry gap");
 });
 
+ok("no-hardcoded-skill-counts", () => {
+  // Agents read help text, MCP tool descriptions, the paste, and the dashboard —
+  // never the README badge. A hardcoded "410" in any of those teaches the agent
+  // the vault total is 410 forever, no matter how many collections get installed.
+  const { execFileSync } = require("child_process");
+  const root = path.resolve(__dirname, "..");
+  const help = execFileSync(process.execPath, [path.join(root, "bin", "cli.js"), "help"], { timeout: 30000 }).toString();
+  assert(!/\b410\b/.test(help), "help text hardcodes the 410 vault size");
+  const { TOOLS } = require("../mcp/server");
+  for (const t of TOOLS) {
+    assert(!/\b410\b/.test(t.description || ""), `MCP tool ${t.name} hardcodes the 410 vault size`);
+  }
+  const prompt = fs.readFileSync(path.join(root, "PROMPT.md"), "utf8");
+  const paste = prompt.match(/```\n([\s\S]*?)\n```/)[1];
+  assert(!/\b410\b/.test(paste), "agent paste hardcodes the 410 vault size");
+  const dash = fs.readFileSync(path.join(root, "src", "dashboard.js"), "utf8");
+  assert(!/>410</.test(dash) && !/\(410\)/.test(dash) && !/410 loaded/.test(dash), "dashboard hardcodes the 410 vault size");
+});
+
 ok("cli-prompt-prints-clean-copy", () => {
   const { execFileSync } = require("child_process");
   const root = path.resolve(__dirname, "..");
