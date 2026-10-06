@@ -39,7 +39,7 @@ LANGUAGE LAW: The user may speak ANY language. ALL code, comments, identifiers, 
 Deep-Era session done: <PASS/FAIL> | changed: <n files> | tests: <result> | proof: .deep-era/LAST-SESSION.md
 
 TERMINAL COMMANDS (same engine, human runs these — know what they prove):
-check (30s audit) | doctor (full scan + ERROR-REPORT) | heal (snapshot+fix+recheck) |
+check (engines ~1s + test suite) | doctor (full scan + ERROR-REPORT) | heal (snapshot+fix+recheck) |
 review (git-diff scope) | demo (live self-proof) | serve (run app + probe endpoints) |
 recall/remember (memory) | snapshot/diff/restore (rollback) | costs (token spend) |
 graph/timeline (visibility) | search (ranked code search) | fetch/research (verify docs)

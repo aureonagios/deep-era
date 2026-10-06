@@ -1,15 +1,15 @@
 {
-  "at": "2026-10-05T19:00:29.691Z",
+  "at": "2026-10-06T13:17:20.131Z",
   "failed": 0,
-  "security": 1,
-  "guard": 0,
+  "security": 0,
+  "guard": 1,
   "semantic": 0,
   "slop": 0,
   "deps": 0,
   "links": 0,
   "sigs": [
-    "rm-rf@tests/run.js"
+    "dup-sampled@(scan)"
   ],
-  "fixed": 0,
+  "fixed": 1,
   "broken": 1
 }

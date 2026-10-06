@@ -2,7 +2,7 @@
 # Standard AI-consumable brief. Any AI reading this knows the platform deeply:
 # what it is, how to install it on a PC, how to work under it, how to prove work.
 
-> AI Deep Era v0.46.0: universal audit layer that makes any AI coding agent
+> AI Deep Era v0.58.0: universal audit layer that makes any AI coding agent
 > (Cursor, Copilot, Antigravity, Trae, Windsurf, Claude Code, Gemini CLI, Codex,
 > JetBrains Junie, Roo, Kilo, Zed, Cline, Continue + more) deep, safe and
 > transparent. Zero dependencies, offline-first, MIT. 11 languages audited.
@@ -32,7 +32,7 @@
 
 ## Key facts
 
-- MCP: 15 tools over stdio (`deep-era mcp`); configs for 25+ clients via `setup-ide`
+- MCP: 19 tools over stdio (`deep-era mcp`); configs for 25+ clients via `setup-ide`
 - Memory: local JSONL + global lessons (`remember --global`), TF-IDF + synonyms + trigrams
 - Safety: snapshot/rollback, allowlist `deep-era-allow:`, decision lock, pre-commit `hook`
 - Proof artifacts: ERROR-REPORT.md, report.sarif, ARCHITECTURE.md (Mermaid), sbom.json

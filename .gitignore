@@ -4,6 +4,8 @@ node_modules/
 .deep-era/logs/
 .deep-era/ide/
 .deep-era/report.sarif
+.deep-era/memory_bank.json
+.deep-era/memory-export.jsonl
 *.tgz
 tests/perf-result.json
 tests/.deep-era/

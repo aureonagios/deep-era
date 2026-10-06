@@ -19,22 +19,13 @@ const JSX_EXT = /\.(jsx|tsx)$/;
 // Strip regions where brackets are not code: strings, template literals, regex
 // literals, line/block comments. Replaced with spaces so byte offsets are preserved
 // and error positions still point at the real line/column.
-function blank(str, from, to) {
-  return " ".repeat(Math.max(0, to - from));
-}
-
-// Returns cleaned source with all non-code regions blanked, plus the set of
-// offsets that must be treated as JSX text (inside JSX children). null on
-// unterminated construct (caller reports it).
-function stripNonCode(src, allowJsx) {
+// Returns cleaned source plus any unterminated construct found (caller reports it
+// with line/col).
+function stripNonCode(src) {
   const out = src.split("");
-  const jsxText = new Set();
   let i = 0;
   const n = src.length;
   const fail = { unterminated: null };
-  // Stack of template-literal `${` nesting so a `}` inside a substitution does not
-  // close the outer template.
-  const tstack = [];
 
   while (i < n) {
     const c = src[i];
@@ -120,7 +111,7 @@ function stripNonCode(src, allowJsx) {
     }
     i++;
   }
-  return { code: out.join(""), jsxText, fail };
+  return { code: out.join(""), fail };
 }
 
 // Locate JSX text regions so `<` inside children text is not read as a type
@@ -230,7 +221,7 @@ function verifyFile(absPath, rel) {
   }
   const ext = path.extname(rel).toLowerCase();
   const allowJsx = JSX_EXT.test(ext) || allowJsxByTsConfig(absPath);
-  const stripped = stripNonCode(src, allowJsx);
+  const stripped = stripNonCode(src);
   if (stripped.fail.unterminated) {
     const { line, col } = posOf(src, stripped.fail.unterminated.at);
     return { ok: false, err: `unterminated ${stripped.fail.unterminated.what}`, line, col, kind: "unterminated" };

@@ -215,7 +215,7 @@ function tryBodyOf(code, catchIdx) {
 //   try { txt = fs.readFileSync(p); } catch { continue; }
 //   try { const c = JSON.parse(s); } catch { c = null; }
 const IO_PROBE = /\b(?:readFileSync|readFile|readdirSync|statSync|existsSync|accessSync|openSync|createReadStream|JSON\s*\.\s*parse|parseInt|parseFloat|Number\s*\(|decodeURIComponent|unzipSync|readFile\s*\()/;
-function isIoGuard(tryBody, catchBody) {
+function isIoGuard(tryBody) {
   if (!IO_PROBE.test(tryBody)) return false;
   // The guarded region must be dominated by that one call: no second statement that
   // could represent real work whose failure the user needs to know about.
@@ -255,7 +255,7 @@ function scanSwallowed(src, code, file, sink, scopes) {
     const tryBody = tryBodyOf(code, start);
 
     // The dominant legitimate pattern: a catch protecting one I/O or parse probe.
-    if (isIoGuard(tryBody, raw)) continue;
+    if (isIoGuard(tryBody)) continue;
 
     // Deliberate, annotated suppression: the author already decided this is fine.
     if (/deep-era-allow:\s*swallowed-exception/.test(src.split("\n").slice(0, 12).join("\n"))) continue;

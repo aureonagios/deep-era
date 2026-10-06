@@ -67,7 +67,7 @@ function probe(url, timeoutMs = 8000) {
       // Some hosts reject HEAD entirely. A GET retry is the only honest way to know
       // whether the link is really dead, so it runs for every rejection, not just
       // 405/501 — a 403 on HEAD is frequently a 200 on GET.
-      const retryWithGet = (why) => {
+      const retryWithGet = () => {
         const g = lib.get(url, { timeout: timeoutMs, headers: { "User-Agent": "deep-era/1.0 (link-check)" } }, (r2) => {
           r2.resume();
           resolve({ url, ok: r2.statusCode >= 200 && r2.statusCode < 400, status: r2.statusCode });

@@ -2,7 +2,7 @@
 
 How to reproduce: `node tests/perf.js` (writes `tests/perf-result.json`).
 Machine: Windows, Node 22. No server, no cloud, no cache tricks.
-Last run: v0.49.0 (see History).
+Last run: v0.58.0 (see History).
 
 ## Slop detection (v0.49, new)
 
@@ -63,21 +63,21 @@ a generic verb used to hijack routing (`fix` matched `src/fix.js` regardless of 
 subject), and test fixtures used to appear in the "you will edit this" list while the
 same tool printed "never touch fixtures".
 
-## Own repo (95 files) — measured, not estimated
+## Own repo (108 files) — measured, not estimated
 
 | Engine | Time |
 |---|---|
-| map (scan + import graph) | ~35 ms |
-| guard + duplication scan | ~126 ms |
-| security (regex + entropy + Python AST batch) | ~140 ms |
-| verify (JS two-tier + TS structural + scripts) | ~24 ms |
-| semantic (swallow / promise / branch / test) | ~104 ms |
-| tsparse TS/TSX/JSX | ~0.1 ms (no TS files here) |
-| guidance (classify + route + blockers) | ~120 ms |
-| slop (passthrough / dead code / indirection / chains) | ~90 ms |
-| get_context + snippets | ~2 ms |
-| recall (200 memory entries, TF-IDF + synonyms) | ~11 ms |
-| **Full `check`** | **~0.4 s engines (+ project test-suite time)** |
+| map (scan + import graph) | ~47 ms |
+| guard + duplication scan | ~174 ms |
+| security (regex + entropy + Python AST batch) | ~191 ms |
+| verify (JS two-tier + TS structural + scripts) | ~38 ms |
+| semantic (swallow / promise / branch / test) | ~166 ms |
+| tsparse TS/TSX/JSX | ~0.2 ms (no TS files here) |
+| guidance (classify + route + blockers) | ~187 ms |
+| slop (passthrough / dead code / indirection / chains) | ~178 ms |
+| get_context + snippets | ~4 ms |
+| recall (200 memory entries, TF-IDF + synonyms) | ~12 ms |
+| **Full `check`** | **~1.0 s engines (+ project test-suite time)** |
 
 History: verify was 4392 ms (one node process per file) → 12 ms single-process two-tier (354x).
 Python AST was 14.7 s for 60 files (one process per file) → batched single process.

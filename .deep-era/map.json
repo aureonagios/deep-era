@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-10-06T11:14:55.869Z",
+  "generatedAt": "2026-10-06T13:15:09.114Z",
   "stack": {
     "kind": "node",
     "run": null,
@@ -85,7 +85,7 @@
     {
       "file": ".gitignore",
       "role": "other",
-      "size": 465,
+      "size": 524,
       "imports": [],
       "importedBy": []
     },
@@ -99,21 +99,21 @@
     {
       "file": "AGENTS.md",
       "role": "doc",
-      "size": 5191,
+      "size": 5206,
       "imports": [],
       "importedBy": []
     },
     {
       "file": "ARCHITECTURE.md",
       "role": "doc",
-      "size": 2246,
+      "size": 2321,
       "imports": [],
       "importedBy": []
     },
     {
       "file": "BENCH.md",
       "role": "doc",
-      "size": 6539,
+      "size": 6541,
       "imports": [],
       "importedBy": []
     },
@@ -245,7 +245,7 @@
     {
       "file": "README.md",
       "role": "doc",
-      "size": 14403,
+      "size": 14418,
       "imports": [],
       "importedBy": []
     },
@@ -497,7 +497,7 @@
     {
       "file": "src/init.js",
       "role": "code-js",
-      "size": 6321,
+      "size": 6336,
       "imports": [
         "src/map.js",
         "src/stacks.js",
@@ -512,7 +512,7 @@
     {
       "file": "src/links.js",
       "role": "code-js",
-      "size": 6418,
+      "size": 6415,
       "imports": [],
       "importedBy": [
         "bin/cli.js",
@@ -691,7 +691,7 @@
     {
       "file": "src/semantics.js",
       "role": "code-js",
-      "size": 22660,
+      "size": 22644,
       "imports": [],
       "importedBy": [
         "mcp/server.js",
@@ -814,7 +814,7 @@
     {
       "file": "src/tsparse.js",
       "role": "code-js",
-      "size": 11452,
+      "size": 11081,
       "imports": [],
       "importedBy": [
         "src/verify.js",
@@ -1024,7 +1024,7 @@
     {
       "file": "tests/perf-result.json",
       "role": "config",
-      "size": 937,
+      "size": 935,
       "imports": [],
       "importedBy": []
     },

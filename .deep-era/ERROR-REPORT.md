@@ -1,12 +1,12 @@
 # ERROR-REPORT.md (AI Deep Era Doctor)
 
-Generated: 2026-10-05T19:00:29.689Z
-Stack: node | Files: 104
+Generated: 2026-10-06T13:17:20.129Z
+Stack: node | Files: 108
 
 ## 1. Terminal / build truth
-### `syntax-check (54 JS + 0 TS/JSX)` => PASS
+### `syntax-check (55 JS + 0 TS/JSX)` => PASS
 ```
-all 54 JS pass (single-process)
+all 55 JS pass (single-process)
 ```
 
 ### `npm test --silent` => PASS
@@ -21,7 +21,7 @@ PASS verify-deep-all-files
 PASS snapshot-create-restore
 PASS snapshot-restore-removes-new-files
 PASS init-creates-agents-md
-[deep-era] init ok -> C:\Users\Mustafa\AppData\Local\Temp\deep-era-t8lglD
+[deep-era] init ok -> C:\Users\Mustafa\AppData\Local\Temp\deep-era-wWALGX
   - AGENTS.md (universal rules, 25+ IDEs)
   - .deep-era/map.json (2 files, stack=unknown)
   - .deep-era/RULES.md + logs/
@@ -38,6 +38,8 @@ PASS prompt-file-exists-and-is-complete
 PASS prompt-names-only-tools-that-exist
 PASS prompt-states-the-real-limits
 PASS prompt-covers-the-detected-failures
+PASS prompt-steers-agents-off-the-broken-registry-path
+PASS readme-install-is-honest
 PASS cli-prompt-prints-clean-copy
 PASS skills-catalog-has-triggers
 PASS skills-match-the-right-skill
@@ -46,33 +48,31 @@ PASS skills-refuse-instead-of-guessing
 PASS skills-no-duplicate-suggestions
 PASS guide-task-recommends-skills
 PASS mcp-skill-tools-are-exposed
+PASS skillindex-audit-finds-gaps
+PASS skillindex-audit-clean-catalog-passes
+PASS skillindex-parses-both-frontmatter-styles
+PASS skillindex-normalizes-crlf
+PASS skillindex-derives-triggers
+PASS skillindex-collection-install
+PASS skillindex-reindex-merges-and-discovers
+PASS skillindex-cache-refreshes-on-reindex
+PASS skills-prefix-ratio-guard
+PASS skills-idf-downweights-common-words
+PASS skillindex-audit-two-tier-rescue
 PASS crypt-roundtrip-and-leaks-nothing
 PASS crypt-rejects-wrong-key-and-detects-tampering
 PASS crypt-fresh-iv-per-record
 PASS crypt-refuses-weak-passphrase
 PASS memory-bank-encrypts-at-rest
 PASS memory-bank-plaintext-mode-still-works
-PASS memory-encrypted-recall-and-degrade
-PASS slop-catches-ai-over-engineering
-PASS slop-no-false-positives-on-clean-code
-PASS slop-no-false-positives-on-repo
-PASS slop-does-not-flag-literal-initialisers
-PASS guidance-classifies-task
-PASS guidance-routes-to-right-file
-PASS guidance-never-points-at-fixtures
-PASS guidance-says-stop-when-it-cannot-route
-PASS guidance-surfaces-locked-decisions
-PASS guidance-forbids-generated-and-lockfiles
-PASS memory-no-chat-forgotten
-PASS english-only-code-enforced
-PASS me
+PA
 ```
 
-## 2. Security findings (1)
-- [high] tests/run.js:962: Dangerous rm -rf / (rm-rf) [CWE-78/A03:2021]
-## 2b. Guard / audit (0)
+## 2. Security findings (0)
 None. Clean.
 
+## 2b. Guard / audit (1)
+- [low] (scan): Dup-scan sampled 60/61 files — huge repos are sampled, not fully scanned. (dup-sampled)
 
 ## 2b2. Semantic bugs (0)
 None. No swallowed errors, floating promises, dead branches, or fake tests.
@@ -101,23 +101,23 @@ None. Clean.
 - .github/ISSUE_TEMPLATE/feature_request.md (doc, 291b)
 - .github/PULL_REQUEST_TEMPLATE.md (doc, 239b)
 - .github/workflows/deep-era.yml (config, 279b)
-- .gitignore (other, 465b)
+- .gitignore (other, 524b)
 - .npmignore (other, 50b)
-- AGENTS.md (doc, 5191b)
-- ARCHITECTURE.md (doc, 2246b)
-- BENCH.md (doc, 6539b)
-- bin/cli.js (code-js, 37091b)
-- CHANGELOG.md (doc, 15281b)
+- AGENTS.md (doc, 5206b)
+- ARCHITECTURE.md (doc, 2321b)
+- BENCH.md (doc, 6541b)
+- bin/cli.js (code-js, 38976b)
+- CHANGELOG.md (doc, 18066b)
 - DEMO.md (doc, 1451b)
-- ERROR-REPORT.md (doc, 4515b)
+- ERROR-REPORT.md (doc, 4547b)
 - install.ps1 (other, 690b)
 - install.sh (other, 631b)
 - LICENSE (other, 73b)
 - llms.txt (other, 2184b)
 - mcp/server.js (code-js, 18083b)
 - package.json (config, 1245b)
-- PROMPT.md (doc, 9745b)
-- README.md (doc, 13917b)
+- PROMPT.md (doc, 9955b)
+- README.md (doc, 14418b)
 - SECURITY.md (doc, 1305b)
 - src/browser.js (code-js, 1970b)
 - src/ci.js (code-js, 1874b)
@@ -138,8 +138,8 @@ None. Clean.
 - src/hook.js (code-js, 1826b)
 - src/hunt.js (code-js, 2737b)
 - src/ide.js (code-js, 12571b)
-- src/init.js (code-js, 6321b)
-- src/links.js (code-js, 6418b)
+- src/init.js (code-js, 6336b)
+- src/links.js (code-js, 6415b)
 - src/logger.js (code-js, 886b)
 
 ## 4. Fix order for the AI
@@ -147,5 +147,5 @@ None. Clean.
 2. Then re-run doctor
 
 ## 5. Progress vs last run
-Fixed since last run (0): —
-Newly broken (1): rm-rf@tests/run.js
+Fixed since last run (1): rm-rf@tests/run.js
+Newly broken (1): dup-sampled@(scan)

@@ -52,7 +52,7 @@ Universal layer that makes **any AI agent** (Cursor, Copilot, Antigravity, Winds
 ```bash
 npx deep-era start    # install + wire IDEs + CI gate + audit + print findings
 deep-era guide "<what you are about to build>"   # tell the agent where to work
-deep-era check        # 30s audit from now on: PASS = accept, FAIL = send back
+deep-era check        # audit: ~1s engines + your test suite. PASS = accept, FAIL = send back
 ```
 
 ## THE 1-PROMPT — copy, paste to any AI, done
@@ -110,7 +110,7 @@ npx deep-era start
 
 That is the whole pitch. It installs itself, wires your IDE, adds the CI gate, audits
 the project you are standing in, and prints what a blind AI developer would have
-shipped. No config, no account, no cloud, no API key, 102 kB, zero dependencies.
+shipped. No config, no account, no cloud, no API key, 137 kB, zero dependencies.
 
 Real output, from a throwaway Express app with an OpenAI key, a SQL injection, an
 empty `catch`, an unawaited promise, an `if (true)` guard, and three `assert.ok(true)`:
