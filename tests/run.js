@@ -1445,6 +1445,105 @@ ok("selfupdate-apply-command-shape", () => {
   assert(!args.some((a) => a.includes("registry.npmjs.org")), "apply must not use the npm registry (package was never published there)");
 });
 
+async function withUpdateUrl(url, fn) {
+  // Point the updater at a local server. Restores the env even when asserts throw,
+  // so one failing test cannot poison the rest of the suite.
+  const prev = process.env.DEEP_ERA_UPDATE_URL;
+  process.env.DEEP_ERA_UPDATE_URL = url;
+  try { return await fn(); } finally {
+    if (prev === undefined) delete process.env.DEEP_ERA_UPDATE_URL;
+    else process.env.DEEP_ERA_UPDATE_URL = prev;
+  }
+}
+
+function serveOnce(handler) {
+  // Local HTTP server on a free port. Caller MUST close it (finally) or the suite hangs.
+  const http = require("http");
+  const srv = http.createServer(handler);
+  return new Promise((resolve) => srv.listen(0, "127.0.0.1", () => resolve({ srv, port: srv.address().port })));
+}
+
+function closedPort() {
+  // A port nothing listens on: connecting gives ECONNREFUSED deterministically.
+  const net = require("net");
+  return new Promise((resolve) => {
+    const s = net.createServer();
+    s.listen(0, "127.0.0.1", () => { const p = s.address().port; s.close(() => resolve(p)); });
+  });
+}
+
+ok("selfupdate-names-every-failure", async () => {
+  // The old code reported every failure as "registry unreadable (offline?)" — one
+  // vague message that once sent a user theorizing about private repos and auth
+  // tokens for what was a sandboxed no-network box. Each mode gets its own reason.
+  const { fetchLatestVersion } = require("../src/selfupdate");
+  let srv = null;
+  try {
+    ({ srv } = await serveOnce((req, res) => {
+      if (req.url === "/ok") { res.writeHead(200, { "Content-Type": "application/json" }); res.end('{"name":"x","version":"9.9.9"}'); }
+      else if (req.url === "/badjson") { res.writeHead(200, { "Content-Type": "application/json" }); res.end("not json{{"); }
+      else if (req.url === "/missing") { res.writeHead(404); res.end("nope"); }
+      else if (req.url === "/limited") { res.writeHead(403, { "x-ratelimit-remaining": "0" }); res.end("limit"); }
+      else if (req.url === "/denied") { res.writeHead(403); res.end("denied"); }
+      else if (req.url === "/hang") { /* never respond: client timeout must fire */ }
+      else { res.writeHead(500); res.end("err"); }
+    }));
+    const port = srv.address().port;
+    const base = `http://127.0.0.1:${port}`;
+    const get = (p, t) => withUpdateUrl(base + p, () => fetchLatestVersion(t || 4000));
+    const ok1 = await get("/ok");
+    assert(ok1.version === "9.9.9", `valid body missed: ${JSON.stringify(ok1)}`);
+    assert((await get("/badjson")).error === "parse", "garbage body not named parse");
+    assert((await get("/missing")).error === "http-404", "404 not named http-404");
+    assert((await get("/limited")).error === "rate-limited", "exhausted quota not named rate-limited");
+    assert((await get("/denied")).error === "http-403", "plain 403 mislabeled (no quota headers means NOT rate-limited)");
+    assert((await get("/hang", 400)).error === "timeout", "hung server not named timeout");
+    const shut = await closedPort();
+    assert((await withUpdateUrl(`http://127.0.0.1:${shut}/x`, () => fetchLatestVersion(4000))).error === "refused", "refused connection not named refused");
+    assert((await withUpdateUrl("http://deep-era-invalid-host-xyz.test/pkg", () => fetchLatestVersion(3000))).error === "dns", "bad hostname not named dns");
+  } finally {
+    if (srv) srv.close();
+  }
+});
+
+ok("selfupdate-runUpdate-messages-name-the-reason", async () => {
+  const { runUpdate } = require("../src/selfupdate");
+  const lines = [];
+  const orig = console.log;
+  console.log = (...a) => lines.push(a.join(" "));
+  try {
+    let srv = null;
+    try {
+      ({ srv } = await serveOnce((req, res) => {
+        if (req.url === "/new") { res.writeHead(200, { "Content-Type": "application/json" }); res.end('{"name":"x","version":"99.0.0"}'); }
+        else { res.writeHead(404); res.end("nope"); }
+      }));
+      const port = srv.address().port;
+      const home = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-home-"));
+      lines.length = 0;
+      await withUpdateUrl(`http://127.0.0.1:${port}/new`, () => runUpdate({ homeDir: home, timeoutMs: 4000 }));
+      assert(lines.some((l) => l.includes("update available") && l.includes("99.0.0")), `newer version not announced: ${lines.join(" | ")}`);
+      lines.length = 0;
+      await withUpdateUrl(`http://127.0.0.1:${port}/missing`, () => runUpdate({ homeDir: home, timeoutMs: 4000 }));
+      const msg = lines.join(" | ");
+      assert(/HTTP 404/.test(msg), `404 not named honestly: ${msg}`);
+      assert(!/offline/i.test(msg), `404 mislabeled as offline: ${msg}`);
+      lines.length = 0;
+      await withUpdateUrl("http://deep-era-invalid-host-xyz.test/pkg", () => runUpdate({ homeDir: home, timeoutMs: 3000 }));
+      // Whatever the sandbox does with a bogus host (DNS fail, refused egress,
+      // timeout), the message must stay in the connectivity family — never blame
+      // HTTP status, rate limits, or claim to be up to date.
+      const conn = lines.join(" | ");
+      assert(/offline|refused|no answer|no network/i.test(conn), `connectivity failure mislabeled: ${conn}`);
+      assert(!/HTTP \d|rate-limit|up to date/i.test(conn), `connectivity failure mislabeled: ${conn}`);
+    } finally {
+      if (srv) srv.close();
+    }
+  } finally {
+    console.log = orig;
+  }
+});
+
 ok("ide-detects-from-disk-markers", () => {
   const { detectInstalledIdes } = require("../src/ide");
   const home = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-home-"));

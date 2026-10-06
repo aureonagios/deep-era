@@ -2,722 +2,734 @@
   "version": 1,
   "suites": {
     "unit": {
-      "pass": 119,
+      "pass": 121,
       "fail": 0,
       "tests": [
         {
           "name": "map-builds-with-imports",
           "ok": true,
-          "at": "2026-10-06T17:52:43.063Z",
-          "detail": "52ms"
+          "at": "2026-10-06T18:45:47.681Z",
+          "detail": "44ms"
         },
         {
           "name": "security-runs-deep",
           "ok": true,
-          "at": "2026-10-06T17:52:43.266Z",
-          "detail": "202ms"
+          "at": "2026-10-06T18:45:47.852Z",
+          "detail": "170ms"
         },
         {
           "name": "guardian-skips-placeholders",
           "ok": true,
-          "at": "2026-10-06T17:52:43.271Z",
-          "detail": "5ms"
+          "at": "2026-10-06T18:45:47.858Z",
+          "detail": "6ms"
         },
         {
           "name": "guardian-catches-real-secrets",
           "ok": true,
-          "at": "2026-10-06T17:52:43.274Z",
-          "detail": "3ms"
+          "at": "2026-10-06T18:45:47.873Z",
+          "detail": "15ms"
         },
         {
           "name": "guardian-merge-keeps-worst-finding",
           "ok": true,
-          "at": "2026-10-06T17:52:43.275Z",
+          "at": "2026-10-06T18:45:47.874Z",
           "detail": "1ms"
         },
         {
           "name": "context-saves-tokens",
           "ok": true,
-          "at": "2026-10-06T17:52:43.318Z",
-          "detail": "42ms"
+          "at": "2026-10-06T18:45:47.911Z",
+          "detail": "37ms"
         },
         {
           "name": "verify-deep-all-files",
           "ok": true,
-          "at": "2026-10-06T17:52:43.395Z",
-          "detail": "77ms"
+          "at": "2026-10-06T18:45:47.974Z",
+          "detail": "62ms"
         },
         {
           "name": "snapshot-create-restore",
           "ok": true,
-          "at": "2026-10-06T17:52:43.407Z",
-          "detail": "12ms"
+          "at": "2026-10-06T18:45:47.983Z",
+          "detail": "9ms"
         },
         {
           "name": "snapshot-restore-removes-new-files",
           "ok": true,
-          "at": "2026-10-06T17:52:43.416Z",
-          "detail": "9ms"
+          "at": "2026-10-06T18:45:47.993Z",
+          "detail": "10ms"
         },
         {
           "name": "init-creates-agents-md",
           "ok": true,
-          "at": "2026-10-06T17:52:43.421Z",
-          "detail": "4ms"
+          "at": "2026-10-06T18:45:47.996Z",
+          "detail": "2ms"
         },
         {
           "name": "guard-generic-no-trading",
           "ok": true,
-          "at": "2026-10-06T17:52:43.634Z",
-          "detail": "196ms"
+          "at": "2026-10-06T18:45:48.175Z",
+          "detail": "168ms"
         },
         {
           "name": "fixture-demo-caught",
           "ok": true,
-          "at": "2026-10-06T17:52:45.527Z",
-          "detail": "1893ms"
+          "at": "2026-10-06T18:45:49.757Z",
+          "detail": "1582ms"
         },
         {
           "name": "semantic-catches-ai-bugs",
           "ok": true,
-          "at": "2026-10-06T17:52:45.536Z",
-          "detail": "9ms"
+          "at": "2026-10-06T18:45:49.765Z",
+          "detail": "8ms"
         },
         {
           "name": "semantic-no-false-positives-on-repo",
           "ok": true,
-          "at": "2026-10-06T17:52:45.712Z",
-          "detail": "176ms"
+          "at": "2026-10-06T18:45:49.918Z",
+          "detail": "152ms"
         },
         {
           "name": "semantic-respects-guard-patterns",
           "ok": true,
-          "at": "2026-10-06T17:52:45.736Z",
-          "detail": "24ms"
+          "at": "2026-10-06T18:45:49.920Z",
+          "detail": "2ms"
         },
         {
           "name": "tsparse-valid-typescript-passes",
           "ok": true,
-          "at": "2026-10-06T17:52:45.742Z",
+          "at": "2026-10-06T18:45:49.927Z",
           "detail": "6ms"
         },
         {
           "name": "tsparse-catches-broken-typescript",
           "ok": true,
-          "at": "2026-10-06T17:52:45.744Z",
+          "at": "2026-10-06T18:45:49.929Z",
           "detail": "2ms"
         },
         {
           "name": "verify-fails-on-broken-typescript",
           "ok": true,
-          "at": "2026-10-06T17:52:45.752Z",
-          "detail": "8ms"
+          "at": "2026-10-06T18:45:49.933Z",
+          "detail": "4ms"
         },
         {
           "name": "prompt-file-exists-and-is-complete",
           "ok": true,
-          "at": "2026-10-06T17:52:45.754Z",
+          "at": "2026-10-06T18:45:49.935Z",
           "detail": "2ms"
         },
         {
           "name": "prompt-names-only-tools-that-exist",
           "ok": true,
-          "at": "2026-10-06T17:52:45.759Z",
-          "detail": "5ms"
+          "at": "2026-10-06T18:45:49.939Z",
+          "detail": "4ms"
         },
         {
           "name": "prompt-states-the-real-limits",
           "ok": true,
-          "at": "2026-10-06T17:52:45.759Z",
-          "detail": "0ms"
+          "at": "2026-10-06T18:45:49.940Z",
+          "detail": "1ms"
         },
         {
           "name": "prompt-covers-the-detected-failures",
           "ok": true,
-          "at": "2026-10-06T17:52:45.760Z",
-          "detail": "1ms"
+          "at": "2026-10-06T18:45:49.940Z",
+          "detail": "0ms"
         },
         {
           "name": "prompt-steers-agents-off-the-broken-registry-path",
           "ok": true,
-          "at": "2026-10-06T17:52:45.760Z",
+          "at": "2026-10-06T18:45:49.940Z",
           "detail": "0ms"
         },
         {
           "name": "readme-install-is-honest",
           "ok": true,
-          "at": "2026-10-06T17:52:45.760Z",
-          "detail": "0ms"
+          "at": "2026-10-06T18:45:49.941Z",
+          "detail": "1ms"
         },
         {
           "name": "no-hardcoded-skill-counts",
           "ok": true,
-          "at": "2026-10-06T17:52:45.844Z",
-          "detail": "83ms"
+          "at": "2026-10-06T18:45:50.012Z",
+          "detail": "71ms"
         },
         {
           "name": "cli-prompt-prints-clean-copy",
           "ok": true,
-          "at": "2026-10-06T17:52:45.927Z",
-          "detail": "83ms"
+          "at": "2026-10-06T18:45:50.086Z",
+          "detail": "74ms"
         },
         {
           "name": "skills-catalog-has-triggers",
           "ok": true,
-          "at": "2026-10-06T17:52:45.932Z",
+          "at": "2026-10-06T18:45:50.091Z",
           "detail": "5ms"
         },
         {
           "name": "skills-match-the-right-skill",
           "ok": true,
-          "at": "2026-10-06T17:52:46.019Z",
-          "detail": "87ms"
+          "at": "2026-10-06T18:45:50.169Z",
+          "detail": "78ms"
         },
         {
           "name": "skills-handles-shorthand",
           "ok": true,
-          "at": "2026-10-06T17:52:46.031Z",
-          "detail": "12ms"
+          "at": "2026-10-06T18:45:50.180Z",
+          "detail": "11ms"
         },
         {
           "name": "skills-refuse-instead-of-guessing",
           "ok": true,
-          "at": "2026-10-06T17:52:46.050Z",
-          "detail": "19ms"
+          "at": "2026-10-06T18:45:50.197Z",
+          "detail": "17ms"
         },
         {
           "name": "skills-no-duplicate-suggestions",
           "ok": true,
-          "at": "2026-10-06T17:52:46.061Z",
-          "detail": "11ms"
+          "at": "2026-10-06T18:45:50.207Z",
+          "detail": "10ms"
         },
         {
           "name": "guide-task-recommends-skills",
           "ok": true,
-          "at": "2026-10-06T17:52:46.197Z",
-          "detail": "136ms"
+          "at": "2026-10-06T18:45:50.326Z",
+          "detail": "119ms"
         },
         {
           "name": "mcp-skill-tools-are-exposed",
           "ok": true,
-          "at": "2026-10-06T17:52:46.198Z",
+          "at": "2026-10-06T18:45:50.326Z",
           "detail": "0ms"
         },
         {
           "name": "skillindex-audit-finds-gaps",
           "ok": true,
-          "at": "2026-10-06T17:52:49.090Z",
-          "detail": "2892ms"
+          "at": "2026-10-06T18:45:52.866Z",
+          "detail": "2540ms"
         },
         {
           "name": "skillindex-audit-clean-catalog-passes",
           "ok": true,
-          "at": "2026-10-06T17:52:51.773Z",
-          "detail": "2683ms"
+          "at": "2026-10-06T18:45:55.269Z",
+          "detail": "2402ms"
         },
         {
           "name": "skillindex-parses-both-frontmatter-styles",
           "ok": true,
-          "at": "2026-10-06T17:52:51.775Z",
+          "at": "2026-10-06T18:45:55.271Z",
           "detail": "2ms"
         },
         {
           "name": "skillindex-normalizes-crlf",
           "ok": true,
-          "at": "2026-10-06T17:52:51.778Z",
+          "at": "2026-10-06T18:45:55.274Z",
           "detail": "3ms"
         },
         {
           "name": "skillindex-derives-triggers",
           "ok": true,
-          "at": "2026-10-06T17:52:51.779Z",
+          "at": "2026-10-06T18:45:55.274Z",
           "detail": "0ms"
         },
         {
           "name": "skillindex-collection-install",
           "ok": true,
-          "at": "2026-10-06T17:52:51.798Z",
-          "detail": "19ms"
+          "at": "2026-10-06T18:45:55.291Z",
+          "detail": "17ms"
         },
         {
           "name": "skillindex-reindex-merges-and-discovers",
           "ok": true,
-          "at": "2026-10-06T17:52:51.833Z",
-          "detail": "35ms"
+          "at": "2026-10-06T18:45:55.321Z",
+          "detail": "30ms"
         },
         {
           "name": "skillindex-cache-refreshes-on-reindex",
           "ok": true,
-          "at": "2026-10-06T17:52:51.884Z",
-          "detail": "51ms"
+          "at": "2026-10-06T18:45:55.364Z",
+          "detail": "43ms"
         },
         {
           "name": "skills-prefix-ratio-guard",
           "ok": true,
-          "at": "2026-10-06T17:52:51.907Z",
-          "detail": "23ms"
+          "at": "2026-10-06T18:45:55.381Z",
+          "detail": "17ms"
         },
         {
           "name": "skills-idf-downweights-common-words",
           "ok": true,
-          "at": "2026-10-06T17:52:51.929Z",
-          "detail": "22ms"
+          "at": "2026-10-06T18:45:55.400Z",
+          "detail": "19ms"
         },
         {
           "name": "skillindex-audit-two-tier-rescue",
           "ok": true,
-          "at": "2026-10-06T17:52:54.655Z",
-          "detail": "2726ms"
+          "at": "2026-10-06T18:45:57.845Z",
+          "detail": "2445ms"
         },
         {
           "name": "crypt-roundtrip-and-leaks-nothing",
           "ok": true,
-          "at": "2026-10-06T17:52:54.830Z",
-          "detail": "175ms"
+          "at": "2026-10-06T18:45:58.002Z",
+          "detail": "157ms"
         },
         {
           "name": "crypt-rejects-wrong-key-and-detects-tampering",
           "ok": true,
-          "at": "2026-10-06T17:52:55.187Z",
-          "detail": "357ms"
+          "at": "2026-10-06T18:45:58.320Z",
+          "detail": "318ms"
         },
         {
           "name": "crypt-fresh-iv-per-record",
           "ok": true,
-          "at": "2026-10-06T17:52:55.361Z",
-          "detail": "174ms"
+          "at": "2026-10-06T18:45:58.479Z",
+          "detail": "159ms"
         },
         {
           "name": "crypt-refuses-weak-passphrase",
           "ok": true,
-          "at": "2026-10-06T17:52:55.361Z",
+          "at": "2026-10-06T18:45:58.479Z",
           "detail": "0ms"
         },
         {
           "name": "memory-bank-encrypts-at-rest",
           "ok": true,
-          "at": "2026-10-06T17:52:55.546Z",
-          "detail": "184ms"
+          "at": "2026-10-06T18:45:58.641Z",
+          "detail": "162ms"
         },
         {
           "name": "memory-bank-plaintext-mode-still-works",
           "ok": true,
-          "at": "2026-10-06T17:52:55.552Z",
-          "detail": "6ms"
+          "at": "2026-10-06T18:45:58.646Z",
+          "detail": "5ms"
         },
         {
           "name": "memory-encrypted-recall-and-degrade",
           "ok": true,
-          "at": "2026-10-06T17:52:55.958Z",
-          "detail": "406ms"
+          "at": "2026-10-06T18:45:58.971Z",
+          "detail": "325ms"
         },
         {
           "name": "slop-catches-ai-over-engineering",
           "ok": true,
-          "at": "2026-10-06T17:52:55.962Z",
-          "detail": "4ms"
+          "at": "2026-10-06T18:45:58.975Z",
+          "detail": "3ms"
         },
         {
           "name": "slop-no-false-positives-on-clean-code",
           "ok": true,
-          "at": "2026-10-06T17:52:55.969Z",
-          "detail": "7ms"
+          "at": "2026-10-06T18:45:58.976Z",
+          "detail": "1ms"
         },
         {
           "name": "slop-no-false-positives-on-repo",
           "ok": true,
-          "at": "2026-10-06T17:52:56.235Z",
-          "detail": "266ms"
+          "at": "2026-10-06T18:45:59.170Z",
+          "detail": "194ms"
         },
         {
           "name": "slop-does-not-flag-literal-initialisers",
           "ok": true,
-          "at": "2026-10-06T17:52:56.238Z",
+          "at": "2026-10-06T18:45:59.174Z",
           "detail": "3ms"
         },
         {
           "name": "guidance-classifies-task",
           "ok": true,
-          "at": "2026-10-06T17:52:56.239Z",
-          "detail": "1ms"
+          "at": "2026-10-06T18:45:59.174Z",
+          "detail": "0ms"
         },
         {
           "name": "guidance-routes-to-right-file",
           "ok": true,
-          "at": "2026-10-06T17:52:56.455Z",
-          "detail": "216ms"
+          "at": "2026-10-06T18:45:59.368Z",
+          "detail": "194ms"
         },
         {
           "name": "guidance-never-points-at-fixtures",
           "ok": true,
-          "at": "2026-10-06T17:52:56.756Z",
-          "detail": "301ms"
+          "at": "2026-10-06T18:45:59.633Z",
+          "detail": "265ms"
         },
         {
           "name": "guidance-says-stop-when-it-cannot-route",
           "ok": true,
-          "at": "2026-10-06T17:52:56.875Z",
-          "detail": "119ms"
+          "at": "2026-10-06T18:45:59.739Z",
+          "detail": "106ms"
         },
         {
           "name": "guidance-surfaces-locked-decisions",
           "ok": true,
-          "at": "2026-10-06T17:52:56.926Z",
-          "detail": "51ms"
+          "at": "2026-10-06T18:45:59.758Z",
+          "detail": "19ms"
         },
         {
           "name": "guidance-forbids-generated-and-lockfiles",
           "ok": true,
-          "at": "2026-10-06T17:52:56.926Z",
-          "detail": "0ms"
+          "at": "2026-10-06T18:45:59.759Z",
+          "detail": "1ms"
         },
         {
           "name": "memory-no-chat-forgotten",
           "ok": true,
-          "at": "2026-10-06T17:52:56.937Z",
-          "detail": "11ms"
+          "at": "2026-10-06T18:45:59.768Z",
+          "detail": "9ms"
         },
         {
           "name": "english-only-code-enforced",
           "ok": true,
-          "at": "2026-10-06T17:52:57.107Z",
-          "detail": "170ms"
+          "at": "2026-10-06T18:45:59.922Z",
+          "detail": "154ms"
         },
         {
           "name": "memory-dedupe-saves-tokens",
           "ok": true,
-          "at": "2026-10-06T17:52:57.112Z",
-          "detail": "5ms"
+          "at": "2026-10-06T18:45:59.927Z",
+          "detail": "4ms"
         },
         {
           "name": "duplication-caught-offline",
           "ok": true,
-          "at": "2026-10-06T17:52:57.133Z",
-          "detail": "21ms"
+          "at": "2026-10-06T18:45:59.932Z",
+          "detail": "5ms"
         },
         {
           "name": "verify-fast-two-tier",
           "ok": true,
-          "at": "2026-10-06T17:52:57.296Z",
-          "detail": "163ms"
+          "at": "2026-10-06T18:46:00.073Z",
+          "detail": "141ms"
         },
         {
           "name": "stack-packs-cover-all",
           "ok": true,
-          "at": "2026-10-06T17:52:57.297Z",
+          "at": "2026-10-06T18:46:00.074Z",
           "detail": "1ms"
         },
         {
           "name": "ci-gate-generator",
           "ok": true,
-          "at": "2026-10-06T17:52:57.301Z",
+          "at": "2026-10-06T18:46:00.078Z",
           "detail": "4ms"
         },
         {
           "name": "sarif-output-valid",
           "ok": true,
-          "at": "2026-10-06T17:52:57.307Z",
+          "at": "2026-10-06T18:46:00.083Z",
           "detail": "5ms"
         },
         {
           "name": "dep-blocklist-critical",
           "ok": true,
-          "at": "2026-10-06T17:52:59.178Z",
-          "detail": "1871ms"
+          "at": "2026-10-06T18:46:01.633Z",
+          "detail": "1550ms"
         },
         {
           "name": "sinks-and-entropy-caught",
           "ok": true,
-          "at": "2026-10-06T17:52:59.181Z",
+          "at": "2026-10-06T18:46:01.636Z",
           "detail": "3ms"
         },
         {
           "name": "py-ast-precision",
           "ok": true,
-          "at": "2026-10-06T17:52:59.416Z",
-          "detail": "235ms"
+          "at": "2026-10-06T18:46:01.849Z",
+          "detail": "213ms"
         },
         {
           "name": "recall-tfidf-ranks-rare-first",
           "ok": true,
-          "at": "2026-10-06T17:52:59.445Z",
-          "detail": "29ms"
+          "at": "2026-10-06T18:46:01.876Z",
+          "detail": "27ms"
         },
         {
           "name": "ide-22-clients-valid",
           "ok": true,
-          "at": "2026-10-06T17:52:59.448Z",
-          "detail": "3ms"
+          "at": "2026-10-06T18:46:01.878Z",
+          "detail": "2ms"
         },
         {
           "name": "graph-from-real-imports",
           "ok": true,
-          "at": "2026-10-06T17:52:59.456Z",
-          "detail": "8ms"
+          "at": "2026-10-06T18:46:01.884Z",
+          "detail": "6ms"
         },
         {
           "name": "timeline-reads-logs",
           "ok": true,
-          "at": "2026-10-06T17:52:59.461Z",
-          "detail": "4ms"
+          "at": "2026-10-06T18:46:01.889Z",
+          "detail": "5ms"
         },
         {
           "name": "allowlist-suppression",
           "ok": true,
-          "at": "2026-10-06T17:53:01.359Z",
-          "detail": "6ms"
+          "at": "2026-10-06T18:46:03.406Z",
+          "detail": "4ms"
         },
         {
           "name": "snapshot-diff-tracks-ai",
           "ok": true,
-          "at": "2026-10-06T17:53:01.366Z",
-          "detail": "7ms"
+          "at": "2026-10-06T18:46:03.412Z",
+          "detail": "6ms"
         },
         {
           "name": "recall-synonym-finds-bug",
           "ok": true,
-          "at": "2026-10-06T17:53:01.370Z",
+          "at": "2026-10-06T18:46:03.416Z",
           "detail": "4ms"
         },
         {
           "name": "skill-md-valid",
           "ok": true,
-          "at": "2026-10-06T17:53:01.380Z",
-          "detail": "10ms"
+          "at": "2026-10-06T18:46:03.425Z",
+          "detail": "9ms"
         },
         {
           "name": "recall-distributional-links",
           "ok": true,
-          "at": "2026-10-06T17:53:01.391Z",
+          "at": "2026-10-06T18:46:03.436Z",
           "detail": "11ms"
         },
         {
           "name": "broken-import-caught",
           "ok": true,
-          "at": "2026-10-06T17:53:01.477Z",
+          "at": "2026-10-06T18:46:03.516Z",
           "detail": "5ms"
         },
         {
           "name": "spend-tracks-chars",
           "ok": true,
-          "at": "2026-10-06T17:53:01.482Z",
-          "detail": "5ms"
+          "at": "2026-10-06T18:46:03.520Z",
+          "detail": "4ms"
         },
         {
           "name": "agents-sync-detects-drift",
           "ok": true,
-          "at": "2026-10-06T17:53:01.494Z",
-          "detail": "11ms"
+          "at": "2026-10-06T18:46:03.529Z",
+          "detail": "9ms"
         },
         {
           "name": "onboard-end-to-end",
           "ok": true,
-          "at": "2026-10-06T17:53:01.639Z",
-          "detail": "144ms"
+          "at": "2026-10-06T18:46:03.652Z",
+          "detail": "123ms"
         },
         {
           "name": "stdlib-not-hallucination",
           "ok": true,
-          "at": "2026-10-06T17:53:01.848Z",
-          "detail": "19ms"
+          "at": "2026-10-06T18:46:03.830Z",
+          "detail": "16ms"
         },
         {
           "name": "ssl-is-stdlib-not-hallucination",
           "ok": true,
-          "at": "2026-10-06T17:53:01.853Z",
-          "detail": "5ms"
+          "at": "2026-10-06T18:46:03.836Z",
+          "detail": "6ms"
         },
         {
           "name": "unlisted-dependency-framing",
           "ok": true,
-          "at": "2026-10-06T17:53:01.867Z",
-          "detail": "14ms"
+          "at": "2026-10-06T18:46:03.846Z",
+          "detail": "10ms"
         },
         {
           "name": "rm-rf-only-bare-root",
           "ok": true,
-          "at": "2026-10-06T17:53:02.105Z",
-          "detail": "238ms"
+          "at": "2026-10-06T18:46:04.054Z",
+          "detail": "208ms"
         },
         {
           "name": "global-lesson-travels-projects",
           "ok": true,
-          "at": "2026-10-06T17:53:02.110Z",
-          "detail": "4ms"
+          "at": "2026-10-06T18:46:04.059Z",
+          "detail": "5ms"
         },
         {
           "name": "projects-registry-lists-health",
           "ok": true,
-          "at": "2026-10-06T17:53:02.116Z",
-          "detail": "6ms"
+          "at": "2026-10-06T18:46:04.063Z",
+          "detail": "4ms"
         },
         {
           "name": "recall-phrase-beats-scatter",
           "ok": true,
-          "at": "2026-10-06T17:53:02.123Z",
+          "at": "2026-10-06T18:46:04.069Z",
           "detail": "6ms"
         },
         {
           "name": "osv-fixed-version-parsed",
           "ok": true,
-          "at": "2026-10-06T17:53:02.124Z",
-          "detail": "1ms"
+          "at": "2026-10-06T18:46:04.070Z",
+          "detail": "0ms"
         },
         {
           "name": "deep-eraignore-tames-monorepo",
           "ok": true,
-          "at": "2026-10-06T17:53:02.170Z",
-          "detail": "16ms"
+          "at": "2026-10-06T18:46:04.102Z",
+          "detail": "3ms"
         },
         {
           "name": "recall-trigram-cousins",
           "ok": true,
-          "at": "2026-10-06T17:53:02.176Z",
-          "detail": "6ms"
+          "at": "2026-10-06T18:46:04.107Z",
+          "detail": "5ms"
         },
         {
           "name": "cwe-tags-present",
           "ok": true,
-          "at": "2026-10-06T17:53:02.177Z",
+          "at": "2026-10-06T18:46:04.108Z",
           "detail": "1ms"
         },
         {
           "name": "resolve-dep-no-fake-ext",
           "ok": true,
-          "at": "2026-10-06T17:53:02.177Z",
+          "at": "2026-10-06T18:46:04.108Z",
           "detail": "0ms"
         },
         {
           "name": "recall-proximity-density",
           "ok": true,
-          "at": "2026-10-06T17:53:02.184Z",
+          "at": "2026-10-06T18:46:04.115Z",
           "detail": "7ms"
         },
         {
           "name": "snapshot-prune-keeps-five",
           "ok": true,
-          "at": "2026-10-06T17:53:02.207Z",
-          "detail": "23ms"
+          "at": "2026-10-06T18:46:04.135Z",
+          "detail": "20ms"
         },
         {
           "name": "undefined-method-caught",
           "ok": true,
-          "at": "2026-10-06T17:53:02.230Z",
-          "detail": "23ms"
+          "at": "2026-10-06T18:46:04.142Z",
+          "detail": "7ms"
         },
         {
           "name": "comment-stats-caught",
           "ok": true,
-          "at": "2026-10-06T17:53:02.257Z",
-          "detail": "27ms"
+          "at": "2026-10-06T18:46:04.146Z",
+          "detail": "4ms"
         },
         {
           "name": "announce-rule-in-template",
           "ok": true,
-          "at": "2026-10-06T17:53:02.257Z",
+          "at": "2026-10-06T18:46:04.146Z",
           "detail": "0ms"
         },
         {
           "name": "stack-detection",
           "ok": true,
-          "at": "2026-10-06T17:53:02.262Z",
+          "at": "2026-10-06T18:46:04.149Z",
           "detail": "0ms"
         },
         {
           "name": "selfupdate-compare-versions",
           "ok": true,
-          "at": "2026-10-06T17:53:02.265Z",
-          "detail": "3ms"
+          "at": "2026-10-06T18:46:04.151Z",
+          "detail": "2ms"
         },
         {
           "name": "selfupdate-cache-roundtrip",
           "ok": true,
-          "at": "2026-10-06T17:53:02.269Z",
+          "at": "2026-10-06T18:46:04.154Z",
           "detail": "3ms"
         },
         {
           "name": "selfupdate-apply-command-shape",
           "ok": true,
-          "at": "2026-10-06T17:53:02.272Z",
+          "at": "2026-10-06T18:46:04.157Z",
           "detail": "0ms"
         },
         {
           "name": "ide-detects-from-disk-markers",
           "ok": true,
-          "at": "2026-10-06T17:53:03.980Z",
-          "detail": "1708ms"
+          "at": "2026-10-06T18:46:05.683Z",
+          "detail": "1525ms"
         },
         {
           "name": "ide-wire-creates-and-merges",
           "ok": true,
-          "at": "2026-10-06T17:53:05.595Z",
-          "detail": "1615ms"
+          "at": "2026-10-06T18:46:07.139Z",
+          "detail": "1456ms"
         },
         {
           "name": "ide-unknown-name-says-so",
           "ok": true,
-          "at": "2026-10-06T17:53:07.167Z",
-          "detail": "1572ms"
+          "at": "2026-10-06T18:46:08.574Z",
+          "detail": "1435ms"
         },
         {
           "name": "heal-loop-reports",
           "ok": true,
-          "at": "2026-10-06T17:53:07.172Z",
-          "detail": "5533ms"
+          "at": "2026-10-06T18:46:08.580Z",
+          "detail": "4928ms"
         },
         {
           "name": "demo-catches-traps",
           "ok": true,
-          "at": "2026-10-06T17:53:07.181Z",
-          "detail": "7720ms"
+          "at": "2026-10-06T18:46:08.592Z",
+          "detail": "6703ms"
         },
         {
           "name": "safe-fix-guards",
           "ok": true,
-          "at": "2026-10-06T17:53:07.182Z",
-          "detail": "23761ms"
+          "at": "2026-10-06T18:46:08.592Z",
+          "detail": "20596ms"
         },
         {
           "name": "selfupdate-staleness-notice",
           "ok": true,
-          "at": "2026-10-06T17:53:07.182Z",
-          "detail": "4913ms"
+          "at": "2026-10-06T18:46:08.592Z",
+          "detail": "4438ms"
         },
         {
           "name": "serve-fail-spots-crash",
           "ok": true,
-          "at": "2026-10-06T17:53:07.190Z",
-          "detail": "5060ms"
+          "at": "2026-10-06T18:46:08.599Z",
+          "detail": "4523ms"
         },
         {
           "name": "net-fetch-local-server",
           "ok": true,
-          "at": "2026-10-06T17:53:07.204Z",
-          "detail": "5080ms"
+          "at": "2026-10-06T18:46:08.612Z",
+          "detail": "4542ms"
         },
         {
           "name": "links-catch-dead-url",
           "ok": true,
-          "at": "2026-10-06T17:53:07.206Z",
-          "detail": "4949ms"
+          "at": "2026-10-06T18:46:08.614Z",
+          "detail": "4468ms"
         },
         {
-          "name": "net-research-degrades-honestly",
+          "name": "selfupdate-runUpdate-messages-name-the-reason",
           "ok": true,
-          "at": "2026-10-06T17:53:07.460Z",
-          "detail": "5331ms"
+          "at": "2026-10-06T18:46:10.620Z",
+          "detail": "6462ms"
         },
         {
-          "name": "osv-resolves-array-offline-safe",
+          "name": "selfupdate-names-every-failure",
           "ok": true,
-          "at": "2026-10-06T17:53:08.251Z",
-          "detail": "6860ms"
+          "at": "2026-10-06T18:46:10.621Z",
+          "detail": "6464ms"
         },
         {
           "name": "serve-run-observe-probe",
           "ok": true,
-          "at": "2026-10-06T17:53:10.166Z",
-          "detail": "8021ms"
+          "at": "2026-10-06T18:46:12.121Z",
+          "detail": "8031ms"
+        },
+        {
+          "name": "net-research-degrades-honestly",
+          "ok": true,
+          "at": "2026-10-06T18:46:12.758Z",
+          "detail": "8684ms"
+        },
+        {
+          "name": "osv-resolves-array-offline-safe",
+          "ok": true,
+          "at": "2026-10-06T18:46:13.094Z",
+          "detail": "9658ms"
         }
       ]
     },
@@ -728,218 +740,218 @@
         {
           "name": "cli-init-check-rules-costs",
           "ok": true,
-          "at": "2026-10-06T17:53:11.006Z",
-          "detail": "740ms"
+          "at": "2026-10-06T18:46:13.613Z",
+          "detail": "406ms"
         },
         {
           "name": "cli-remember-recall-roundtrip",
           "ok": true,
-          "at": "2026-10-06T17:53:11.606Z",
-          "detail": "598ms"
+          "at": "2026-10-06T18:46:13.869Z",
+          "detail": "255ms"
         },
         {
           "name": "cli-snapshot-diff-restore",
           "ok": true,
-          "at": "2026-10-06T17:53:12.077Z",
-          "detail": "471ms"
+          "at": "2026-10-06T18:46:14.293Z",
+          "detail": "424ms"
         },
         {
           "name": "cli-graph-timeline-skill-ci",
           "ok": true,
-          "at": "2026-10-06T17:53:12.528Z",
-          "detail": "450ms"
+          "at": "2026-10-06T18:46:14.703Z",
+          "detail": "410ms"
         },
         {
           "name": "cli-perf-smoke",
           "ok": true,
-          "at": "2026-10-06T17:53:12.642Z",
-          "detail": "114ms"
+          "at": "2026-10-06T18:46:14.799Z",
+          "detail": "96ms"
         },
         {
           "name": "cli-fix-doctor-sarif",
           "ok": true,
-          "at": "2026-10-06T17:53:12.997Z",
-          "detail": "355ms"
+          "at": "2026-10-06T18:46:15.163Z",
+          "detail": "363ms"
         },
         {
           "name": "cli-serve-fixture-probe",
           "ok": true,
-          "at": "2026-10-06T17:53:25.130Z",
-          "detail": "12133ms"
+          "at": "2026-10-06T18:46:27.307Z",
+          "detail": "12144ms"
         },
         {
           "name": "cli-global-machine-setup",
           "ok": true,
-          "at": "2026-10-06T17:53:25.163Z",
-          "detail": "19ms"
+          "at": "2026-10-06T18:46:27.336Z",
+          "detail": "17ms"
         },
         {
           "name": "cli-review-scoped-diff",
           "ok": true,
-          "at": "2026-10-06T17:53:25.635Z",
-          "detail": "472ms"
+          "at": "2026-10-06T18:46:27.746Z",
+          "detail": "410ms"
         },
         {
           "name": "cli-search-ranked",
           "ok": true,
-          "at": "2026-10-06T17:53:25.826Z",
-          "detail": "191ms"
+          "at": "2026-10-06T18:46:27.914Z",
+          "detail": "168ms"
         },
         {
           "name": "cli-skill-pack-six",
           "ok": true,
-          "at": "2026-10-06T17:53:25.919Z",
-          "detail": "93ms"
+          "at": "2026-10-06T18:46:27.999Z",
+          "detail": "85ms"
         },
         {
           "name": "cli-doctor-json",
           "ok": true,
-          "at": "2026-10-06T17:53:26.172Z",
-          "detail": "253ms"
+          "at": "2026-10-06T18:46:28.219Z",
+          "detail": "220ms"
         },
         {
           "name": "cli-sarif-has-cwe-tags",
           "ok": true,
-          "at": "2026-10-06T17:53:26.429Z",
-          "detail": "257ms"
+          "at": "2026-10-06T18:46:28.442Z",
+          "detail": "223ms"
         },
         {
           "name": "cli-update-offline-safe",
           "ok": true,
-          "at": "2026-10-06T17:53:26.755Z",
-          "detail": "325ms"
+          "at": "2026-10-06T18:46:28.750Z",
+          "detail": "308ms"
         },
         {
           "name": "cli-sbom-cyclonedx",
           "ok": true,
-          "at": "2026-10-06T17:53:26.846Z",
-          "detail": "91ms"
+          "at": "2026-10-06T18:46:28.838Z",
+          "detail": "87ms"
         },
         {
           "name": "cli-memory-stats",
           "ok": true,
-          "at": "2026-10-06T17:53:27.045Z",
-          "detail": "199ms"
+          "at": "2026-10-06T18:46:29.007Z",
+          "detail": "169ms"
         },
         {
           "name": "cli-context-shows-files",
           "ok": true,
-          "at": "2026-10-06T17:53:27.248Z",
-          "detail": "183ms"
+          "at": "2026-10-06T18:46:29.190Z",
+          "detail": "166ms"
         },
         {
           "name": "cli-demo-verdict",
           "ok": true,
-          "at": "2026-10-06T17:53:29.391Z",
-          "detail": "2143ms"
+          "at": "2026-10-06T18:46:30.837Z",
+          "detail": "1646ms"
         },
         {
           "name": "cli-browser-bridge",
           "ok": true,
-          "at": "2026-10-06T17:53:29.481Z",
-          "detail": "90ms"
+          "at": "2026-10-06T18:46:30.918Z",
+          "detail": "81ms"
         },
         {
           "name": "cli-hook-installs-gate",
           "ok": true,
-          "at": "2026-10-06T17:53:29.874Z",
-          "detail": "393ms"
+          "at": "2026-10-06T18:46:31.276Z",
+          "detail": "358ms"
         },
         {
           "name": "cli-graph-full-and-for",
           "ok": true,
-          "at": "2026-10-06T17:53:30.252Z",
-          "detail": "378ms"
+          "at": "2026-10-06T18:46:31.607Z",
+          "detail": "331ms"
         },
         {
           "name": "cli-timeline-json",
           "ok": true,
-          "at": "2026-10-06T17:53:30.432Z",
-          "detail": "179ms"
+          "at": "2026-10-06T18:46:31.769Z",
+          "detail": "162ms"
         },
         {
           "name": "cli-memory-export-import",
           "ok": true,
-          "at": "2026-10-06T17:53:30.810Z",
-          "detail": "378ms"
+          "at": "2026-10-06T18:46:32.110Z",
+          "detail": "341ms"
         },
         {
           "name": "cli-installers-and-llms",
           "ok": true,
-          "at": "2026-10-06T17:53:30.811Z",
+          "at": "2026-10-06T18:46:32.111Z",
           "detail": "1ms"
         },
         {
           "name": "cli-receipt-and-status",
           "ok": true,
-          "at": "2026-10-06T17:53:31.284Z",
-          "detail": "473ms"
+          "at": "2026-10-06T18:46:32.541Z",
+          "detail": "430ms"
         },
         {
           "name": "cli-check-json",
           "ok": true,
-          "at": "2026-10-06T17:53:31.497Z",
-          "detail": "213ms"
+          "at": "2026-10-06T18:46:32.734Z",
+          "detail": "193ms"
         },
         {
           "name": "cli-guard-secrets-flags-real-skips-placeholder",
           "ok": true,
-          "at": "2026-10-06T17:53:31.751Z",
-          "detail": "254ms"
+          "at": "2026-10-06T18:46:32.966Z",
+          "detail": "232ms"
         },
         {
           "name": "cli-setup-ide-writes-configs",
           "ok": true,
-          "at": "2026-10-06T17:53:31.865Z",
-          "detail": "114ms"
+          "at": "2026-10-06T18:46:33.066Z",
+          "detail": "100ms"
         },
         {
           "name": "cli-ide-detects-wires-briefs",
           "ok": true,
-          "at": "2026-10-06T17:53:35.497Z",
-          "detail": "3632ms"
+          "at": "2026-10-06T18:46:36.332Z",
+          "detail": "3266ms"
         },
         {
           "name": "cli-version-answers",
           "ok": true,
-          "at": "2026-10-06T17:53:35.581Z",
-          "detail": "84ms"
+          "at": "2026-10-06T18:46:36.408Z",
+          "detail": "76ms"
         },
         {
           "name": "cli-start-wires-ide-and-points-at-prompt",
           "ok": true,
-          "at": "2026-10-06T17:53:37.699Z",
-          "detail": "2118ms"
+          "at": "2026-10-06T18:46:38.339Z",
+          "detail": "1930ms"
         },
         {
           "name": "cli-skills-reindex",
           "ok": true,
-          "at": "2026-10-06T17:53:37.932Z",
-          "detail": "233ms"
+          "at": "2026-10-06T18:46:38.548Z",
+          "detail": "209ms"
         },
         {
           "name": "cli-skill-add-local-collection",
           "ok": true,
-          "at": "2026-10-06T17:53:38.806Z",
-          "detail": "874ms"
+          "at": "2026-10-06T18:46:39.332Z",
+          "detail": "784ms"
         },
         {
           "name": "cli-skills-audit-reports-coverage",
           "ok": true,
-          "at": "2026-10-06T17:53:41.819Z",
-          "detail": "3013ms"
+          "at": "2026-10-06T18:46:41.970Z",
+          "detail": "2638ms"
         },
         {
           "name": "cli-license-offline-safe",
           "ok": true,
-          "at": "2026-10-06T17:53:41.822Z",
-          "detail": "14777ms"
+          "at": "2026-10-06T18:46:41.973Z",
+          "detail": "12965ms"
         },
         {
           "name": "cli-watch-detects-change",
           "ok": true,
-          "at": "2026-10-06T17:53:45.823Z",
-          "detail": "20693ms"
+          "at": "2026-10-06T18:46:45.974Z",
+          "detail": "18667ms"
         }
       ]
     },
@@ -950,74 +962,74 @@
         {
           "name": "mcp-initialize-and-list",
           "ok": true,
-          "at": "2026-10-06T17:53:46.352Z",
-          "detail": "434ms"
-        },
-        {
-          "name": "mcp-remember-global-lesson",
-          "ok": true,
-          "at": "2026-10-06T17:53:46.442Z",
-          "detail": "415ms"
-        },
-        {
-          "name": "mcp-spend-report",
-          "ok": true,
-          "at": "2026-10-06T17:53:46.454Z",
-          "detail": "418ms"
-        },
-        {
-          "name": "mcp-unknown-tool-errors",
-          "ok": true,
-          "at": "2026-10-06T17:53:46.464Z",
-          "detail": "418ms"
-        },
-        {
-          "name": "mcp-memory-roundtrip",
-          "ok": true,
-          "at": "2026-10-06T17:53:46.541Z",
-          "detail": "606ms"
-        },
-        {
-          "name": "mcp-skills-tools-work",
-          "ok": true,
-          "at": "2026-10-06T17:53:46.544Z",
-          "detail": "585ms"
-        },
-        {
-          "name": "mcp-verify-security-audit",
-          "ok": true,
-          "at": "2026-10-06T17:53:46.579Z",
-          "detail": "610ms"
-        },
-        {
-          "name": "mcp-snapshot-safefix",
-          "ok": true,
-          "at": "2026-10-06T17:53:46.639Z",
-          "detail": "650ms"
+          "at": "2026-10-06T18:46:46.349Z",
+          "detail": "267ms"
         },
         {
           "name": "mcp-guide-task-routes",
           "ok": true,
-          "at": "2026-10-06T17:53:46.648Z",
-          "detail": "696ms"
+          "at": "2026-10-06T18:46:46.425Z",
+          "detail": "314ms"
         },
         {
-          "name": "mcp-search-code",
+          "name": "mcp-remember-global-lesson",
           "ok": true,
-          "at": "2026-10-06T17:53:46.657Z",
-          "detail": "660ms"
+          "at": "2026-10-06T18:46:46.430Z",
+          "detail": "280ms"
+        },
+        {
+          "name": "mcp-memory-roundtrip",
+          "ok": true,
+          "at": "2026-10-06T18:46:46.431Z",
+          "detail": "334ms"
+        },
+        {
+          "name": "mcp-unknown-tool-errors",
+          "ok": true,
+          "at": "2026-10-06T18:46:46.442Z",
+          "detail": "275ms"
         },
         {
           "name": "mcp-plan-log-context",
           "ok": true,
-          "at": "2026-10-06T17:53:46.660Z",
-          "detail": "717ms"
+          "at": "2026-10-06T18:46:46.493Z",
+          "detail": "390ms"
+        },
+        {
+          "name": "mcp-search-code",
+          "ok": true,
+          "at": "2026-10-06T18:46:46.495Z",
+          "detail": "357ms"
+        },
+        {
+          "name": "mcp-spend-report",
+          "ok": true,
+          "at": "2026-10-06T18:46:46.495Z",
+          "detail": "336ms"
+        },
+        {
+          "name": "mcp-skills-tools-work",
+          "ok": true,
+          "at": "2026-10-06T18:46:46.512Z",
+          "detail": "395ms"
+        },
+        {
+          "name": "mcp-snapshot-safefix",
+          "ok": true,
+          "at": "2026-10-06T18:46:46.533Z",
+          "detail": "401ms"
+        },
+        {
+          "name": "mcp-verify-security-audit",
+          "ok": true,
+          "at": "2026-10-06T18:46:46.539Z",
+          "detail": "414ms"
         },
         {
           "name": "mcp-fetch-research",
           "ok": true,
-          "at": "2026-10-06T17:53:46.755Z",
-          "detail": "733ms"
+          "at": "2026-10-06T18:46:46.578Z",
+          "detail": "434ms"
         }
       ]
     },
@@ -1028,52 +1040,52 @@
         {
           "name": "skills-catalog-loads-410",
           "ok": true,
-          "at": "2026-10-06T17:54:46.870Z",
+          "at": "2026-10-06T18:47:46.721Z",
           "detail": "7ms"
         },
         {
           "name": "skills-search-and-fetch",
           "ok": true,
-          "at": "2026-10-06T17:54:46.877Z",
+          "at": "2026-10-06T18:47:46.726Z",
           "detail": "3ms"
         },
         {
           "name": "secret-guardian-detects-dangers",
           "ok": true,
-          "at": "2026-10-06T17:54:46.901Z",
-          "detail": "12ms"
+          "at": "2026-10-06T18:47:46.747Z",
+          "detail": "10ms"
         },
         {
           "name": "docker-scaffold-generates-valid",
           "ok": true,
-          "at": "2026-10-06T17:54:46.903Z",
+          "at": "2026-10-06T18:47:46.749Z",
           "detail": "2ms"
         },
         {
           "name": "memory-bank-crud-lifecycle",
           "ok": true,
-          "at": "2026-10-06T17:54:46.910Z",
-          "detail": "7ms"
+          "at": "2026-10-06T18:47:46.755Z",
+          "detail": "6ms"
         },
         {
           "name": "port-hunter-finds-ports",
           "ok": true,
-          "at": "2026-10-06T17:54:46.940Z",
-          "detail": "63ms"
+          "at": "2026-10-06T18:47:46.778Z",
+          "detail": "52ms"
         },
         {
           "name": "dashboard-server-starts-and-serves-api",
           "ok": true,
-          "at": "2026-10-06T17:54:46.964Z",
-          "detail": "54ms"
+          "at": "2026-10-06T18:47:46.798Z",
+          "detail": "43ms"
         }
       ]
     }
   },
-  "at": "2026-10-06T17:54:46.965Z",
-  "deepEra": "0.58.1",
+  "at": "2026-10-06T18:47:46.798Z",
+  "deepEra": "0.58.2",
   "total": {
-    "pass": 174,
+    "pass": 176,
     "fail": 0
   },
   "result": "PASS"

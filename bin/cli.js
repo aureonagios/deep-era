@@ -9,7 +9,7 @@ const targetDir = process.argv[3] && !process.argv[3].startsWith("-") ? path.res
 async function main() {
   if (!cmd || cmd === "help" || cmd === "--help" || cmd === "-h") {
     console.log(`
-AI Deep Era v0.58.1 - give the blind AI developer eyes (no frontend, proof in your IDE)
+AI Deep Era v0.58.2 - give the blind AI developer eyes (no frontend, proof in your IDE)
 
 START HERE:
   npx deep-era start             Install, wire up, and audit this project in ONE command.

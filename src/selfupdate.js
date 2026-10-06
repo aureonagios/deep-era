@@ -7,8 +7,12 @@
 // RULES this module obeys (and tests enforce):
 // - Never slow down a gate. `check` reads the cache only — no network, ever.
 // - Never install anything silently. `--apply` is an explicit user decision.
-// - Never lie offline. No network means "unknown", reported as such, exit 0.
+// - Never mislabel a failure. Every fetch failure reports its ACTUAL reason
+//   (DNS, timeout, HTTP status, rate-limit, bad body) — never a guessed blanket
+//   like "offline?". A vague message once sent a user theorizing about private
+//   repos and auth tokens for what was a sandboxed no-network box.
 // - The cache lives in the home dir (machine scope), not the project.
+// - DEEP_ERA_UPDATE_URL overrides the source (tests, mirrors). Default is GitHub.
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
@@ -59,34 +63,62 @@ function writeCache(home, latest) {
   } catch {}
 }
 
+function sourceUrl() {
+  return process.env.DEEP_ERA_UPDATE_URL || GITHUB_PKG_URL;
+}
+
 function fetchLatestVersion(timeoutMs) {
+  // Resolves { version } on success or { error } on failure, where error is one of:
+  // dns (name does not resolve — truly offline or sandboxed), timeout (no answer in
+  // time), http-<status> (server answered with an error), rate-limited (GitHub 403/429
+  // with an exhausted quota — public repo, no token involved), parse (body is not a
+  // package.json with a version). Never rejects, never throws, never guesses.
   return new Promise((resolve) => {
     let done = false;
     const finish = (v) => { if (!done) { done = true; resolve(v); } };
+    const url = sourceUrl();
+    const lib = url.startsWith("http://") ? require("http") : https;
     let req;
     try {
-      req = https.get(GITHUB_PKG_URL, { timeout: timeoutMs || CHECK_TIMEOUT_MS }, (res) => {
+      req = lib.get(url, { timeout: timeoutMs || CHECK_TIMEOUT_MS }, (res) => {
+        if (res.statusCode === 403 || res.statusCode === 429) {
+          const remaining = res.headers && res.headers["x-ratelimit-remaining"];
+          res.resume();
+          if (String(remaining) === "0" || res.statusCode === 429) return finish({ error: "rate-limited" });
+          return finish({ error: "http-" + res.statusCode });
+        }
+        if (res.statusCode < 200 || res.statusCode >= 300) {
+          res.resume();
+          return finish({ error: "http-" + res.statusCode });
+        }
         let body = "";
-        res.on("data", (c) => { body += c; if (body.length > 20000) { try { req.destroy(); } catch {} finish(null); } });
+        res.on("data", (c) => { body += c; if (body.length > 20000) { try { req.destroy(); } catch {} finish({ error: "parse" }); } });
         res.on("end", () => {
           try {
             const v = JSON.parse(body).version;
-            finish(typeof v === "string" && /^\d+\.\d+\.\d+/.test(v) ? v : null);
-          } catch { finish(null); }
+            if (typeof v === "string" && /^\d+\.\d+\.\d+/.test(v)) return finish({ version: v });
+            finish({ error: "parse" });
+          } catch { finish({ error: "parse" }); }
         });
       });
-    } catch { finish(null); return; }
-    req.on("timeout", () => { try { req.destroy(); } catch {} finish(null); });
-    req.on("error", () => finish(null));
+    } catch { finish({ error: "dns" }); return; }
+    req.on("timeout", () => { try { req.destroy(); } catch {} finish({ error: "timeout" }); });
+    req.on("error", (e) => {
+      const code = (e && e.code) || "";
+      if (code === "ENOTFOUND" || code === "EAI_AGAIN") return finish({ error: "dns" });
+      if (code === "ECONNREFUSED") return finish({ error: "refused" });
+      if (code === "EHOSTUNREACH" || code === "ENETUNREACH" || code === "ENETDOWN") return finish({ error: "offline" });
+      finish({ error: code ? String(code).toLowerCase() : "timeout" });
+    });
   });
 }
 
-// Live check with cache write-through. Returns {latest} or {latest: null, offline: true}.
+// Live check with cache write-through. Returns {latest} or {latest: null, reason}.
 // Resolves — never rejects, never throws.
 async function checkForUpdate(home, timeoutMs) {
-  const latest = await fetchLatestVersion(timeoutMs);
-  if (latest) writeCache(home, latest);
-  return latest ? { latest } : { latest: null, offline: true };
+  const r = await fetchLatestVersion(timeoutMs);
+  if (r.version) writeCache(home, r.version);
+  return r.version ? { latest: r.version } : { latest: null, reason: r.error };
 }
 
 // The one-liner shown inside other commands. Cache-only when asked (the `check`
@@ -126,19 +158,36 @@ async function runUpdate(opts) {
   const o = opts || {};
   const cur = currentVersion();
   console.log(`[deep-era] installed: ${cur}. Checking github:${REPO} ...`);
-  const { latest, offline } = await checkForUpdate(o.homeDir || homeDir(), o.timeoutMs);
-  if (!latest) {
-    console.log(`[deep-era] registry unreadable (offline?) — staying on ${cur}.`);
+  const r = await checkForUpdate(o.homeDir || homeDir(), o.timeoutMs);
+  if (!r.latest) {
+    console.log(`[deep-era] ${describeFailure(r.reason)} — staying on ${cur}.`);
     return { current: cur, latest: null };
   }
-  if (compareVersions(cur, latest) >= 0) {
+  if (compareVersions(cur, r.latest) >= 0) {
     console.log(`[deep-era] up to date (${cur}).`);
-    return { current: cur, latest };
+    return { current: cur, latest: r.latest };
   }
-  console.log(`[deep-era] update available: ${cur} -> ${latest}.`);
+  console.log(`[deep-era] update available: ${cur} -> ${r.latest}.`);
   if (o.apply) applyUpdate();
   else console.log(`Run: deep-era update --apply`);
-  return { current: cur, latest };
+  return { current: cur, latest: r.latest };
+}
+
+// One honest sentence per failure mode. "Registry unreadable (offline?)" used to
+// cover all of these and sent at least one user theorizing about private repos and
+// auth tokens for what was a sandboxed no-network box.
+function describeFailure(reason) {
+  switch (reason) {
+    case "dns": return "offline (DNS lookup failed — no network path from here)";
+    case "timeout": return "no answer in time (offline or very slow network)";
+    case "refused": return "connection refused (blocked egress or proxy)";
+    case "offline": return "offline (host unreachable from here)";
+    case "rate-limited": return "GitHub rate-limited this IP (public repo — no token needed, no token involved). Retry in an hour";
+    case "parse": return "GitHub answered, but the body was not a package.json with a version";
+    default:
+      if (reason && reason.startsWith("http-")) return `GitHub answered HTTP ${reason.slice(5)}`;
+      return `check failed (${reason || "unknown"})`;
+  }
 }
 
 module.exports = {

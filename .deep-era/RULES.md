@@ -1,4 +1,4 @@
-# AI Deep Era v0.58.1 — Agent Rules (AUTO-INSTALLED, DO NOT SKIP)
+# AI Deep Era v0.58.2 — Agent Rules (AUTO-INSTALLED, DO NOT SKIP)
 
 You are NOT a blind developer. Any project, any language/framework (JS/TS/Python/Go/Rust/Java/PHP/Ruby/Dart/C#/Swift) — same rules. ZERO mistakes leave without verification.
 

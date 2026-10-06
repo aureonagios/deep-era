@@ -3,6 +3,20 @@
 > The README shows only the latest version. Everything else lives here, newest first.
 > Older than this file: `git log --oneline`.
 
+## v0.58.1: no hardcoded skill counts anywhere an agent looks
+
+`match_skills` told agents "410 skills ship with deep-era", the dashboard flashed
+"410 loaded", and help said "Search the 410 vault" — all stale the moment any
+collection gets installed. Every surface now counts live (dashboard reads
+`/api/overview`, MCP/help/paste carry no numbers), pinned by a test that fails on any
+new hardcoded count.
+
+Same audit also removed dead code the engines can't see (unused params and helpers
+don't match any finding shape): `blank()`/`tstack`/`jsxText` in tsparse.js,
+`catchBody` in semantics.js, `why` in links.js — plus plaintext memory is no longer
+tracked in git, the tarball claim is re-measured (137 kB), and `check` no longer
+advertises a 30-second audit it can't keep (measured: ~1s engines + your suite).
+
 ## v0.58: skill use-cases hold at 1228-scale; IDF + prefix-ratio matching
 
 **Use-cases for all 1228 skills — measured, not claimed: 0 orphans on both vaults.**

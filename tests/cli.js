@@ -170,7 +170,7 @@ ok("cli-sarif-has-cwe-tags", () => {
 ok("cli-update-offline-safe", () => {
   const { execFileSync } = require("child_process");
   const out = execFileSync(process.execPath, [CLI, "update"], { timeout: 30000 }).toString();
-  assert(out.includes("deep-era") && /up to date|update available|offline|unreachable|unreadable/i.test(out), `update behaved badly: ${out.slice(0, 200)}`);
+  assert(out.includes("deep-era") && /up to date|update available|offline|no network|rate-limit|HTTP \d+|unreachable|unreadable/i.test(out), `update behaved badly: ${out.slice(0, 200)}`);
 });
 
 ok("cli-sbom-cyclonedx", () => {
