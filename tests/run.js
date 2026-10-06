@@ -322,6 +322,23 @@ ok("prompt-covers-the-detected-failures", () => {
   assert(txt.includes("deep-era check"), "prompt does not mention deep-era check");
 });
 
+ok("prompt-steers-agents-off-the-broken-registry-path", () => {
+  // Agents naturally try `npx -y deep-era@latest`. The package was never published,
+  // so that 404s and whatever runs instead is stale or fake. The prompt must say so.
+  const txt = fs.readFileSync(path.join(path.resolve(__dirname, ".."), "PROMPT.md"), "utf8");
+  assert(txt.includes("github:aureonagios/deep-era"), "prompt has no working install path");
+  assert(/deep-era@latest/.test(txt) && /404/.test(txt), "prompt never warns that @latest/registry forms 404");
+});
+
+ok("readme-install-is-honest", () => {
+  // README line 31 once said `npm i -g deep-era` — a command that 404s. Docs that
+  // teach a failing install waste every new user's first five minutes.
+  const txt = fs.readFileSync(path.join(path.resolve(__dirname, ".."), "README.md"), "utf8");
+  assert(txt.includes("github:aureonagios/deep-era"), "README has no working install path");
+  assert(!/npm\s+i\s+-g\s+deep-era(?![\w/:@-])/i.test(txt), "README still teaches bare `npm i -g deep-era` (registry 404s)");
+  assert(/not on the npm registry/i.test(txt), "README never states the registry gap");
+});
+
 ok("cli-prompt-prints-clean-copy", () => {
   const { execFileSync } = require("child_process");
   const root = path.resolve(__dirname, "..");

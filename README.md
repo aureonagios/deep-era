@@ -15,9 +15,9 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/Node-%3E%3D18-blue.svg)](package.json)
-[![Tests](https://img.shields.io/badge/Tests-168%20passing-brightgreen.svg)](tests/run.js)
+[![Tests](https://img.shields.io/badge/Tests-170%20passing-brightgreen.svg)](tests/run.js)
 [![No deps](https://img.shields.io/badge/Dependencies-0-orange.svg)](package.json)
-[![Skills](https://img.shields.io/badge/Skills-410%20vault-blue.svg)](.agents/skills/)
+[![Skills](https://img.shields.io/badge/Skills-410%2B-indexed-blue.svg)](.agents/skills/)
 [![MCP](https://img.shields.io/badge/MCP-19%20tools-purple.svg)](mcp/server.js)
 [![IDE](https://img.shields.io/badge/IDEs-25%2B-blueviolet.svg)](src/setupIde.js)
 
@@ -28,7 +28,10 @@
 > Installs itself, wires your IDE, adds the CI gate, audits the project you are in, and
 > prints what a blind AI developer would have shipped. No config, no account, no API key.
 >
-> Prefer a global install? `npm i -g deep-era && deep-era start`
+> Prefer a global install? `npm i -g github:aureonagios/deep-era && deep-era start`
+>
+> Note: the package is NOT on the npm registry (`npx -y deep-era@latest` 404s).
+> Always install from the GitHub repo URL above — any other source is stale or fake.
 >
 > **COPY THIS to your AI agent 👇 (Cursor, Copilot, Antigravity, Trae, Windsurf, Claude Code, any IDE)**
 > ```
@@ -68,7 +71,8 @@ See [`PROMPT.md`](PROMPT.md). The short version, which is the whole idea in two 
 The agent is told five things it cannot argue its way past:
 
 1. **Route first.** `guide_task` names the files, the protected paths, the callers that
-   will break, the locked decisions, and the matching skills from the 410 installed. If
+   will break, the locked decisions, and the matching skills from the indexed vault
+   (410 built in, more installable as collections). If
    it cannot route, the agent must search by content rather than guess.
 2. **Recall or admit you forgot.** Decisions the user approved are always returned,
    because breaking one silently is how a project loses a week.
@@ -211,7 +215,7 @@ silent — a clean bill of health from any tool, including this one, deserves su
 `DEMO.md` — 5-minute video script. Or run `deep-era demo` and watch 4 traps get caught.
 
 ## Self-proof (v0.57.0, just ran)
-- `npm test` → 113 unit + 36 CLI + 12 MCP + 7 superpowers = **168 green (100% PASS)**
+- `npm test` → 115 unit + 36 CLI + 12 MCP + 7 superpowers = **170 green (100% PASS)**
 - `deep-era start` on a real 7-file Express app → **10 findings, all verified correct**, in one command
 - Encryption: AES-256-GCM, 7/7 proof tests (wrong key refuses, tampering detected, no plaintext leak)
 - Encryption perf: 1.24 ms/record after the salt fix, down from 155 ms (125x faster, 70 s → 0.55 s)

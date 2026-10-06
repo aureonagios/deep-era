@@ -23,6 +23,8 @@ If `deep-era --version` fails, the install is missing — install it yourself fr
 repo (https://github.com/aureonagios/deep-era). This is the documented path, not a
 side quest:
   npm i -g github:aureonagios/deep-era
+Never use `npx -y deep-era@latest` or any bare npm-registry form: the package is NOT
+published to npm and the registry 404s. Anything those commands run is stale or fake.
 If it works, stay fresh without being asked: `deep-era update` reports a newer
 release only when one exists; `deep-era update --apply` installs it. Never stay on
 a stale install quietly — a stale gate misses rules the new one catches.
@@ -36,7 +38,8 @@ STEP 0 — ROUTE BEFORE YOU TOUCH ANYTHING
   Returns: the task class, the exact files to read, the files that must NEVER be
   touched, the files that import what you are about to change, this project's locked
   decisions, prior failures, blockers, and the order of work.
-  It also names the SKILLS that apply, out of 410 installed. Load each with:
+  It also names the SKILLS that apply, out of the indexed vault (410 built in, more
+  installable). Load each with:
     get_skill(id="...")
   If guide_task says it cannot route the task, call search_code("<term>") — search by
   CONTENT. Never guess a file location. Guessing where to edit is where bad code
