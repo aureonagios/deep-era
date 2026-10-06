@@ -3,6 +3,24 @@
 > The README shows only the latest version. Everything else lives here, newest first.
 > Older than this file: `git log --oneline`.
 
+## v0.56: installed skills are discoverable, collections supported
+
+Until now, `skill --add` copied files somewhere nothing ever read: the matcher only
+read static catalogs that no code wrote, and single-skill validation rejected every
+multi-skill collection (the layout large public vaults use). So installing skills
+changed nothing observable.
+
+Now `skill --add <git-url>` accepts single-skill repos AND `skills/` collections
+(validated per member, bad members reported not fatal), auto-reindexes, and the new
+indexer makes everything searchable: `match_skills`, `skills <query>`, and
+`guide_task` all see installed skills immediately. Proven against a real 818-skill
+vault: 818/818 install, indexed, matched by task, content readable.
+
+Scope, stated plainly: deep-era only READS skill content to rank it — scripts inside
+skills are never listed, never executed. Installing a third-party collection is your
+explicit choice (some vaults are offensive security content); the agent's REFUSE
+rules still govern what gets used.
+
 ## v0.55: fewer false alarms, start sets up everything
 
 **The audit stopped crying wolf twice — and `start` is now truly one command.**

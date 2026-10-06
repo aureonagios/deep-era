@@ -401,6 +401,59 @@ ok("mcp-skill-tools-are-exposed", () => {
   }
 });
 
+ok("skillindex-audit-finds-gaps", () => {
+  // Hand-written catalog: six skills sharing identical triggers. All tie, the
+  // alphabetically-last one falls out of the top-5 — a deterministic orphan.
+  // Plus one trigger-less entry and one duplicated id.
+  const { auditCatalog } = require("../src/skillindex");
+  const { clearCatalogCache } = require("../src/skills");
+  clearCatalogCache();
+  const proj = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-proj-"));
+  const dir = path.join(proj, ".deep-era", "skills");
+  fs.mkdirSync(dir, { recursive: true });
+  const mk = (id, triggers, extra) => Object.assign(
+    { id, name: id, description: `Does ${id} things.`, category: "test", tags: [], triggers, path: id },
+    extra || {}
+  );
+  const skills = ["aaa-one", "bbb-two", "ccc-three", "ddd-four", "eee-five", "zzz-orphan"]
+    .map((id) => mk(id, ["common", "shared"]));
+  skills.push(mk("no-trig", []));
+  // Distinctive triggers keep these self-retrieving: the audit must report each
+  // problem exactly once, not cascade one entry's issue into orphan noise.
+  skills.push(mk("dup-skill", ["uniquedupword", "common"]));
+  skills.push(mk("dup-skill", ["uniquedupword", "common"]));
+  skills.push(mk("empty-desc", ["emptydescword", "common"], { description: "   " }));
+  fs.writeFileSync(path.join(dir, "catalog.json"), JSON.stringify({ version: 1, skills }));
+  const a = auditCatalog(proj);
+  // Merged view: hand catalog + repo fallback vault. Counts float with the
+  // fallback, so assert on OUR ids, not totals: the crowded-out orphan must be
+  // reported, and each structural problem exactly where it belongs.
+  assert(a.total >= 10, `expected at least our 10 entries, got ${a.total}`);
+  assert(a.orphans.some((x) => x.id === "zzz-orphan"),
+    `expected the crowded-out orphan, got: ${JSON.stringify(a.orphans)}`);
+  assert(a.withoutTriggers.length === 1 && a.withoutTriggers[0] === "no-trig", "trigger-less entry missed");
+  assert(a.duplicates.length === 1 && a.duplicates[0] === "dup-skill", "duplicate id missed");
+  assert(a.emptyDescription.includes("empty-desc"), "empty description missed");
+  clearCatalogCache();
+});
+
+ok("skillindex-audit-clean-catalog-passes", () => {
+  // Both directions: a healthy catalog reports zero of everything.
+  const { installCollectionFromDir } = require("../src/skill");
+  const { reindexSkills, auditCatalog } = require("../src/skillindex");
+  const { clearCatalogCache } = require("../src/skills");
+  clearCatalogCache();
+  const proj = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-proj-"));
+  fs.writeFileSync(path.join(proj, "package.json"), "{}");
+  installCollectionFromDir(path.join(__dirname, "fixtures", "skills-collection"), path.join(proj, ".deep-era", "skills"));
+  const r = reindexSkills(proj);
+  assert(r.indexed === 2, "fixture reindex broke");
+  const a = auditCatalog(proj);
+  assert(a.orphans.length === 0 && a.withoutTriggers.length === 0 && a.duplicates.length === 0,
+    `clean catalog flagged: ${JSON.stringify(a.orphans)}`);
+  clearCatalogCache();
+});
+
 // --- skill collections: install + index + discover (the missing pipeline) --------
 
 ok("skillindex-parses-both-frontmatter-styles", () => {

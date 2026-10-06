@@ -408,6 +408,26 @@ ok("cli-skill-add-local-collection", () => {
   assert(fs.existsSync(path.join(tmp, ".deep-era", "skills", "alpha-cache-audit", "SKILL.md")), "installed skill missing on disk");
 });
 
+ok("cli-skills-audit-reports-coverage", () => {
+  const { execFileSync } = require("child_process");
+  const tmp = sandbox({ "package.json": "{}" });
+  const real = path.join(tmp, ".deep-era", "skills");
+  fs.mkdirSync(real, { recursive: true });
+  const mk = (id, triggers) => {
+    fs.mkdirSync(path.join(real, id), { recursive: true });
+    fs.writeFileSync(path.join(real, id, "SKILL.md"),
+      `---\nname: ${id}\ndescription: Does ${id} things.\n---\n\nBody for ${id}.\n`);
+    return { id, name: id, description: `Does ${id} things.`, category: "test", tags: [], triggers, path: id };
+  };
+  const skills = ["aaa-one", "bbb-two", "ccc-three", "ddd-four", "eee-five", "zzz-orphan"]
+    .map((id) => mk(id, ["common", "shared"]));
+  fs.writeFileSync(path.join(real, "catalog.json"), JSON.stringify({ version: 1, skills }));
+  const out = execFileSync(process.execPath, [CLI, "skills", "--audit"], { cwd: tmp, timeout: 60000 }).toString();
+  // Merged with the repo fallback vault, so assert the shape + our orphan, not totals.
+  assert(/audit: \d+ skills, \d+ orphans/.test(out), `audit summary malformed: ${out.slice(0, 200)}`);
+  assert(out.includes("zzz-orphan"), "orphan not named");
+});
+
 ok("cli-suite-reported", async () => {
   await finish();
   const { readReport } = require("./lib/report");

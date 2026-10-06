@@ -200,66 +200,74 @@ function matchSkills(taskText, limit = 5, cwd = process.cwd()) {
     const cat = String(s.category || "").toLowerCase();
     const desc = String(s.description || "").toLowerCase();
     const tags = (Array.isArray(s.tags) ? s.tags : []).map((t) => String(t).toLowerCase());
-    const triggers = (Array.isArray(s.triggers) ? s.triggers : []).map((t) => String(t).toLowerCase());
-    const triggerSet = new Set(triggers);
+    const rawTriggers = (Array.isArray(s.triggers) ? s.triggers : []).map((t) => String(t).toLowerCase());
+    const triggerSet = new Set(rawTriggers);
+    // Sanitize trigger WORDS the same way task tokens are sanitized. Vendored
+    // catalogs carry junk triggers ("you", "are") and whole hyphenated ids
+    // ("accessibility-compliance-accessibility-audit") as single triggers, which
+    // can never match a cleaned query token — 76 of 410 skills were unreachable
+    // for exactly this reason (measured by `skills --audit`, not guessed).
+    // Splitting is word-boundary-safe by construction; the typo-in-podsecuritypolicy
+    // lesson still holds because we never substring-match across words.
+    const triggerWords = new Set();
+    for (const rt of rawTriggers) {
+      for (const w of rt.split(/[^a-z0-9+#.-]+/).filter((w) => w.length > 2 && !STOPWORDS.has(w))) {
+        triggerWords.add(w.replace(/^[#.-]+|[#.-]+$/g, ""));
+      }
+    }
+    triggerWords.delete("");
     let score = 0;
     const hits = [];
     let strongHits = 0;   // name or exact-trigger matches, which are real intent
-    let nameStrong = 0;   // matched on the skill NAME, the most reliable identifier
     for (const t of tokens) {
       // An exact trigger hit is a strong signal the catalog offers.
-      if (triggerSet.has(t)) { score += 16; strongHits++; hits.push(t); continue; }
+      if (triggerSet.has(t) || triggerWords.has(t)) { score += 16; strongHits++; hits.push(t); continue; }
       // The skill NAME is the most reliable identifier there is, so an exact or
       // near-exact name match must outrank a trigger hit. Catalog trigger lists are
       // derived from prose descriptions and are not exhaustive: the `postgresql`
       // skill has no "postgres" trigger even though the name says it plainly.
       const nameBare = name.replace(/[^a-z0-9]/g, "");
       const tokenBare = t.replace(/[^a-z0-9]/g, "");
-      if (nameBare === tokenBare) { score += 20; strongHits += 2; nameStrong += 2; hits.push(t); continue; }
+      if (nameBare === tokenBare) { score += 20; strongHits += 2; hits.push(t); continue; }
       // Substring matching on a squashed name produces nonsense: "k8ssecuritypolicies"
       // contains the letters "typo" inside "podsecuritypolicy", so "fix a typo" matched
       // a Kubernetes skill. Compare on word boundaries instead, using the original
       // hyphen/underscore/space separated name.
       const nameWords = name.split(/[^a-z0-9]+/).filter(Boolean);
-      if (nameWords.some((w) => w === tokenBare) && tokenBare.length > 3) { score += 14; strongHits++; nameStrong++; hits.push(t); continue; }
+      if (nameWords.some((w) => w === tokenBare) && tokenBare.length > 3) { score += 14; strongHits++; hits.push(t); continue; }
       // Prefix matching catches the common shorthand: users write "postgres" for the
       // `postgresql` skill, "k8s" for `kubernetes-*`, "a11y" for accessibility. The
       // longer string must be at least 4 characters and the shorter at least 3, or
       // three-letter words collide with everything.
       if (nameWords.some((w) => w.length >= 4 && tokenBare.length >= 3 && (w.startsWith(tokenBare) || tokenBare.startsWith(w)))) {
-        score += 14; strongHits++; nameStrong++; hits.push(t); continue;
+        score += 14; strongHits++; hits.push(t); continue;
       }
-      if (nameWords.some((w) => w.length > 4 && (w.startsWith(tokenBare) || tokenBare.startsWith(w)))) { score += 10; strongHits++; nameStrong++; hits.push(t); continue; }
-      if (name.includes(t)) { score += 8; strongHits++; nameStrong++; hits.push(t); continue; }
+      if (nameWords.some((w) => w.length > 4 && (w.startsWith(tokenBare) || tokenBare.startsWith(w)))) { score += 10; strongHits++; hits.push(t); continue; }
+      if (name.includes(t)) { score += 8; strongHits++; hits.push(t); continue; }
       if (tags.some((x) => x === t)) { score += 6; hits.push(t); continue; }
       if (cat === t) { score += 5; hits.push(t); continue; }
       if (cat.includes(t)) { score += 3; hits.push(t); continue; }
       // Same boundary rule as the name: a trigger like "podsecuritypolicy" must not
       // match the word "typo" hiding inside it.
-      const trigBare = triggers.map((x) => x.replace(/[^a-z0-9]/g, ""));
+      const trigBare = rawTriggers.map((x) => x.replace(/[^a-z0-9]/g, ""));
       const tokenBare2 = t.replace(/[^a-z0-9]/g, "");
       if (trigBare.some((x) => x === tokenBare2)) { score += 2; hits.push(t); continue; }
       if (tags.some((x) => x.includes(t))) { score += 1; hits.push(t); continue; }
       if (desc.includes(t)) { score += 1; }
     }
-    // One incidental word is not a recommendation. Trigger lists are generated from
-    // prose, so a Kubernetes security skill legitimately contains the word "typo"
-    // somewhere in its description, and a secret-scanning skill contains "leak". Those
     // A skill that only matched weakly is not a recommendation, and neither is one that
     // matched a single incidental word. Trigger lists are generated from prose, so a
     // Kubernetes security skill legitimately contains the word "leak" somewhere and a
     // secret scanner contains "leak" too, without either being about a database pool.
     //
     // A suggestion is credible when any of these hold:
-    //   * two or more strong signals (name or exact-trigger matches),
+    //   * one exact hit (trigger word or skill-name word) — word-boundary equality
+    //     is strong evidence; the gate's job is blocking WEAK matches, and exact
+    //     equality cannot happen by accident the way substrings can ("typo" hiding
+    //     inside "podsecuritypolicy" never equals anything),
     //   * a very high score, meaning an exact skill-name match,
-    //   * one strong signal plus corroboration from a second task word, or
-    //   * three or more task words matched in total.
-    // `nameStrong` counts matches on the skill NAME specifically. A user who types
-    // "postgres" means the postgresql skill, and that has to survive the gate even
-    // though it is a single word.
-    const credible = strongHits >= 2 || score >= 20 || (strongHits >= 1 && hits.length >= 2)
-      || hits.length >= 3 || nameStrong >= 1;
+    //   * or three or more task words matched in total.
+    const credible = strongHits >= 1 || score >= 20 || hits.length >= 3;
     if (score >= MIN_SCORE && credible) {
       scored.push({ id: s.id, name: s.name, category: s.category, score, matched: [...new Set(hits)].slice(0, 5), description: s.description });
     }

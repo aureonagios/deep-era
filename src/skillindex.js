@@ -106,6 +106,16 @@ function listSkillDirs(root) {
   return entries.filter((e) => e.isDirectory()).map((e) => path.join(root, e.name));
 }
 
+// Raw read of one catalog file (no merge, no dedupe) for structural checks.
+function readRawCatalog(file) {
+  try {
+    const c = JSON.parse(fs.readFileSync(file, "utf8"));
+    return Array.isArray(c.skills) ? c.skills : [];
+  } catch {
+    return [];
+  }
+}
+
 // Build a catalog object from skill directories. Pure function of the dirs given —
 // no network, no side effects — so tests can run it on fixtures.
 function buildSkillCatalog(dirs, source) {
@@ -181,11 +191,87 @@ function reindexSkills(cwd) {
   return { catalogPath: dest, indexed: skills.length, rejected };
 }
 
+// Coverage audit: is every skill actually reachable? A skill no task query can find
+// is shelfware — installed, indexed, and invisible. For each skill, its own top-3
+// triggers become the query; missing the top-N means no realistic task will surface
+// it either, because real tasks match worse than the skill's own keywords.
+// Also reports trigger-less entries, duplicate ids, and empty descriptions.
+// Pure read of the merged catalog — never writes, never executes.
+function auditCatalog(cwd, opts) {
+  const { getCatalog, clearCatalogCache, matchSkills } = require("./skills");
+  const o = opts || {};
+  const topN = o.topN || 5;
+  const root = cwd || process.cwd();
+  clearCatalogCache();
+  const catalog = getCatalog(root);
+  const skills = (catalog && catalog.skills) || [];
+  // Duplicates are checked against the RAW project file, not the merged view:
+  // merging dedupes by design (project shadows vault = override, not error).
+  // Same id twice in one file is ambiguity no override explains.
+  const rawProject = readRawCatalog(path.join(root, ".deep-era", "skills", "catalog.json"));
+  const seenRaw = new Set();
+  const duplicates = [];
+  for (const s of rawProject) {
+    const id = String(s.id || s.name || "");
+    if (!id) continue;
+    if (seenRaw.has(id)) {
+      if (!duplicates.includes(id)) duplicates.push(id);
+      continue;
+    }
+    seenRaw.add(id);
+  }
+  const seen = new Set();
+  const withoutTriggers = [];
+  const emptyDescription = [];
+  const orphans = [];
+  for (const s of skills) {
+    const id = String(s.id || s.name || "");
+    if (!id || seen.has(id)) continue; // merged view already deduped; dupes reported above
+    seen.add(id);
+    const triggers = Array.isArray(s.triggers) ? s.triggers.filter(Boolean) : [];
+    if (!triggers.length) {
+      withoutTriggers.push(id);
+      continue; // nothing to query with — unreachable by construction
+    }
+    if (!String(s.description || "").trim()) emptyDescription.push(id);
+    // Two tiers: a terse 3-word query, then a descriptive 5-word one. Skills whose
+    // distinctive terms sit past position 3 (e.g. five siblings all starting
+    // "building-threat-intelligence-…") are reachable by realistic sentences even
+    // when a terse query drowns them in siblings. Only unreachable-by-both counts.
+    const q3 = triggers.slice(0, 3).join(" ");
+    let ranked = [];
+    try {
+      ranked = matchSkills(q3, topN, root).map((x) => String(x.id));
+    } catch {
+      orphans.push({ id, query: q3 });
+      continue;
+    }
+    if (ranked.includes(id)) continue;
+    let ranked5 = [];
+    try {
+      ranked5 = matchSkills(triggers.slice(0, 5).join(" "), topN, root).map((x) => String(x.id));
+    } catch { /* fall through to orphan */ }
+    if (!ranked5.includes(id)) orphans.push({ id, query: q3 });
+  }
+  clearCatalogCache();
+  return {
+    total: skills.length,
+    withTriggers: skills.length - withoutTriggers.length,
+    withoutTriggers,
+    orphans,
+    duplicates,
+    emptyDescription,
+    topN,
+    orphanRate: skills.length ? +(orphans.length / skills.length).toFixed(3) : 0,
+  };
+}
+
 module.exports = {
   parseSkillFrontmatter,
   deriveTriggers,
   buildSkillCatalog,
   reindexSkills,
+  auditCatalog,
   listSkillDirs,
   catalogPath,
   skillsRoot,

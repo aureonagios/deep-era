@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-10-05T19:50:54.666Z",
+  "generatedAt": "2026-10-06T09:54:15.988Z",
   "stack": {
     "kind": "node",
     "run": null,
@@ -120,7 +120,7 @@
     {
       "file": "bin/cli.js",
       "role": "code-js",
-      "size": 37718,
+      "size": 38976,
       "imports": [
         "package.json",
         "src/init.js",
@@ -148,7 +148,7 @@
     {
       "file": "CHANGELOG.md",
       "role": "doc",
-      "size": 16327,
+      "size": 17355,
       "imports": [],
       "importedBy": []
     },
@@ -245,7 +245,7 @@
     {
       "file": "README.md",
       "role": "doc",
-      "size": 14107,
+      "size": 13878,
       "imports": [],
       "importedBy": []
     },
@@ -734,7 +734,7 @@
     {
       "file": "src/skillindex.js",
       "role": "code-js",
-      "size": 7518,
+      "size": 10895,
       "imports": [
         "src/skills.js"
       ],
@@ -745,7 +745,7 @@
     {
       "file": "src/skills.js",
       "role": "code-js",
-      "size": 12909,
+      "size": 13260,
       "imports": [],
       "importedBy": [
         "mcp/server.js",
@@ -843,14 +843,14 @@
     {
       "file": "TEST-REPORT.md",
       "role": "doc",
-      "size": 5580,
+      "size": 5698,
       "imports": [],
       "importedBy": []
     },
     {
       "file": "tests/cli.js",
       "role": "code-js",
-      "size": 21009,
+      "size": 22227,
       "imports": [
         "tests/lib/report.js",
         "src/global.js",
@@ -1047,7 +1047,7 @@
     {
       "file": "tests/run.js",
       "role": "code-js",
-      "size": 71479,
+      "size": 74575,
       "imports": [
         "src/map.js",
         "src/security.js",

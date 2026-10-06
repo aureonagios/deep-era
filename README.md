@@ -1,4 +1,4 @@
-# AI Deep Era v0.56.0 — give the blind AI developer eyes
+# AI Deep Era v0.57.0 — give the blind AI developer eyes
 
 > ## Paste this into your AI agent
 > ```
@@ -15,7 +15,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/Node-%3E%3D18-blue.svg)](package.json)
-[![Tests](https://img.shields.io/badge/Tests-157%20passing-brightgreen.svg)](tests/run.js)
+[![Tests](https://img.shields.io/badge/Tests-168%20passing-brightgreen.svg)](tests/run.js)
 [![No deps](https://img.shields.io/badge/Dependencies-0-orange.svg)](package.json)
 [![Skills](https://img.shields.io/badge/Skills-410%20vault-blue.svg)](.agents/skills/)
 [![MCP](https://img.shields.io/badge/MCP-19%20tools-purple.svg)](mcp/server.js)
@@ -80,25 +80,19 @@ The agent is told five things it cannot argue its way past:
 5. **Refuse.** Removing test coverage, skipping verification, hardcoding secrets: say no,
    say why in one sentence, offer the safe alternative. No flattery.
 
-## What v0.56 does (latest)
+## What v0.57 does (latest)
 
-**Installed skills are finally discoverable — including whole collections.**
+**Every skill now has to prove it can be found — or the audit names it.**
 
-Until now, `skill --add` copied files somewhere nothing ever read: the matcher only
-read static catalogs that no code wrote, and single-skill validation rejected every
-multi-skill collection (the layout large public vaults use). So installing skills
-changed nothing observable.
+1228 skills across two vaults (410 vendored + 818 installed) are worth nothing if no
+task query surfaces them. `skills --audit` checks each skill against its own keywords:
+reachable in the top-5, or listed as an orphan with the exact query that failed.
+Measured: 0 orphans, 0 missing triggers, 0 duplicate ids on both vaults.
 
-Now `skill --add <git-url>` accepts single-skill repos AND `skills/` collections
-(validated per member, bad members reported not fatal), auto-reindexes, and the new
-indexer makes everything searchable: `match_skills`, `skills <query>`, and
-`guide_task` all see installed skills immediately. Proven against a real 818-skill
-vault: 818/818 install, indexed, matched by task, content readable.
-
-Scope, stated plainly: deep-era only READS skill content to rank it — scripts inside
-skills are never listed, never executed. Installing a third-party collection is your
-explicit choice (some vaults are offensive security content); the agent's REFUSE
-rules still govern what gets used.
+Getting there exposed two real bugs, both fixed: vendored trigger lists carry junk
+words ("you", "are") and whole hyphenated ids that can never match a cleaned query,
+so matching now compares on word boundaries; and the credibility gate demanded
+corroboration even for exact hits, so single-word lookups silently returned nothing.
 
 Full history: [CHANGELOG.md](CHANGELOG.md)
 
@@ -184,6 +178,7 @@ silent — a clean bill of health from any tool, including this one, deserves su
 | `skill <name>` | Render complete SKILL.md guide for any autonomous agent skill |
 | `skills [query]` | skills search: semantic search, categories, triggers (installed skills included) |
 | `skills --reindex` | rebuild the skills index from installed skills |
+| `skills --audit` | coverage: every skill reachable, or named as orphan |
 | `skill --add <git-url>` | install a skill repo or a whole `skills/` collection (validated, auto-indexed) |
 | `ui [port]` | Live Autonomous Command Center & Web Dashboard (dual theme, mobile responsive) |
 | `hunt [port]` | Port hunter & socket conflict resolver (finds free port in 5ms) |
@@ -215,8 +210,8 @@ silent — a clean bill of health from any tool, including this one, deserves su
 ## Demo
 `DEMO.md` — 5-minute video script. Or run `deep-era demo` and watch 4 traps get caught.
 
-## Self-proof (v0.56.0, just ran)
-- `npm test` → 111 unit + 35 CLI + 12 MCP + 7 superpowers = **165 green (100% PASS)**
+## Self-proof (v0.57.0, just ran)
+- `npm test` → 113 unit + 36 CLI + 12 MCP + 7 superpowers = **168 green (100% PASS)**
 - `deep-era start` on a real 7-file Express app → **10 findings, all verified correct**, in one command
 - Encryption: AES-256-GCM, 7/7 proof tests (wrong key refuses, tampering detected, no plaintext leak)
 - Encryption perf: 1.24 ms/record after the salt fix, down from 155 ms (125x faster, 70 s → 0.55 s)
@@ -231,7 +226,7 @@ silent — a clean bill of health from any tool, including this one, deserves su
 - `npm publish --dry-run` → clean
 ## Looking for an alternative?
 
-- **SuperClaude / BMAD alternative** — same plan→verify loop, plus a 165-test suite, decision lock, and a 1-command audit. Zero framework to learn.
+- **SuperClaude / BMAD alternative** — same plan→verify loop, plus a 168-test suite, decision lock, and a 1-command audit. Zero framework to learn.
 - **CodeRabbit / Snyk alternative (offline)** — dep blocklist, OSV.dev CVEs, entropy secrets, SARIF output. No cloud, no per-seat bill.
 - **Semgrep / CodeQL alternative (offline)** — reads the code, not just the syntax: swallowed exceptions, floating promises, dead branches, and tests that cannot fail. Zero deps, milliseconds, no query language to learn.
 - **"Un-spaghettify" cost reducer** — finds the passthrough layers, dead code, and pointless indirection that make AI-written code expensive to own. Catches the complaint that syntax checkers structurally cannot.

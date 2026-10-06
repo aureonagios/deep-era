@@ -1,6 +1,6 @@
 {
   "name": "deep-era",
-  "version": "0.56.0",
+  "version": "0.57.0",
   "description": "Give any AI agent eyes: route it to the right files before it edits, then verify what it wrote. Zero dependencies, offline, no AI inside.",
   "type": "commonjs",
   "main": "./src/map.js",

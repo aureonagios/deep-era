@@ -9,7 +9,7 @@ const targetDir = process.argv[3] && !process.argv[3].startsWith("-") ? path.res
 async function main() {
   if (!cmd || cmd === "help" || cmd === "--help" || cmd === "-h") {
     console.log(`
-AI Deep Era v0.56.0 - give the blind AI developer eyes (no frontend, proof in your IDE)
+AI Deep Era v0.57.0 - give the blind AI developer eyes (no frontend, proof in your IDE)
 
 START HERE:
   npx deep-era start             Install, wire up, and audit this project in ONE command.
@@ -768,6 +768,22 @@ if (cmd === "perf") {
       console.log(`\nUsage: deep-era skills <query>   (e.g. deep-era skills docker)`);
       console.log(`       deep-era skill <name>     (e.g. deep-era skill tailwind-design-system)`);
       console.log(`       deep-era skills --reindex (rebuild index from installed skills)`);
+      console.log(`       deep-era skills --audit   (coverage: orphans, missing triggers, duplicates)`);
+      return;
+    }
+    if (process.argv.includes("--audit")) {
+      const { auditCatalog } = require("../src/skillindex");
+      const a = auditCatalog(process.cwd());
+      console.log(`[deep-era skills] audit: ${a.total} skills, ${a.orphans.length} orphans (top-${a.topN} self-retrieval), ${a.withoutTriggers.length} without triggers, ${a.duplicates.length} duplicate ids.`);
+      if (a.withoutTriggers.length) console.log(`  no triggers (${a.withoutTriggers.length}, showing 5): ${a.withoutTriggers.slice(0, 5).join(", ")}`);
+      if (a.duplicates.length) console.log(`  duplicates (${a.duplicates.length}, showing 5): ${a.duplicates.slice(0, 5).join(", ")}`);
+      if (a.emptyDescription.length) console.log(`  empty description (${a.emptyDescription.length}, showing 5): ${a.emptyDescription.slice(0, 5).join(", ")}`);
+      if (a.orphans.length) {
+        console.log(`  orphans (${a.orphans.length}, showing 8) — no task query surfaces these:`);
+        for (const x of a.orphans.slice(0, 8)) console.log(`  - ${x.id}  (tried: "${x.query}")`);
+      } else {
+        console.log(`  every skill is reachable by its own keywords.`);
+      }
       return;
     }
     const results = searchSkills(q, 15, process.cwd());
