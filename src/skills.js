@@ -175,14 +175,71 @@ const STOPWORDS = new Set([
 ]);
 
 // A skill needs more than a generic verb to be a recommendation. Anything scoring only
-// on one weak token is noise that would teach the agent to ignore the whole section.
+// on one weak token is noise that would teach the agent to ignore the suggestion.
 const MIN_SCORE = 14;
 
+// Per-entry sanitized trigger words, cached: matchSkills runs once per query over the
+// whole catalog, and re-splitting every trigger list every time is what made the
+// 1228-skill audit take 34 seconds.
+const triggerWordCache = new WeakMap();
+function entryTriggerWords(s) {
+  let set = triggerWordCache.get(s);
+  if (set) return set;
+  set = new Set();
+  const raw = (Array.isArray(s.triggers) ? s.triggers : []).map((t) => String(t).toLowerCase());
+  for (const rt of raw) {
+    if (/^[a-z0-9+#.-]{3,}$/.test(rt) && !STOPWORDS.has(rt)) set.add(rt);
+    for (const w of rt.split(/[^a-z0-9+#.-]+/).filter((w) => w.length > 2 && !STOPWORDS.has(w))) {
+      set.add(w.replace(/^[#.-]+|[#.-]+$/g, ""));
+    }
+  }
+  set.delete("");
+  triggerWordCache.set(s, set);
+  return set;
+}
+
+// Document frequency over trigger words, cached per catalog object. Common words
+// ("name", "variable", "leak") appear in hundreds of trigger lists and carry almost
+// no signal; rare words ("postgres", "docker") identify. Same TF-IDF philosophy as
+// memory.js recall — rare terms outrank common ones.
+const idfCache = new WeakMap();
+function triggerIdf(catalog, token) {
+  let entry = idfCache.get(catalog);
+  if (!entry) {
+    const df = new Map();
+    const skills = (catalog && catalog.skills) || [];
+    for (const s of skills) {
+      for (const w of entryTriggerWords(s)) df.set(w, (df.get(w) || 0) + 1);
+    }
+    entry = { df, n: skills.length || 1 };
+    idfCache.set(catalog, entry);
+  }
+  const df = entry.df.get(token) || 0;
+  if (entry.n <= 1 || df <= 0) return 1;
+  return Math.log(entry.n / df) / Math.log(entry.n);
+}
+
+// Prefix shorthands are real ("postgres" for postgresql) but length-unbounded prefix
+// matching is how "fix a typo" ranked a typosquatting skill and "postgres" ranked a
+// post-incident skill: the token merely starts with a short dictionary word ("post",
+// "react"). Same word family required: the shorter must cover 80%+ of the longer.
+// postgres/postgresql (.80) and containers/container (.90) pass; typo/typosquatting
+// (.31), postgres/post (.50) and reactor/react (.71) do not.
+function closeEnough(a, b) {
+  const m = Math.min(a.length, b.length);
+  const M = Math.max(a.length, b.length);
+  return M > 0 && m / M >= 0.8;
+}
+
 function taskTokens(taskText) {
+  // Hyphens split: "accidental-data-loss-prevention" must become four matchable
+  // words, or a skill whose triggers are stored hyphenated can never self-match
+  // (measured: 12 orphans on the 410 vault from this alone). Dots stay whole
+  // ("node.js" is one token); the phrase bonus below still fires on word pairs.
   return [...new Set(
     String(taskText || "")
       .toLowerCase()
-      .split(/[^a-z0-9+#.-]+/)
+      .split(/[^a-z0-9+#.]+/)
       .filter((w) => w.length > 2 && !STOPWORDS.has(w))
   )];
 }
@@ -202,26 +259,20 @@ function matchSkills(taskText, limit = 5, cwd = process.cwd()) {
     const tags = (Array.isArray(s.tags) ? s.tags : []).map((t) => String(t).toLowerCase());
     const rawTriggers = (Array.isArray(s.triggers) ? s.triggers : []).map((t) => String(t).toLowerCase());
     const triggerSet = new Set(rawTriggers);
-    // Sanitize trigger WORDS the same way task tokens are sanitized. Vendored
-    // catalogs carry junk triggers ("you", "are") and whole hyphenated ids
-    // ("accessibility-compliance-accessibility-audit") as single triggers, which
-    // can never match a cleaned query token — 76 of 410 skills were unreachable
-    // for exactly this reason (measured by `skills --audit`, not guessed).
-    // Splitting is word-boundary-safe by construction; the typo-in-podsecuritypolicy
-    // lesson still holds because we never substring-match across words.
-    const triggerWords = new Set();
-    for (const rt of rawTriggers) {
-      for (const w of rt.split(/[^a-z0-9+#.-]+/).filter((w) => w.length > 2 && !STOPWORDS.has(w))) {
-        triggerWords.add(w.replace(/^[#.-]+|[#.-]+$/g, ""));
-      }
-    }
-    triggerWords.delete("");
+    const triggerWords = entryTriggerWords(s);
     let score = 0;
     const hits = [];
     let strongHits = 0;   // name or exact-trigger matches, which are real intent
     for (const t of tokens) {
-      // An exact trigger hit is a strong signal the catalog offers.
-      if (triggerSet.has(t) || triggerWords.has(t)) { score += 16; strongHits++; hits.push(t); continue; }
+      // An exact trigger hit, weighted by rarity. "postgres" identifies one skill;
+      // "name" is claimed by hundreds. Flat scoring let generic words drag unrelated
+      // skills over the bar (measured: "fix a typo" matching leak scanners).
+      if (triggerSet.has(t) || triggerWords.has(t)) {
+        score += 4 + Math.round(12 * triggerIdf(catalog, t));
+        strongHits++;
+        hits.push(t);
+        continue;
+      }
       // The skill NAME is the most reliable identifier there is, so an exact or
       // near-exact name match must outrank a trigger hit. Catalog trigger lists are
       // derived from prose descriptions and are not exhaustive: the `postgresql`
@@ -238,11 +289,12 @@ function matchSkills(taskText, limit = 5, cwd = process.cwd()) {
       // Prefix matching catches the common shorthand: users write "postgres" for the
       // `postgresql` skill, "k8s" for `kubernetes-*`, "a11y" for accessibility. The
       // longer string must be at least 4 characters and the shorter at least 3, or
-      // three-letter words collide with everything.
-      if (nameWords.some((w) => w.length >= 4 && tokenBare.length >= 3 && (w.startsWith(tokenBare) || tokenBare.startsWith(w)))) {
+      // three-letter words collide with everything — and the two must be close in
+      // length, or "typo" matches "typosquatting" (measured on the 1228-skill union).
+      if (nameWords.some((w) => w.length >= 4 && tokenBare.length >= 3 && ((w.startsWith(tokenBare) || tokenBare.startsWith(w)) && closeEnough(w, tokenBare)))) {
         score += 14; strongHits++; hits.push(t); continue;
       }
-      if (nameWords.some((w) => w.length > 4 && (w.startsWith(tokenBare) || tokenBare.startsWith(w)))) { score += 10; strongHits++; hits.push(t); continue; }
+      if (nameWords.some((w) => w.length > 4 && ((w.startsWith(tokenBare) || tokenBare.startsWith(w))) && closeEnough(w, tokenBare))) { score += 10; strongHits++; hits.push(t); continue; }
       if (name.includes(t)) { score += 8; strongHits++; hits.push(t); continue; }
       if (tags.some((x) => x === t)) { score += 6; hits.push(t); continue; }
       if (cat === t) { score += 5; hits.push(t); continue; }
@@ -261,12 +313,18 @@ function matchSkills(taskText, limit = 5, cwd = process.cwd()) {
     // secret scanner contains "leak" too, without either being about a database pool.
     //
     // A suggestion is credible when any of these hold:
-    //   * one exact hit (trigger word or skill-name word) — word-boundary equality
-    //     is strong evidence; the gate's job is blocking WEAK matches, and exact
+    //   * one strong signal (exact trigger word or skill-name word) — word-boundary
     //     equality cannot happen by accident the way substrings can ("typo" hiding
     //     inside "podsecuritypolicy" never equals anything),
     //   * a very high score, meaning an exact skill-name match,
     //   * or three or more task words matched in total.
+    // Two deliberate pairings make single hits safe: IDF keeps common words
+    // ("name", "variable") below MIN_SCORE on their own, and the prefix ratio
+    // guard keeps near-miss substrings out of the strong set.
+    // Known boundary, stated not hidden: on a large corpus a rare exact word can
+    // still be topically adjacent rather than identical ("typo" ranking a
+    // typosquatting skill). Lexical matching cannot see word sense; the agent
+    // verifies relevance before loading, and the audit measures recall, not intent.
     const credible = strongHits >= 1 || score >= 20 || hits.length >= 3;
     if (score >= MIN_SCORE && credible) {
       scored.push({ id: s.id, name: s.name, category: s.category, score, matched: [...new Set(hits)].slice(0, 5), description: s.description });

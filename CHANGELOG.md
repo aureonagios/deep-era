@@ -3,6 +3,18 @@
 > The README shows only the latest version. Everything else lives here, newest first.
 > Older than this file: `git log --oneline`.
 
+## v0.57: every skill has to prove it can be found
+
+1228 skills across two vaults (410 vendored + 818 installed) are worth nothing if no
+task query surfaces them. `skills --audit` checks each skill against its own keywords:
+reachable in the top-5, or listed as an orphan with the exact query that failed.
+Measured: 0 orphans, 0 missing triggers, 0 duplicate ids on both vaults.
+
+Getting there exposed two real bugs, both fixed: vendored trigger lists carry junk
+words ("you", "are") and whole hyphenated ids that can never match a cleaned query,
+so matching now compares on word boundaries; and the credibility gate demanded
+corroboration even for exact hits, so single-word lookups silently returned nothing.
+
 ## v0.56: installed skills are discoverable, collections supported
 
 Until now, `skill --add` copied files somewhere nothing ever read: the matcher only

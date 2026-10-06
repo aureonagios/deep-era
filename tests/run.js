@@ -568,7 +568,68 @@ ok("skillindex-cache-refreshes-on-reindex", () => {
   clearCatalogCache();
 });
 
-// --- v0.51: encryption at rest (AES-256-GCM, zero dependencies) ---------------
+ok("skills-prefix-ratio-guard", () => {
+  // "reactor" must reach reactor-control but never react-state: same-prefix words
+  // are only the same family when lengths are close (.80+). Measured: without the
+  // ratio, "fix a typo" ranked a typosquatting skill and "postgres" ranked a
+  // post-incident skill on the 1228-skill union.
+  const { clearCatalogCache, matchSkills } = require("../src/skills");
+  clearCatalogCache();
+  const proj = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-proj-"));
+  const dir = path.join(proj, ".deep-era", "skills");
+  fs.mkdirSync(dir, { recursive: true });
+  const mk = (id, triggers) => ({ id, name: id, description: `Does ${id} things.`, category: "test", tags: [], triggers, path: id });
+  fs.writeFileSync(path.join(dir, "catalog.json"), JSON.stringify({ version: 1, skills: [
+    mk("reactor-control", ["reactor"]),
+    mk("react-state", ["react"]),
+  ] }));
+  const m = matchSkills("fix the submarine reactor", 5, proj).map((s) => s.id);
+  assert(m.includes("reactor-control"), "prefix shorthand missed its own skill");
+  assert(!m.includes("react-state"), `distant prefix leaked through: ${m.join(",")}`);
+  clearCatalogCache();
+});
+
+ok("skills-idf-downweights-common-words", () => {
+  // A word claimed by every skill ("shared" here, "name"/"leak" in the wild) must
+  // not single-handedly recommend anything; a word claimed by one skill must.
+  const { clearCatalogCache, matchSkills } = require("../src/skills");
+  clearCatalogCache();
+  const proj = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-proj-"));
+  const dir = path.join(proj, ".deep-era", "skills");
+  fs.mkdirSync(dir, { recursive: true });
+  const mk = (id, triggers) => ({ id, name: id, description: `Does ${id} things.`, category: "test", tags: [], triggers, path: id });
+  const skills = ["s-one", "s-two", "s-three", "s-four"].map((id) => mk(id, ["shared"]));
+  skills.push(mk("sigil-holder", ["shared", "uniquesigil"]));
+  fs.writeFileSync(path.join(dir, "catalog.json"), JSON.stringify({ version: 1, skills }));
+  assert(matchSkills("shared", 5, proj).length === 0, "lone common word recommended skills");
+  const m = matchSkills("uniquesigil", 5, proj).map((s) => s.id);
+  assert(m.includes("sigil-holder"), "distinctive word missed its skill");
+  clearCatalogCache();
+});
+
+ok("skillindex-audit-two-tier-rescue", () => {
+  // Siblings sharing three triggers crowd each other out of a terse top-5, but a
+  // realistic longer query (top-5 triggers) rescues the one with distinctive terms.
+  // Seven identical skills have no rescue: the last two are genuinely orphaned.
+  const { auditCatalog } = require("../src/skillindex");
+  const { clearCatalogCache } = require("../src/skills");
+  clearCatalogCache();
+  const proj = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-proj-"));
+  const dir = path.join(proj, ".deep-era", "skills");
+  fs.mkdirSync(dir, { recursive: true });
+  const mk = (id, triggers) => ({ id, name: id, description: `Does ${id} things.`, category: "test", tags: [], triggers, path: id });
+  const skills = ["sib-a", "sib-b", "sib-c", "sib-d", "sib-e"].map((id) => mk(id, ["redwood", "falcon", "harbor"]));
+  skills.push(mk("zzz-target", ["redwood", "falcon", "harbor", "zephyr", "quartz"]));
+  for (const id of ["dup-a", "dup-b", "dup-c", "dup-d", "dup-e", "dup-f", "dup-g"]) {
+    skills.push(mk(id, ["juniper", "yucca"]));
+  }
+  fs.writeFileSync(path.join(dir, "catalog.json"), JSON.stringify({ version: 1, skills }));
+  const a = auditCatalog(proj);
+  const orphans = a.orphans.map((x) => x.id);
+  assert(!orphans.includes("zzz-target"), "two-tier rescue failed: distinctive skill reported orphan");
+  assert(orphans.includes("dup-f") && orphans.includes("dup-g"), `identical crowded-out pair missed: ${orphans.join(",")}`);
+  clearCatalogCache();
+});
 
 ok("crypt-roundtrip-and-leaks-nothing", () => {
   const fs2 = require("fs");

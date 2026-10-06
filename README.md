@@ -1,4 +1,4 @@
-# AI Deep Era v0.57.0 — give the blind AI developer eyes
+# AI Deep Era v0.58.0 — give the blind AI developer eyes
 
 > ## Paste this into your AI agent
 > ```
@@ -15,7 +15,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/Node-%3E%3D18-blue.svg)](package.json)
-[![Tests](https://img.shields.io/badge/Tests-170%20passing-brightgreen.svg)](tests/run.js)
+[![Tests](https://img.shields.io/badge/Tests-173%20passing-brightgreen.svg)](tests/run.js)
 [![No deps](https://img.shields.io/badge/Dependencies-0-orange.svg)](package.json)
 [![Skills](https://img.shields.io/badge/Skills-410%2B-indexed-blue.svg)](.agents/skills/)
 [![MCP](https://img.shields.io/badge/MCP-19%20tools-purple.svg)](mcp/server.js)
@@ -84,19 +84,21 @@ The agent is told five things it cannot argue its way past:
 5. **Refuse.** Removing test coverage, skipping verification, hardcoding secrets: say no,
    say why in one sentence, offer the safe alternative. No flattery.
 
-## What v0.57 does (latest)
+## What v0.58 does (latest)
 
-**Every skill now has to prove it can be found — or the audit names it.**
+**Use-cases for all 1228 skills — measured, not claimed: 0 orphans on both vaults.**
 
-1228 skills across two vaults (410 vendored + 818 installed) are worth nothing if no
-task query surfaces them. `skills --audit` checks each skill against its own keywords:
-reachable in the top-5, or listed as an orphan with the exact query that failed.
-Measured: 0 orphans, 0 missing triggers, 0 duplicate ids on both vaults.
+Installing 818 more skills tripled the corpus, which broke matching quality in two
+places the 410-vault never exposed: generic words ("name", "variable", "leak") claimed
+by hundreds of trigger lists dragged unrelated skills over the bar, and near-miss
+prefixes ("typo" inside "typosquatting", "post" inside "postgres") ranked nonsense.
+Three fixes, each pinned by tests: trigger hits are now IDF-weighted (rare words hit
+at full strength, common words need corroboration), prefixes require 80% length
+overlap, and task tokens split on hyphens so hyphenated ids self-match.
 
-Getting there exposed two real bugs, both fixed: vendored trigger lists carry junk
-words ("you", "are") and whole hyphenated ids that can never match a cleaned query,
-so matching now compares on word boundaries; and the credibility gate demanded
-corroboration even for exact hits, so single-word lookups silently returned nothing.
+Stated limit, not hidden: "fix a typo" can still surface a typosquatting skill on a
+large corpus — lexically adjacent, semantically off, and no word statistic can see
+the difference. Nonsense still refuses everywhere; agents verify before loading.
 
 Full history: [CHANGELOG.md](CHANGELOG.md)
 
@@ -214,8 +216,9 @@ silent — a clean bill of health from any tool, including this one, deserves su
 ## Demo
 `DEMO.md` — 5-minute video script. Or run `deep-era demo` and watch 4 traps get caught.
 
-## Self-proof (v0.57.0, just ran)
-- `npm test` → 115 unit + 36 CLI + 12 MCP + 7 superpowers = **170 green (100% PASS)**
+## Self-proof (v0.58.0, just ran)
+- `npm test` → 118 unit + 36 CLI + 12 MCP + 7 superpowers = **173 green (100% PASS)**
+- Skill coverage: new audit engine proves every installed skill reachable (was 76 orphans before the fix)
 - `deep-era start` on a real 7-file Express app → **10 findings, all verified correct**, in one command
 - Encryption: AES-256-GCM, 7/7 proof tests (wrong key refuses, tampering detected, no plaintext leak)
 - Encryption perf: 1.24 ms/record after the salt fix, down from 155 ms (125x faster, 70 s → 0.55 s)
@@ -230,7 +233,7 @@ silent — a clean bill of health from any tool, including this one, deserves su
 - `npm publish --dry-run` → clean
 ## Looking for an alternative?
 
-- **SuperClaude / BMAD alternative** — same plan→verify loop, plus a 168-test suite, decision lock, and a 1-command audit. Zero framework to learn.
+- **SuperClaude / BMAD alternative** — same plan→verify loop, plus a 173-test suite, decision lock, and a 1-command audit. Zero framework to learn.
 - **CodeRabbit / Snyk alternative (offline)** — dep blocklist, OSV.dev CVEs, entropy secrets, SARIF output. No cloud, no per-seat bill.
 - **Semgrep / CodeQL alternative (offline)** — reads the code, not just the syntax: swallowed exceptions, floating promises, dead branches, and tests that cannot fail. Zero deps, milliseconds, no query language to learn.
 - **"Un-spaghettify" cost reducer** — finds the passthrough layers, dead code, and pointless indirection that make AI-written code expensive to own. Catches the complaint that syntax checkers structurally cannot.
