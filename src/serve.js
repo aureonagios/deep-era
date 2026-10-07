@@ -69,11 +69,18 @@ async function runServe(cwd, observeMs = 12000) {
   let log = "";
   child.stdout.on("data", (c) => { log += c.toString().slice(0, 30000); log = log.slice(-30000); });
   child.stderr.on("data", (c) => { log += c.toString().slice(0, 30000); log = log.slice(-30000); });
-  const exited = await new Promise((resolve) => {
-    const t = setTimeout(() => resolve(false), observeMs);
-    child.on("exit", (code) => { clearTimeout(t); resolve(code); });
-    child.on("error", () => { clearTimeout(t); resolve("spawn-error"); });
+  // Wait for `close`, not `exit`. Node fires `exit` as soon as the process is
+  // gone, which can be BEFORE its stdio has been drained -- measured at 4/240
+  // fast-crashing spawns here, where the crash text was still in the pipe when
+  // we read it. `close` fires only once all stdio streams have closed, so the
+  // log we scan below is complete. A startup crash IS the whole point of
+  // `deep-era serve`, so losing it to a race makes the command useless.
+  const settled = await new Promise((resolve) => {
+    const t = setTimeout(() => resolve(null), observeMs);
+    child.on("close", (code) => { clearTimeout(t); resolve({ code }); });
+    child.on("error", () => { clearTimeout(t); resolve({ code: "spawn-error" }); });
   });
+  const exited = settled ? settled.code : false;
   const urls = findUrls(log);
   const probes = [];
   for (const u of urls) {

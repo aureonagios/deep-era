@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-10-06T18:39:21.549Z",
+  "generatedAt": "2026-10-07T14:20:34.632Z",
   "stack": {
     "kind": "node",
     "run": null,
@@ -148,7 +148,7 @@
     {
       "file": "CHANGELOG.md",
       "role": "doc",
-      "size": 19869,
+      "size": 22035,
       "imports": [],
       "importedBy": []
     },
@@ -245,7 +245,7 @@
     {
       "file": "README.md",
       "role": "doc",
-      "size": 14062,
+      "size": 14631,
       "imports": [],
       "importedBy": []
     },
@@ -705,7 +705,7 @@
     {
       "file": "src/serve.js",
       "role": "code-js",
-      "size": 4432,
+      "size": 4960,
       "imports": [],
       "importedBy": []
     },
@@ -843,7 +843,7 @@
     {
       "file": "TEST-REPORT.md",
       "role": "doc",
-      "size": 6019,
+      "size": 6092,
       "imports": [],
       "importedBy": []
     },
@@ -1003,7 +1003,7 @@
     {
       "file": "tests/lib/report.js",
       "role": "code-js",
-      "size": 3188,
+      "size": 4608,
       "imports": [],
       "importedBy": [
         "tests/cli.js",
@@ -1047,7 +1047,7 @@
     {
       "file": "tests/run.js",
       "role": "code-js",
-      "size": 86115,
+      "size": 91397,
       "imports": [
         "src/map.js",
         "src/security.js",

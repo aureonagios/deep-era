@@ -358,6 +358,53 @@ ok("no-hardcoded-skill-counts", () => {
   assert(!/>410</.test(dash) && !/\(410\)/.test(dash) && !/410 loaded/.test(dash), "dashboard hardcodes the 410 vault size");
 });
 
+// shields.io named badge styles. A badge URL's last "-" segment is its style;
+// anything else here means the label swallowed the style and the badge 404s.
+const VALID_BADGE_STYLES = new Set([
+  "blue", "brightgreen", "green", "yellowgreen", "yellow", "orange", "red",
+  "lightgrey", "blueviolet", "grey", "success", "informational", "important",
+  "inactive", "critical", "purple", "ff69b4",
+]);
+
+ok("readme-badges-are-well-formed", () => {
+  // shields.io answers HTTP 200 for a malformed custom badge and puts
+  // "404: badge not found" in the SVG body — so a link checker that reads only
+  // the status code calls a broken badge healthy. Catch the malformation
+  // structurally instead, so it fails without needing the network.
+  //
+  // Rule, verified against live shields.io (4 probes, HTTP 200 + body check):
+  //   Skills-410%2B%20indexed-blue   -> OK
+  //   Skills-410%2B%20indexed-blue   -> OK   (label "410+ indexed", style blue)
+  //   Skills-410%2B-indexed-blue     -> 404  <-- the bug that shipped
+  //   Skills-410%20%2B%20indexed     -> OK
+  //
+  // `-` and `_` are shields' label/style separators. So an escaped `%2B` (+) is
+  // legal, but only when what follows it is a space or more label text. When a
+  // separator comes right after it, shields splits there and treats the rest as
+  // the style name, which does not exist -> 404.
+  const readme = fs.readFileSync(path.join(__dirname, "..", "README.md"), "utf8");
+  const badges = [...readme.matchAll(/https:\/\/img\.shields\.io\/badge\/[^)\s]+/g)].map((m) => m[0]);
+  assert(badges.length >= 3, `expected the README to carry badges, found ${badges.length}`);
+  for (const url of badges) {
+    // Every badge must end in a real style name. This is what proves the label
+    // and style are actually separable -- the failure this test exists for.
+    const label = url.slice(url.indexOf("/badge/") + 7).replace(/\.svg$/, "");
+    const style = label.split("-").pop().toLowerCase();
+    assert(VALID_BADGE_STYLES.has(style),
+      `badge does not end in a known shields style name (got "${style}"): ${url}`);
+  }
+  // The specific bug: `410%2B-indexed` splits at the separator, so shields reads
+  // "indexed" as the style and 404s. `%2B` is fine when it is the last thing in
+  // the label (`25%2B` -> blueviolet) or followed by a space (`410%2B%20indexed`).
+  // It is only fatal when a separator follows it AND what follows is not a style.
+  for (const url of badges) {
+    const m = /%2B([^%]*?)-([^/]+?)(?:\.svg)?$/i.exec(url);
+    if (!m) continue;
+    assert(VALID_BADGE_STYLES.has(m[2].toLowerCase()),
+      `badge escapes %2B then breaks into non-style text "${m[2]}", so shields.io 404s: ${url}`);
+  }
+});
+
 ok("cli-prompt-prints-clean-copy", () => {
   const { execFileSync } = require("child_process");
   const root = path.resolve(__dirname, "..");
@@ -1289,6 +1336,50 @@ ok("serve-run-observe-probe", async () => {  const { runServe } = require("../sr
   assert(r.errors.length === 0, `false errors: ${r.errors}`);
 });
 
+ok("serve-waits-for-close-not-exit", async () => {
+  // The race that `exit` opened: it fires when the process dies, which can be
+  // before its stdio is drained. Measured 4/240 fast-crashing spawns lost the
+  // crash text that way -- and for `serve`, a startup crash IS the product.
+  //
+  // Simulated here rather than timed: the fake child emits `exit` FIRST, then
+  // delivers stderr, then `close`. That is a legal ordering and it is the one
+  // that loses data. If runServe settles on `exit`, it reads an empty log and
+  // this fails. No flakiness, no sleeping, no real process.
+  const { EventEmitter } = require("events");
+  const childProc = require("child_process");
+  const realSpawn = childProc.spawn;
+  const fake = new EventEmitter();
+  fake.stdout = new EventEmitter();
+  fake.stderr = new EventEmitter();
+  fake.exitCode = null;
+  fake.kill = () => { fake.exitCode = 0; return true; };
+  childProc.spawn = () => {
+    // Deliver the ordering on the next ticks: exit, then the crash text, then close.
+    setImmediate(() => {
+      fake.emit("exit", 1);
+      setImmediate(() => {
+        fake.stderr.emit("data", "Error: Cannot find module './nope'\n");
+        setImmediate(() => fake.emit("close", 1));
+      });
+    });
+    return fake;
+  };
+  try {
+    // serve.js destructures `spawn` at module load, and an earlier test already
+    // required it -- so the mock only takes effect against a freshly loaded copy.
+    delete require.cache[require.resolve("../src/serve")];
+    const { runServe } = require("../src/serve");
+    const r = await runServe(path.join(__dirname, "fixtures", "serve-fail"), 5000);
+    assert(r.ran, "serve refused to run!");
+    assert(r.exited === 1, `exit code not surfaced: ${r.exited}`);
+    assert(r.errors.some((e) => /Cannot find module/.test(e)),
+      `crash text lost because serve settled on 'exit' before stdio drained: log=${JSON.stringify(r.logTail)}`);
+  } finally {
+    childProc.spawn = realSpawn;
+    delete require.cache[require.resolve("../src/serve")];
+  }
+});
+
 ok("deep-eraignore-tames-monorepo", () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-"));
   fs.mkdirSync(path.join(tmp, "generated"), { recursive: true });
@@ -1500,7 +1591,13 @@ ok("selfupdate-names-every-failure", async () => {
     assert((await get("/hang", 400)).error === "timeout", "hung server not named timeout");
     const shut = await closedPort();
     assert((await withUpdateUrl(`http://127.0.0.1:${shut}/x`, () => fetchLatestVersion(4000))).error === "refused", "refused connection not named refused");
-    assert((await withUpdateUrl("http://deep-era-invalid-host-xyz.test/pkg", () => fetchLatestVersion(3000))).error === "dns", "bad hostname not named dns");
+    // A bogus host has no real DNS to speak of. But whatever a machine's resolver
+    // does with it (NXDOMAIN, hijacked by a captive portal, plain no answer), the
+    // result must stay in the connectivity family -- never an HTTP status, a
+    // rate-limit claim, or "up to date". Both dns and timeout qualify; the point
+    // is that neither gets dressed up as something it is not.
+    const bogus = (await withUpdateUrl("http://deep-era-invalid-host-xyz.test/pkg", () => fetchLatestVersion(4000))).error;
+    assert(["dns", "timeout", "offline"].includes(bogus), `unreachable host mislabeled as "${bogus}"`);
   } finally {
     if (srv) srv.close();
   }
@@ -1529,7 +1626,7 @@ ok("selfupdate-runUpdate-messages-name-the-reason", async () => {
       assert(/HTTP 404/.test(msg), `404 not named honestly: ${msg}`);
       assert(!/offline/i.test(msg), `404 mislabeled as offline: ${msg}`);
       lines.length = 0;
-      await withUpdateUrl("http://deep-era-invalid-host-xyz.test/pkg", () => runUpdate({ homeDir: home, timeoutMs: 3000 }));
+      await withUpdateUrl("http://deep-era-invalid-host-xyz.test/pkg", () => runUpdate({ homeDir: home, timeoutMs: 4000 }));
       // Whatever the sandbox does with a bogus host (DNS fail, refused egress,
       // timeout), the message must stay in the connectivity family — never blame
       // HTTP status, rate limits, or claim to be up to date.

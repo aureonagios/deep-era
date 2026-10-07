@@ -21,7 +21,13 @@ function readReport(rootDir) {
 function makeReporter(suite, rootDir) {
   const root = rootDir || process.cwd();
   const state = { pass: 0, fail: 0, tests: [] };
-  const pending = [];
+  // Async tests run ONE AT A TIME, in registration order. They used to be fired
+  // immediately and awaited together in finish(), which meant they overlapped:
+  // a test that swapped `child_process.spawn` (to simulate a fast-crashing app)
+  // captured the real spawns belonging to other tests running at the same time.
+  // Timing-sensitive tests -- serve, selfupdate, anything binding a port or a
+  // stubbed global -- cannot be trusted when the runner interleaves them.
+  let chain = Promise.resolve();
   function record(name, ok, detail) {
     state.tests.push({ name, ok: !!ok, at: new Date().toISOString(), detail: (detail || "").slice(0, 300) });
     if (ok) { state.pass++; console.log(`PASS ${name}`); }
@@ -29,20 +35,43 @@ function makeReporter(suite, rootDir) {
   }
   function ok(name, fn) {
     const t0 = Date.now();
-    try {
-      const r = fn();
+    outstanding.push(name);
+    const done = (pass, detail) => {
+      settledNames.add(name);
+      current = null;
+      record(name, pass, `${Date.now() - t0}ms${detail ? " " + detail : ""}`);
+    };
+    chain = chain.then(() => {
+      current = name;
+      let r;
+      try { r = fn(); } catch (e) { done(false, e && e.message ? e.message : e); return; }
       if (r && typeof r.then === "function") {
-        pending.push(r.then(
-          () => record(name, true, `${Date.now() - t0}ms`),
-          (e) => record(name, false, `${Date.now() - t0}ms ${e && e.message ? e.message : e}`)
-        ));
-      } else record(name, true, `${Date.now() - t0}ms`);
-    } catch (e) {
-      record(name, false, `${Date.now() - t0}ms ${e && e.message ? e.message : e}`);
-    }
+        return r.then(() => done(true), (e) => done(false, e && e.message ? e.message : e));
+      }
+      done(true);
+    });
   }
-  async function finish() {
-    await Promise.all(pending);
+  let finishing = null;
+  // "test-report-written" calls finish() from inside a test, and that test is
+  // already part of the chain -- waiting on the full chain there waits on the
+  // caller (deadlock: the process exited 0 and silently printed no summary).
+  // So track each test's settled state by name and let finish() ignore the test
+  // that is calling it. No polling, no snapshots, no cycle.
+  const outstanding = [];
+  const settledNames = new Set();
+  let current = null;
+  function finish() {
+    const self = current;
+    const done = () => outstanding.filter((n) => n !== self && !settledNames.has(n)).length === 0;
+    if (!finishing) {
+      finishing = new Promise((resolve) => {
+        const tick = () => { if (done()) resolve(); else setImmediate(tick); };
+        tick();
+      }).then(write);
+    }
+    return finishing;
+  }
+  async function write() {
     const full = readReport(root);
     full.at = new Date().toISOString();
     try { full.deepEra = require(path.join(root, "package.json")).version; } catch { full.deepEra = "?"; }
@@ -63,7 +92,7 @@ function makeReporter(suite, rootDir) {
     console.log(`\n${state.pass} ${suite} tests passed${state.fail ? `, ${state.fail} FAILED` : ""} (report: .deep-era/test-report.json)`);
     return full;
   }
-  return { ok, finish, pending };
+  return { ok, finish, get pending() { return chain; } };
 }
 
 module.exports = makeReporter;

@@ -3,6 +3,42 @@
 > The README shows only the latest version. Everything else lives here, newest first.
 > Older than this file: `git log --oneline`.
 
+## v0.58.3: a broken README badge, a crash-detection race, and a test runner that lied
+
+**The Skills badge 404'd in front of a user, and two link checkers had called it healthy.**
+
+`Skills-410%2B-indexed-blue` is malformed: shields.io splits a custom badge on `-`,
+so `410%2B` ended the label and `indexed` was left as the style name — which does
+not exist. The trap is that shields answers **HTTP 200** for a malformed badge and
+draws "404: badge not found" inside the SVG, so status-code checks pass. Fixed to
+`Skills-410%2B%20indexed-blue`, verified against live shields, and pinned by a
+structural test that needs no network. (`%2B` is only fatal when a separator
+follows it; `IDEs-25%2B-blueviolet` is fine, and the test knows the difference.)
+
+Found while chasing it: **`serve` settled on the child's `exit` event**, which fires
+before stdio has drained. Measured at 4/240 fast-crashing spawns, the crash text was
+still in the pipe when the log was scanned. For a command whose entire purpose is
+catching startup crashes, that is a silent failure. Now waits for `close`.
+
+Found while pinning that: **the test runner started every async test immediately**
+and awaited them together in `finish()`, so they overlapped. A test that stubs a
+global (`child_process.spawn`) captured other tests' real work — which is exactly
+how the race above survived three consecutive green runs. Async tests are now
+strictly serial; the runner also no longer deadlocks when a test calls `finish()`
+itself.
+
+178 tests green, 3 consecutive clean full runs.
+
+## v0.58.2: update failures name their real reason
+
+`deep-era update` reported DNS failure, timeout, HTTP 404, rate-limit and a garbage
+body as one vague `registry unreadable (offline?)` — and "registry" was never even
+true (the source is GitHub, not the npm registry). That vagueness once sent a user
+theorizing about private repos and auth tokens for what was a sandboxed no-network
+box. Each mode now has its own sentence, including an explicit rate-limit note
+("public repo — no token needed, no token involved"). Pinned by tests that drive
+each failure against a local server via a `DEEP_ERA_UPDATE_URL` hook.
+
 ## v0.58.1: no hardcoded skill counts anywhere an agent looks
 
 `match_skills` told agents "410 skills ship with deep-era", the dashboard flashed
