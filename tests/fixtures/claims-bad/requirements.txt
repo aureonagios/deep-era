@@ -1,0 +1,6 @@
+// "Installed, therefore done." torch and transformers are declared as dependencies
+// and imported by no source file in this project. The exact shape of reporting a
+// working AI engine on the strength of a pip install.
+torch==2.3.0
+transformers==4.40.0
+zmq==0.17.0

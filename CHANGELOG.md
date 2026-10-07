@@ -3,6 +3,61 @@
 > The README shows only the latest version. Everything else lives here, newest first.
 > Older than this file: `git log --oneline`.
 
+## v0.58.5: five rules for code that reports work it never did
+
+Written against a real observed case: a demo that slept instead of measuring, printed
+"added to vault" instead of writing anything, carried a hardcoded quote in a trading
+path, declared `torch` and never imported it, and sat an unfinished-work marker above
+a function claiming to be complete. Every one of those is the same defect wearing a
+different hat — a claim with no operation behind it.
+
+| Rule | Catches | Severity | CWE |
+|---|---|---|---|
+| `synthetic-latency` | a sleep standing in for a measurement | high | CWE-1059 |
+| `stub-claims-success` | a print claiming a write that never happened | critical | CWE-840 |
+| `hardcoded-market-data` | a quote-shaped constant inlined in a trading path | critical | CWE-798 |
+| `installed-but-unused` | `pip install torch` treated as a working model | medium | CWE-1059 |
+| `marker-pretending-done` | an unfinished-work marker above a completion claim | high | CWE-1059 |
+
+Each rule has a seeded fabrication it must catch **and** a corrected twin it must stay
+silent on: a retry backoff, a cooperative yield, a CLI status line, a real write
+followed by its message, a price read from a feed, a configured default. Writing these
+produced **fourteen measured false accusations**, each fixed and each now pinned:
+
+- A 2-line effect window missed `await safeFix(...)`; a 5-line one silenced four real
+  CLI reports. Fixed structurally: evidence is the whole enclosing function, not a
+  window of any width.
+- Whitelisting "real" callee names failed immediately — `safeFix` is a local domain
+  function no static list could know. The rule asks "did it call anything", which
+  generalises across languages and domains.
+- A comment reading "nothing is stored here" was read as an effect, hiding a real
+  fabrication. Comments are stripped before evidence is read.
+- `def add_to_vault(record):` — the function's own signature matched the call pattern
+  and satisfied the rule, reporting the stub clean.
+- `printf("Order sent successfully")` — the claimed verb was counted as its own
+  evidence, so every success print would have silenced the rule.
+- `returns?` in the completion-word list matched every `return` statement in the
+  language, making any function containing a marker look finished.
+
+Also fixed: `undefinedMethodScan` accused `SELF.has()` because a module exporting a
+`Set` was treated as a callable namespace. And the scanner self-exemption list moved
+to one shared module, since two drifting copies had already let two scanners trip
+their own rules on the day they were written.
+
+**33 rules total**, each proven to fire on a seeded defect and silent on the corrected
+version of it, in 208 tests.
+
+### What was not proven
+
+Four of fourteen mutations were not caught by the suite and are reported as such
+rather than claimed: removing `stripComments` at the call site, the comment-skip in
+the body walker, the comment filter in the marker rule, and the claim-verb strip each
+left every existing test green. Those four are defensive depth whose primary guard
+lives elsewhere (the body walker, and `REAL_EFFECT` respectively), so no test
+currently isolates them. A future change to any of them would not be caught.
+
+## v0.58.4: every rule proven, and proving them found three real bugs
+
 ## v0.58.4: every rule proven, and proving them found three real bugs
 
 **"Add 1000 rules" was refused.** A fabricated rule still advertises "I check for

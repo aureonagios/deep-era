@@ -47,6 +47,15 @@ const CWE = {
   "slop-chain": { cwe: "CWE-561", owasp: "A04:2021" },
   "slop-indirection": { cwe: "CWE-561", owasp: "A04:2021" },
   "slop-dead-code": { cwe: "CWE-561", owasp: "A04:2021" },
+  // Claim-vs-reality rules (src/claims.js). These are not memory-safety or
+  // injection weaknesses -- they are integrity ones: the program asserts an effect
+  // it did not perform. CWE-840 maps "business logic errors" and CWE-1059 an
+  // incomplete/incorrect implementation, which is exactly the shape here.
+  "synthetic-latency": { cwe: "CWE-1059", owasp: "A08:2021" },
+  "stub-claims-success": { cwe: "CWE-840", owasp: "A08:2021" },
+  "hardcoded-market-data": { cwe: "CWE-798", owasp: "A07:2021" },
+  "installed-but-unused": { cwe: "CWE-1059", owasp: "A06:2021" },
+  "marker-pretending-done": { cwe: "CWE-1059", owasp: "A08:2021" },
 };
 
 function tag(rule) {

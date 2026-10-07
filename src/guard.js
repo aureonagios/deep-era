@@ -83,6 +83,12 @@ function duplicationScan(cwd, files) {
 // classes, exports.x, module.exports = {a, b}. Unknown re-exports bail out.
 function jsExports(txt) {
   const out = new Set();
+  // A module that hands back a bare value (`module.exports = new Set([...])`,
+  // `module.exports = { ... }` assigned to a name) exposes no callable namespace, so
+  // `mod.foo()` cannot be a missing export -- the call belongs to whatever that value
+  // is. Only a named-export module is a namespace worth checking.
+  const namespace = /module\.exports\s*=\s*\{/.test(txt)
+    || /(?:exports|module\.exports)\.[A-Za-z_$][\w$]*\s*=/.test(txt);
   for (const m of txt.matchAll(/^\s*(?:async\s+)?function\s+([A-Za-z_$][\w$]*)\s*\(/gm)) out.add(m[1]);
   for (const m of txt.matchAll(/^\s*(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=/gm)) out.add(m[1]);
   for (const m of txt.matchAll(/^\s*class\s+([A-Za-z_$][\w$]*)/gm)) out.add(m[1]);
@@ -90,6 +96,7 @@ function jsExports(txt) {
   for (const m of txt.matchAll(/module\.exports\s*=\s*\{([^}]{0,2000})\}/g)) {
     for (const k of m[1].matchAll(/([A-Za-z_$][\w$]*)\s*[:,}]/g)) out.add(k[1]);
   }
+  out.namespace = namespace;
   return out;
 }
 
@@ -124,6 +131,11 @@ function undefinedMethodScan(cwd, files, byName) {
     const checkCall = (modFile, method, idx) => {
       const exp = getExp(modFile);
       if (exp === null) return; // opaque — cannot judge
+      // A module that exports a value rather than a namespace has no methods to call.
+      // `module.exports = new Set([...])` is a plain data export; `SELF.has()` is the
+      // Set's own method, not a missing export. Measured false accusation: exactly
+      // that import shape in src/security.js, reported as a hallucinated API.
+      if (!exp.namespace) return;
       if (!exp.has(method) && n < 5) {
         n++;
         const line = txt.slice(0, idx).split("\n").length;
@@ -135,7 +147,7 @@ function undefinedMethodScan(cwd, files, byName) {
       const joined = require("path").posix.normalize(require("path").posix.join(base, m[2])).replace(/^\.\//, "");
       const hit = resolveDep(byName, joined);
       if (!hit || !/\.(js|mjs|cjs)$/.test(hit)) continue; // JSON/data requires have no JS exports
-      const re = new RegExp(`\\b${m[1]}\\.([A-Za-z_$][\\w$]*)\\s*\\(`, "g");
+const re = new RegExp(`\\b${m[1]}\\.([A-Za-z_$][\\w$]*)\\s*\\(`, "g");
       let c;
       while ((c = re.exec(txt))) checkCall(hit, c[1], c.index);
     }
@@ -161,6 +173,10 @@ function guardScan(cwd, files) {
   const out = [];
   const push = (sev, rule, file, msg) => out.push({ sev, rule, file, msg });
   out.push(...duplicationScan(cwd, files));
+  // Claim-vs-reality: code that reports an effect it never produced. Kept in its
+  // own module because it needs different evidence (call-shape analysis, declared
+  // deps, multi-line context) than the file-local checks below.
+  try { out.push(...require("./claims").claimScan(cwd, files)); } catch {}
 
   const codeFiles = files.filter((f) => /\.(js|ts|tsx|jsx|py|go|rs|java|php|rb|cs|dart|swift|kt)$/.test(f.file)).slice(0, 300);
 

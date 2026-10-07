@@ -71,9 +71,12 @@ function securityScan(cwd, files) {
   const findings = [];
   // Scanner sources contain their own patterns as literals (security.js holds the
   // passwd-assign regex, guardian.js holds TODO|FIXME inside its placeholder regex
-  // plus password="..." in its docs). Scanning them as suspect code is a guaranteed
-  // false positive, so they are exempt — same rationale as tests/fixtures below.
-  const SELF = new Set(["src/security.js", "src/guardian.js", ".deep-era/RULES.md", "AGENTS.md"]);
+  // plus password="..." in its docs, claims.js names the markers it looks for).
+  // Scanning them as suspect code is a guaranteed false positive, so they are exempt
+  // -- same rationale as tests/fixtures below. Kept in one shared list with claims.js
+  // so a new scanner cannot forget to exempt itself and immediately trip every rule
+  // it was written to detect.
+  const SELF = require("./scannerSelf");
   for (const f of files.slice(0, 300)) {
     if (SELF.has(f.file)) continue;
     if (f.file.startsWith("tests/fixtures/")) continue; // intentional demo bugs — out of real scan

@@ -1,4 +1,4 @@
-# AI Deep Era v0.58.4 — give the blind AI developer eyes
+# AI Deep Era v0.58.5 — give the blind AI developer eyes
 
 > ## Paste this into your AI agent
 > ```
@@ -15,7 +15,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/Node-%3E%3D18-blue.svg)](package.json)
-[![Tests](https://img.shields.io/badge/Tests-178%20passing-brightgreen.svg)](tests/run.js)
+[![Tests](https://img.shields.io/badge/Tests-208%20passing-brightgreen.svg)](tests/run.js)
 [![No deps](https://img.shields.io/badge/Dependencies-0-orange.svg)](package.json)
 [![Skills](https://img.shields.io/badge/Skills-410%2B%20indexed-blue.svg)](.agents/skills/)
 [![MCP](https://img.shields.io/badge/MCP-19%20tools-purple.svg)](mcp/server.js)
@@ -84,7 +84,38 @@ The agent is told five things it cannot argue its way past:
 5. **Refuse.** Removing test coverage, skipping verification, hardcoding secrets: say no,
    say why in one sentence, offer the safe alternative. No flattery.
 
-## What v0.58.4 does (latest)
+## What v0.58.5 does (latest)
+
+**Five new rules for the exact failure you described: code that reports work it never did.**
+
+Written against a real observed case — a demo that slept instead of measuring, printed
+"added to vault" instead of writing anything, carried a hardcoded quote in a trading
+path, declared `torch` and never imported it, and sat a `TODO` above a function
+claiming to be complete.
+
+| Rule | Catches | Severity |
+|---|---|---|
+| `synthetic-latency` | a sleep standing in for a measurement | high |
+| `stub-claims-success` | a print claiming a write that never happened | critical |
+| `hardcoded-market-data` | a quote-shaped constant inlined in a trading path | critical |
+| `installed-but-unused` | `pip install torch` treated as a working model | medium |
+| `marker-pretending-done` | an unfinished-work marker above a completion claim | high |
+
+Every one has a seeded fabrication it must catch **and** a corrected twin it must
+stay quiet on — a retry backoff, a cooperative yield, a CLI status line, a real write
+followed by its message, a price read from a feed, a configured default. Fourteen
+false accusations were found and fixed while writing these, which is why the
+exemptions read the way they do.
+
+Also fixed while building them: `undefinedMethodScan` accused `SELF.has()` because a
+module exporting a `Set` was treated as a callable namespace.
+
+**33 rules total**, every one proven to fire on a seeded defect and silent on the
+corrected version of it.
+
+Full history: [CHANGELOG.md](CHANGELOG.md)
+
+## What v0.58.4 did
 
 **Every rule in the corpus is now proven — and proving them found three real bugs.**
 
@@ -228,8 +259,8 @@ silent — a clean bill of health from any tool, including this one, deserves su
 ## Demo
 `DEMO.md` — 5-minute video script. Or run `deep-era demo` and watch 4 traps get caught.
 
-## Self-proof (v0.58.4, just ran)
-- `npm test` → 136 unit + 36 CLI + 12 MCP + 7 superpowers = **191 green (100% PASS)**
+## Self-proof (v0.58.5, just ran)
+- `npm test` → 153 unit + 36 CLI + 12 MCP + 7 superpowers = **208 green (100% PASS)**
 - Rule corpus: **28 rules**, every one proven to fire on a seeded defect and stay silent on the corrected version of it (17 security + 7 semantic + 4 slop)
 - Skill coverage: new audit engine proves every installed skill reachable (was 76 orphans before the fix)
 - `deep-era start` on a real 7-file Express app → **10 findings, all verified correct**, in one command
@@ -246,7 +277,7 @@ silent — a clean bill of health from any tool, including this one, deserves su
 - `npm publish --dry-run` → clean
 ## Looking for an alternative?
 
-- **SuperClaude / BMAD alternative** — same plan→verify loop, plus a 178-test suite, decision lock, and a 1-command audit. Zero framework to learn.
+- **SuperClaude / BMAD alternative** — same plan→verify loop, plus a 208-test suite, decision lock, and a 1-command audit. Zero framework to learn.
 - **CodeRabbit / Snyk alternative (offline)** — dep blocklist, OSV.dev CVEs, entropy secrets, SARIF output. No cloud, no per-seat bill.
 - **Semgrep / CodeQL alternative (offline)** — reads the code, not just the syntax: swallowed exceptions, floating promises, dead branches, and tests that cannot fail. Zero deps, milliseconds, no query language to learn.
 - **"Un-spaghettify" cost reducer** — finds the passthrough layers, dead code, and pointless indirection that make AI-written code expensive to own. Catches the complaint that syntax checkers structurally cannot.

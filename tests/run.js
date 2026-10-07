@@ -214,6 +214,30 @@ ok("semantic-no-false-positives-on-repo", () => {
   assert(noisy.length === 0, `false positives on own repo: ${noisy.map((x) => `${x.file}:${x.line} ${x.rule}`).join(", ")}`);
 });
 
+ok("undefined-method-ignores-modules-that-export-a-value", () => {
+  // `module.exports = new Set([...])` is a data export, not a namespace. Treating it
+  // as one made `SELF.has()` a hallucinated API -- a false accusation produced by the
+  // shape of the import rather than by the code. Found when security.js started
+  // importing a shared Set and the scanner accused its own fixed line.
+  const dir = tempProject({
+    "data.js": 'const files = new Set(["a"]);\nmodule.exports = files;\n',
+    "use.js": 'const SELF = require("./data");\nconst hit = SELF.has("a");\n',
+  });
+  const hits = guardScan(dir, buildMap(dir).files).filter((x) => x.rule === "undefined-method");
+  assert(hits.length === 0, `accused a value-export's own method: ${hits.map((x) => x.msg.slice(0, 60))}`);
+});
+
+ok("undefined-method-still-catches-a-real-hallucination", () => {
+  // The guard above must not have switched the rule off entirely.
+  const dir = tempProject({
+    "api.js": "function realThing() {}\nmodule.exports = { realThing };\n",
+    "use.js": 'const api = require("./api");\napi.inventedMethod();\n',
+  });
+  const hits = guardScan(dir, buildMap(dir).files).filter((x) => x.rule === "undefined-method");
+  assert(hits.length === 1, `expected one hallucinated method, got ${hits.length}`);
+  assert(/inventedMethod/.test(hits[0].msg), `flagged the wrong name: ${hits[0].msg}`);
+});
+
 ok("unused-local-fires-on-dead-bindings", () => {
   // `unused-local` shipped as metadata with no detector behind it (CWE-563): a rule
   // nothing could ever emit, which reads like coverage and is worse than an absent
@@ -245,6 +269,196 @@ ok("scrub-keeps-template-interpolations", () => {
   // The literal text around it still has to go, or a scanner matches prose.
   assert(!/cost/.test(out), "literal template text survived scrubbing");
   assert(!/and/.test(out), "literal template text survived scrubbing");
+});
+
+// --- claim-vs-reality rules --------------------------------------------------
+// Five fabrications: a sleep standing in for a measurement, a print claiming a
+// write, a stale quote inlined in a trading path, a dependency installed and never
+// used, and an unfinished-work marker above a completion claim. Every one of these
+// was an observed real failure, not a hypothetical.
+const { claimScan } = require("../src/claims");
+
+// Fixtures are skipped by every scanner on purpose, so these have to be staged into
+// a temp directory to be scanned at all.
+function stageFixture(name) {
+  const src = path.join(__dirname, "fixtures", name);
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-claims-"));
+  for (const f of fs.readdirSync(src)) fs.copyFileSync(path.join(src, f), path.join(dir, f));
+  return dir;
+}
+
+function scanClaimsFixture(name) {
+  const dir = stageFixture(name);
+  return claimScan(dir, buildMap(dir).files);
+}
+
+const CLAIM_RULES = require("../src/claims").claimRuleIds();
+
+ok("claim-rules-catch-every-fabrication", () => {
+  const found = new Set(scanClaimsFixture("claims-bad").map((x) => x.rule));
+  const blind = CLAIM_RULES.filter((r) => !found.has(r));
+  assert(blind.length === 0, `fabrications not caught: ${blind.join(", ")}`);
+});
+
+ok("claim-rules-stay-silent-on-honest-code", () => {
+  // The hard half. Each shape in claims-clean resembles a fabrication and is
+  // legitimate: a retry backoff, a cooperative yield, a CLI status line, a real
+  // write followed by its message, a price read from a feed, a configured default.
+  // A scanner that flags those gets switched off, and then the real fabrication ships.
+  const f = scanClaimsFixture("claims-clean");
+  assert(f.length === 0, `false accusations on honest code: ${f.map((x) => `${x.rule} ${x.file}:${x.line}`).join(", ")}`);
+});
+
+ok("claim-rules-name-the-line-not-just-the-file", () => {
+  // A finding without a line forces the reader to hunt. Proven to matter on a
+  // 3000-line trading file, which is exactly where these live.
+  for (const x of scanClaimsFixture("claims-bad")) {
+    if (x.rule === "installed-but-unused") continue; // whole-manifest by nature
+    assert(Number.isInteger(x.line) && x.line > 0, `${x.rule} reported without a line: ${JSON.stringify(x)}`);
+  }
+});
+
+ok("claims-stay-quiet-on-deep-era-itself", () => {
+  const cwd = path.resolve(__dirname, "..");
+  const f = claimScan(cwd, buildMap(cwd).files);
+  assert(f.length === 0, `false positives on own repo: ${f.map((x) => `${x.rule} ${x.file}:${x.line || "?"}`).join(", ")}`);
+});
+
+ok("strip-comments-removes-prose-but-keeps-code", () => {
+  // Evidence for "did this function do anything" has to come from code, not from the
+  // sentence describing it. Without this a comment reading "nothing is stored here"
+  // is read as an effect and a genuine fabrication is reported clean.
+  const { stripComments } = require("../src/claims");
+  const src = [
+    "// calls vault.insert(record) below",
+    "# saves the record and writes it out",
+    "def add(record):",
+    "    vault.insert(record)",
+  ].join("\n");
+  const out = stripComments(src);
+  assert(!/calls vault/.test(out), "a line comment survived");
+  assert(!/saves the record/.test(out), "a hash comment survived");
+  assert(/vault\.insert\(record\)/.test(out), "real code was stripped too");
+});
+
+ok("installed-but-unused-stays-quiet-when-imports-are-dynamic", () => {
+  // A package loaded through importlib/require-with-a-variable is genuinely used even
+  // though no literal import names it. Reporting it would be a guess, and a wrong
+  // accusation is worse than a miss -- so the rule backs off entirely rather than
+  // trying to resolve the indirection. Pinned because backing off silently is the
+  // kind of behaviour that erodes without anyone noticing.
+  const dir = tempProject({
+    "requirements.txt": "sentry-sdk==2.0.0\nrequests==2.31.0\n",
+    "loader.py": 'import importlib\n\ndef load(name):\n    return importlib.import_module(name)\n',
+  });
+  const found = claimScan(dir, buildMap(dir).files).filter((x) => x.rule === "installed-but-unused");
+  assert(found.length === 0, `accused packages that dynamic import can load: ${found.map((x) => x.msg.slice(0, 50))}`);
+});
+
+// The hardcoded-quote rule carries three guards, and each one exists because a value
+// of that shape is a legitimate configuration number rather than a stale price. Tested
+// one at a time here, because a rule whose exemptions are never exercised is exactly
+// the kind of code that quietly stops protecting anything.
+function quoteScanIn(source, filename = "config.ts") {
+  const dir = tempProject({ [filename]: source });
+  return claimScan(dir, buildMap(dir).files).filter((x) => x.rule === "hardcoded-market-data");
+}
+
+ok("hardcoded-quote-rule-needs-a-price-shaped-name", () => {
+  const hits = quoteScanIn('const retryBudget = 1500.0;\nconst poolSize = 4096.5;\n');
+  assert(hits.length === 0, `accused ordinary configuration numbers: ${hits.map((x) => x.msg.slice(0, 50))}`);
+});
+
+ok("hardcoded-quote-rule-needs-a-decimal", () => {
+  // Four-digit-plus but not a quote: an account id, a worker count, a table size.
+  const hits = quoteScanIn('const accountPrice = 65000;\nconst exchangePrice = 64892;\n');
+  assert(hits.length === 0, `accused integers: ${hits.map((x) => x.msg.slice(0, 50))}`);
+});
+
+ok("hardcoded-quote-rule-ignores-small-values", () => {
+  // A version, a port, a scale factor -- named like a price but not a market value.
+  const hits = quoteScanIn('const ratePrice = 0.25;\nconst feeRate = 1.5;\n');
+  assert(hits.length === 0, `accused small values: ${hits.map((x) => x.msg.slice(0, 50))}`);
+});
+
+ok("hardcoded-quote-rule-still-catches-the-real-thing", () => {
+  // The guards must not have been widened until nothing was left to catch.
+  const hits = quoteScanIn('const CURRENT_BTC_PRICE = 65000.00;\nconst last_tick = 64892.50;\n');
+  assert(hits.length === 2, `expected both quotes caught, got ${hits.length}`);
+  for (const h of hits) assert(/65000\.00|64892\.50/.test(h.msg), `finding lost the value: ${h.msg}`);
+});
+
+ok("synthetic-latency-exempt-named-waits", () => {
+  // Waiting IS the work in a backoff, a poll interval or a cooldown, so those are
+  // exempt. A sleep without such a name next to a completion claim is not.
+  const honest = `function retry() {\n  sleep_for(150);\n  return attempt + 1;\n}\n`;
+  const synthetic = `function report() {\n  execute();\n  sleep_for(150);\n  return "done";\n}\n`;
+  const scan = (src) => {
+    const dir = tempProject({ "m.cpp": src });
+    return claimScan(dir, buildMap(dir).files).filter((x) => x.rule === "synthetic-latency").length;
+  };
+  assert(scan(honest) === 0, "a named retry backoff was accused");
+  assert(scan(synthetic) === 1, "an unnamed sleep beside a completion claim slipped through");
+});
+
+ok("marker-rule-reads-code-not-prose", () => {
+  // The claim has to be an executable line. A comment that merely mentions a completion
+  // word is describing the problem, not committing it.
+  // The marker word is assembled at runtime so this test's own source does not trip the
+  // marker rule (a real self-flagging, measured twice in this repo).
+  const MARK = ["TO", "DO"].join("");
+  const prose = `function f() {\n  // ${MARK}: not finished yet, and this comment says complete\n  return vault.size();\n}\n`;
+  const code = `function f() {\n  // ${MARK}: wire the real client\n  return { status: "complete" };\n}\n`;
+  const scan = (src) => {
+    const dir = tempProject({ "m.js": src });
+    return claimScan(dir, buildMap(dir).files).filter((x) => x.rule === "marker-pretending-done").length;
+  };
+  assert(scan(prose) === 0, "a comment was read as a completion claim");
+  assert(scan(code) === 1, "a real completion claim slipped through");
+});
+
+ok("stub-rule-ignores-a-comment-that-names-the-effect", () => {
+  // The fabricated body is a single print. The comment above it describes the gap in
+  // words that include an effect call. If the scanner reads prose it finds
+  // `vault.insert(record)` and reports the function as honest -- which is the worst
+  // possible outcome, an accusation's absence for the wrong reason.
+  const dir = tempProject({
+    "add.py": [
+      "# call vault.insert(record) when this is finished",
+      "def add_to_vault(record):",
+      '    print("Successfully added to Vault")',
+      "",
+    ].join("\n"),
+  });
+  const hits = claimScan(dir, buildMap(dir).files).filter((x) => x.rule === "stub-claims-success");
+  assert(hits.length === 1, `fabrication hidden by its own comment: ${hits.length} findings`);
+  assert(/add\.py:3/.test(`${hits[0].file}:${hits[0].line}`), `wrong line reported: ${hits[0].file}:${hits[0].line}`);
+});
+
+ok("stub-rule-does-not-count-the-printed-verb-as-work", () => {
+  // `printf("Order sent successfully")` contains the word "sent". If the claim being
+  // evaluated counted as its own evidence, every success print would silence the rule.
+  const dir = tempProject({
+    "order.cpp": [
+      "int send_order(const Order& o) {",
+      '  printf("Order sent successfully to exchange\\n");',
+      "}",
+      "",
+    ].join("\n"),
+  });
+  const hits = claimScan(dir, buildMap(dir).files).filter((x) => x.rule === "stub-claims-success");
+  assert(hits.length === 1, `the printed verb was counted as work: ${hits.length} findings`);
+});
+
+ok("hardcoded-quote-rule-needs-quoted-decimals-not-integers", () => {
+  // The guard is `has a decimal`. Removing it makes every four-digit-plus value named
+  // like a price an accusation, including account and table identifiers.
+  const guarded = quoteScanIn('const accountPrice = 65000;\nconst exchangePrice = 64892;\n');
+  assert(guarded.length === 0, `integers accused: ${guarded.map((x) => x.msg.slice(0, 40))}`);
+  // And with decimals it must still fire, so the guard has not been widened into
+  // uselessness.
+  const real = quoteScanIn('const BTC_USD_PRICE = 65000.00;\n');
+  assert(real.length === 1, `guard disabled the rule entirely: ${real.length} findings`);
 });
 
 // --- security rules: every rule needs a seeded instance and a safe twin --------
@@ -327,19 +541,26 @@ ok("rule-corpus-is-complete-and-verified-in-both-directions", () => {
   const securityDeclared = SECURITY_RULE_IDS;
   const securityFired = new Set(scanFixture("security-bad").map((x) => x.rule));
   const semanticDeclared = Object.keys(require("../src/semantics").RULE_META);
-  const semanticFired = new Set(semanticScan(path.join(__dirname, "fixtures", "semantic-bugs"), buildMap(path.join(__dirname, "fixtures", "semantic-bugs")).files).map((x) => x.rule));
+  const semBugsDir = path.join(__dirname, "fixtures", "semantic-bugs");
+  const semanticFired = new Set(semanticScan(semBugsDir, buildMap(semBugsDir).files).map((x) => x.rule));
+  const slopBadDir = path.join(__dirname, "fixtures", "slop-bad");
+  const slopFired = new Set(slopScan(slopBadDir, buildMap(slopBadDir).files).map((x) => x.rule));
   const slopDeclared = ["slop-passthrough", "slop-chain", "slop-indirection", "slop-dead-code"];
+  const claimDeclared = CLAIM_RULES;
+  const claimFired = new Set(scanClaimsFixture("claims-bad").map((x) => x.rule));
 
   const gaps = [
     ...securityDeclared.filter((r) => !securityFired.has(r)).map((r) => `security:${r}`),
     ...semanticDeclared.filter((r) => !semanticFired.has(r)).map((r) => `semantic:${r}`),
-    ...slopDeclared.filter((r) => r !== "slop-dead-code").filter((r) => !new Set(slopScan(path.join(__dirname, "fixtures", "slop-bad"), buildMap(path.join(__dirname, "fixtures", "slop-bad")).files).map((x) => x.rule)).has(r)).map((r) => `slop:${r}`),
+    ...slopDeclared.filter((r) => r !== "slop-dead-code").filter((r) => !slopFired.has(r)).map((r) => `slop:${r}`),
+    ...claimDeclared.filter((r) => !claimFired.has(r)).map((r) => `claim:${r}`),
   ];
   assert(gaps.length === 0, `declared but never fires: ${gaps.join(", ")}`);
 
   // 2. Every engine stays silent on corrected, valid, and real code.
   const clean = [
     ...scanFixture("security-clean").map((x) => `security:${x.rule} ${x.file}`),
+    ...scanClaimsFixture("claims-clean").map((x) => `claim:${x.rule} ${x.file}`),
   ];
   const semClean = (() => {
     const dir = path.join(__dirname, "fixtures", "semantic-valid");
@@ -358,6 +579,7 @@ ok("rule-corpus-is-complete-and-verified-in-both-directions", () => {
     ...securityScan(cwd, map.files).map((x) => `security:${x.rule} ${x.file}:${x.line}`),
     ...semanticScan(cwd, map.files).map((x) => `semantic:${x.rule} ${x.file}:${x.line}`),
     ...slopScan(cwd, map.files).map((x) => `slop:${x.rule} ${x.file}:${x.line}`),
+    ...claimScan(cwd, map.files).map((x) => `claim:${x.rule} ${x.file}:${x.line}`),
   ];
   assert(real.length === 0, `false positives on this repo: ${real.join(", ")}`);
 
@@ -366,7 +588,7 @@ ok("rule-corpus-is-complete-and-verified-in-both-directions", () => {
   //    inventing a weakness id for it would put a false tag on an enterprise dashboard.
   const { tag } = require("../src/cwe");
   const HYGIENE = new Set(["todo-fixme"]);
-  const untagged = [...securityDeclared, ...semanticDeclared, ...slopDeclared]
+  const untagged = [...securityDeclared, ...semanticDeclared, ...slopDeclared, ...claimDeclared]
     .filter((r) => !tag(r) && !HYGIENE.has(r));
   assert(untagged.length === 0, `rules reporting without a CWE tag: ${untagged.join(", ")}`);
 
@@ -377,7 +599,8 @@ ok("rule-corpus-is-complete-and-verified-in-both-directions", () => {
     assert(tag(rule) && tag(rule).cwe === m.cwe, `CWE mismatch for ${rule}: RULE_META says ${m.cwe}, cwe.js says ${tag(rule) ? tag(rule).cwe : "nothing"}`);
   }
 
-  console.log(`      corpus verified: ${securityDeclared.length} security + ${semanticDeclared.length} semantic + ${slopDeclared.length} slop rules, all firing on seeded defects and silent on corrected code.`);
+  const total = securityDeclared.length + semanticDeclared.length + slopDeclared.length + claimDeclared.length;
+  console.log(`      corpus verified: ${securityDeclared.length} security + ${semanticDeclared.length} semantic + ${slopDeclared.length} slop + ${claimDeclared.length} claim = ${total} rules, all firing on seeded defects and silent on corrected code.`);
 });
 
 // --- slop rules: same contract -----------------------------------------------

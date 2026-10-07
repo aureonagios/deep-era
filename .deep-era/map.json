@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-10-07T15:51:10.609Z",
+  "generatedAt": "2026-10-07T18:13:29.879Z",
   "stack": {
     "kind": "node",
     "run": null,
@@ -8,7 +8,7 @@
     "test": "npm test"
   },
   "counts": {
-    "total": 114,
+    "total": 122,
     "truncated": false
   },
   "files": [
@@ -148,7 +148,7 @@
     {
       "file": "CHANGELOG.md",
       "role": "doc",
-      "size": 22035,
+      "size": 24168,
       "imports": [],
       "importedBy": []
     },
@@ -244,7 +244,7 @@
     {
       "file": "README.md",
       "role": "doc",
-      "size": 14631,
+      "size": 15527,
       "imports": [],
       "importedBy": []
     },
@@ -268,6 +268,17 @@
       "size": 1874,
       "imports": [],
       "importedBy": []
+    },
+    {
+      "file": "src/claims.js",
+      "role": "code-js",
+      "size": 21828,
+      "imports": [
+        "src/scannerSelf.js"
+      ],
+      "importedBy": [
+        "src/guard.js"
+      ]
     },
     {
       "file": "src/context.js",
@@ -295,12 +306,11 @@
     {
       "file": "src/cwe.js",
       "role": "code-js",
-      "size": 3143,
+      "size": 3792,
       "imports": [],
       "importedBy": [
         "src/doctor.js",
-        "src/sarif.js",
-        "tests/run.js"
+        "src/sarif.js"
       ]
     },
     {
@@ -422,9 +432,10 @@
     {
       "file": "src/guard.js",
       "role": "code-js",
-      "size": 15837,
+      "size": 16998,
       "imports": [
         "src/map.js",
+        "src/claims.js",
         "src/init.js"
       ],
       "importedBy": [
@@ -660,10 +671,21 @@
       "importedBy": []
     },
     {
+      "file": "src/scannerSelf.js",
+      "role": "code-js",
+      "size": 832,
+      "imports": [],
+      "importedBy": [
+        "src/claims.js",
+        "src/security.js"
+      ]
+    },
+    {
       "file": "src/security.js",
       "role": "code-js",
-      "size": 7976,
+      "size": 8122,
       "imports": [
+        "src/scannerSelf.js",
         "src/pyast.js"
       ],
       "importedBy": [
@@ -843,7 +865,7 @@
     {
       "file": "TEST-REPORT.md",
       "role": "doc",
-      "size": 6702,
+      "size": 7569,
       "imports": [],
       "importedBy": []
     },
@@ -892,6 +914,48 @@
       "file": "tests/fixtures/broken-ts/unclosed.ts",
       "role": "code-js",
       "size": 86,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": "tests/fixtures/claims-bad/cognitive_trader.py",
+      "role": "code-py",
+      "size": 1077,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": "tests/fixtures/claims-bad/execution_router.cpp",
+      "role": "other",
+      "size": 840,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": "tests/fixtures/claims-bad/requirements.txt",
+      "role": "other",
+      "size": 266,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": "tests/fixtures/claims-clean/honest.cpp",
+      "role": "other",
+      "size": 1812,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": "tests/fixtures/claims-clean/honest.py",
+      "role": "code-py",
+      "size": 1166,
+      "imports": [],
+      "importedBy": []
+    },
+    {
+      "file": "tests/fixtures/claims-clean/honest.ts",
+      "role": "code-js",
+      "size": 920,
       "imports": [],
       "importedBy": []
     },
@@ -1089,7 +1153,7 @@
     {
       "file": "tests/run.js",
       "role": "code-js",
-      "size": 104393,
+      "size": 116575,
       "imports": [
         "src/map.js",
         "src/security.js",
@@ -1109,8 +1173,7 @@
         "src/stacks.js",
         "tests/lib/report.js",
         "src/guardian.js",
-        "src/deps.js",
-        "src/cwe.js"
+        "src/deps.js"
       ],
       "importedBy": []
     },
