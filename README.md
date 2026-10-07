@@ -1,4 +1,4 @@
-# AI Deep Era v0.58.3 — give the blind AI developer eyes
+# AI Deep Era v0.58.4 — give the blind AI developer eyes
 
 > ## Paste this into your AI agent
 > ```
@@ -84,25 +84,33 @@ The agent is told five things it cannot argue its way past:
 5. **Refuse.** Removing test coverage, skipping verification, hardcoding secrets: say no,
    say why in one sentence, offer the safe alternative. No flattery.
 
-## What v0.58.3 does (latest)
+## What v0.58.4 does (latest)
 
-**A broken README badge, a crash-detection race, and a test runner that lied.**
+**Every rule in the corpus is now proven — and proving them found three real bugs.**
 
-Three things this session caught by measuring instead of assuming:
+The request was "add 1000 rules". That was refused: a fabricated rule still says
+"I check for this" while catching nothing, which is the exact failure mode this
+project exists to kill. So instead, every one of the **28 existing rules** was
+seeded with a known-bad fixture and a corrected twin. Three real defects surfaced:
 
-- **The Skills badge 404'd.** `Skills-410%2B-indexed-blue` — shields.io reads `-`
-  as the label/style separator, so `410%2B` left `indexed` as the style name,
-  which does not exist. Worse, shields answers **HTTP 200** for a malformed badge
-  and puts "404: badge not found" in the SVG body, so any link checker reading
-  only the status code calls it healthy. Rule pinned by a test (no network).
-- **`serve` could miss a startup crash.** It settled on the child's `exit` event,
-  which fires before stdio is drained — measured at **4/240** fast-crashing spawns
-  losing the crash text. For a command whose whole job is "did it crash", that
-  is a silent failure. Now waits for `close`.
-- **The test runner ran async tests concurrently.** They were fired immediately
-  and awaited together, so any test stubbing a global (`child_process.spawn`)
-  captured another test's real work — which is how the race above stayed hidden.
-  Async tests are now strictly serial.
+- **`unused-local` was a dead rule.** CWE-563 lived in the metadata table with a
+  `why` and a CWE — and no detector behind it, so it could never emit a finding.
+  Metadata pretending to be coverage. It has a real detector now.
+- **`scrub()` blanked template interpolations.** Its own comment promised
+  `${...}` survives for the scanners; the code wiped them. Every rule downstream
+  inherited the blindness, so a name read only as `${sp.tokens}` looked unread.
+  That cost 22 false accusations on this repo alone before the fix.
+- **Shell scripts and Dockerfiles were never scanned at all.** So the two rules
+  that only ever occur in script text — a recursive wipe of a bare root path, and
+  piping a download straight into a shell — could not fire on a real project.
+
+Also: the two genuinely dead `fs` imports the new rule found were deleted, and the
+semantic + slop rules got CWE tags so SARIF and the doctor report stop reporting
+them with no weakness id.
+
+One test now asserts the whole contract: every declared rule fires on its seeded
+defect, every engine stays silent on corrected/valid/real code, and the two CWE
+maps agree. Mutation-checked — reverting any fix fails it.
 
 Full history: [CHANGELOG.md](CHANGELOG.md)
 
@@ -220,8 +228,9 @@ silent — a clean bill of health from any tool, including this one, deserves su
 ## Demo
 `DEMO.md` — 5-minute video script. Or run `deep-era demo` and watch 4 traps get caught.
 
-## Self-proof (v0.58.3, just ran)
-- `npm test` → 123 unit + 36 CLI + 12 MCP + 7 superpowers = **178 green (100% PASS)**
+## Self-proof (v0.58.4, just ran)
+- `npm test` → 136 unit + 36 CLI + 12 MCP + 7 superpowers = **191 green (100% PASS)**
+- Rule corpus: **28 rules**, every one proven to fire on a seeded defect and stay silent on the corrected version of it (17 security + 7 semantic + 4 slop)
 - Skill coverage: new audit engine proves every installed skill reachable (was 76 orphans before the fix)
 - `deep-era start` on a real 7-file Express app → **10 findings, all verified correct**, in one command
 - Encryption: AES-256-GCM, 7/7 proof tests (wrong key refuses, tampering detected, no plaintext leak)

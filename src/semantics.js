@@ -52,7 +52,11 @@ function scrub(src) {
     if (c === "`") {
       // Blank the literal text but PRESERVE ${...} interpolations: the code inside
       // them is real code and every rule must still see it (e.g. `nodes.join()`).
+      // The ranges of kept interpolation are tracked here, because the blanking
+      // pass at the end of this branch walks the whole template and would
+      // otherwise wipe the expressions the comment above promises to keep.
       let j = i + 1;
+      const keep = [];
       while (j < n) {
         if (src[j] === "\\") { j += 2; continue; }
         if (src[j] === "`") break;
@@ -64,15 +68,21 @@ function scrub(src) {
             else if (src[k] === "}") d--;
             if (d > 0) k++;
           }
-          // blank from j+2..k (the expression) but keep ${ and }
-          for (let x = j; x <= k; x++) if (src[x] !== "$" && src[x] !== "{" && src[x] !== "}") out[x] = " ";
+          // Keep ${ and } so the boundary is still readable, but do NOT blank the
+          // expression between them. The comment above promised interpolations are
+          // preserved for the scanners, and it was lying: this branch blanked them,
+          // so a name used only as `${sp.tokens}` looked unread. It cost 22 false
+          // "unused-local" accusations on this repo alone (every one verified wrong
+          // by hand). Real code stays real code; only the literal text is scrubbed.
+          keep.push([j, k]);
           j = k + 1;
           continue;
         }
         j++;
       }
       const end = Math.min(j + 1, n);
-      for (let k = i + 1; k < end - 1; k++) if (out[k] === src[k]) out[k] = " ";
+      const isKept = (idx) => keep.some(([a, b]) => idx > a && idx <= b);
+      for (let k = i + 1; k < end - 1; k++) if (!isKept(k)) out[k] = " ";
       i = end; continue;
     }
     i++;
@@ -420,6 +430,55 @@ function scanDeadBranch(src, code, file, sink) {
 }
 
 // ---------------------------------------------------------------------------
+// Unused local: a binding that is written and never read again.
+//
+// `unused-local` had lived in RULE_META since v0.51 with no detector behind it —
+// metadata for a rule nothing could ever emit. A rule that can never fire is worse
+// than an absent one: it reads like coverage. This is the detector.
+//
+// Precision rules, all learned from what false accusations here look like:
+//  - Occurrence counting is textual over the scrubbed source, so a name used only
+//    inside a `${...}` interpolation still counts as used (scrub keeps those).
+//  - Anything reachable from outside the file is not unused: `module.exports`,
+//    `exports.x`, ESM `export`, or a declaration that is destructured (the shape
+//    where counting is unreliable).
+//  - Exported and shadowed names are skipped, not guessed at.
+const DECL_RE = /\b(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*(?::[^=]+)?=\s*([^;\n]+)/g;
+function scanUnusedLocal(src, code, file, sink) {
+  const countOf = (name) => {
+    const esc = name.replace(/[$]/g, "\\$");
+    const all = code.match(new RegExp(`\\b${esc}\\b`, "g"));
+    return all ? all.length : 0;
+  };
+  // Names that leave the file, so "used elsewhere" is unknowable here.
+  const escapes = (name) => {
+    const esc = name.replace(/[$]/g, "\\$");
+    return new RegExp(`(?:module\\.exports|exports|export\\b)[^\\n;]*\\b${esc}\\b`).test(code);
+  };
+  const decls = [];
+  for (const m of code.matchAll(DECL_RE)) {
+    const [, name, init] = m;
+    // Destructuring and multiple declarators: the value text would not tell us
+    // which identifier is which, so counting would be a guess.
+    if (/^[[{]/.test(init.trim())) continue;
+    if (/(^|,)\s*[A-Za-z_$][\w$]*\s*[=,)]/.test(init)) continue;
+    decls.push({ name, index: m.index, at: m.index + m[0].indexOf(name) });
+  }
+  const seen = new Set();
+  for (const d of decls) {
+    if (seen.has(d.name)) continue; // same name twice: one report is enough
+    seen.add(d.name);
+    if (escapes(d.name)) continue;
+    // One occurrence == the declaration itself == never read.
+    if (countOf(d.name) > 1) continue;
+    sink({
+      file, rule: "unused-local", sev: "low", line: lineOf(src, d.at),
+      msg: `\`${d.name}\` is assigned and never read. (${meta("unused-local").why})`,
+    });
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Test quality: assertions that cannot fail, and suites with no real assertions.
 // ---------------------------------------------------------------------------
 function scanTestQuality(src, file, sink) {
@@ -475,6 +534,7 @@ function analyzeFile(cwd, file, absPath, caps) {
     scanSwallowed(src, code, file, sink, scopes);
     scanFloatingPromise(src, code, file, sink);
     scanDeadBranch(src, code, file, sink);
+    scanUnusedLocal(src, code, file, sink);
   }
   return col.all();
 }

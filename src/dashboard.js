@@ -2,7 +2,6 @@
 // AI Deep Era Live Command Center & Web Dashboard (Zero-dependency Node >= 18)
 // RULE: user may speak any language. All code, comments, logs and replies: ENGLISH ONLY.
 const http = require("http");
-const fs = require("fs");
 const path = require("path");
 const url = require("url");
 

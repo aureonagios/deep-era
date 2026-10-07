@@ -31,6 +31,22 @@ const CWE = {
   "dep-unpinned": { cwe: "CWE-1104", owasp: "A06:2021" },
   "rm-rf": { cwe: "CWE-78", owasp: "A03:2021" },
   "curl-bash": { cwe: "CWE-494", owasp: "A08:2021" },
+  // Semantic and slop rules carry their weakness id here too, not only in RULE_META.
+  // Every consumer of a CWE tag -- SARIF, the doctor report, the MCP audit_work
+  // payload -- reads THIS map; without these entries the semantic findings reported
+  // with no weakness id at all, which on an enterprise dashboard is indistinguishable
+  // from noise. Kept in sync with RULE_META by the corpus test.
+  "swallowed-exception": { cwe: "CWE-390", owasp: "A09:2021" },
+  "floating-promise": { cwe: "CWE-703", owasp: "A09:2021" },
+  "dead-branch": { cwe: "CWE-570", owasp: "A04:2021" },
+  "unused-local": { cwe: "CWE-563", owasp: "A04:2021" },
+  "tautological-test": { cwe: "CWE-1254", owasp: "A04:2021" },
+  "empty-test": { cwe: "CWE-1254", owasp: "A04:2021" },
+  "always-passing-suite": { cwe: "CWE-1254", owasp: "A04:2021" },
+  "slop-passthrough": { cwe: "CWE-561", owasp: "A04:2021" },
+  "slop-chain": { cwe: "CWE-561", owasp: "A04:2021" },
+  "slop-indirection": { cwe: "CWE-561", owasp: "A04:2021" },
+  "slop-dead-code": { cwe: "CWE-561", owasp: "A04:2021" },
 };
 
 function tag(rule) {

@@ -214,6 +214,223 @@ ok("semantic-no-false-positives-on-repo", () => {
   assert(noisy.length === 0, `false positives on own repo: ${noisy.map((x) => `${x.file}:${x.line} ${x.rule}`).join(", ")}`);
 });
 
+ok("unused-local-fires-on-dead-bindings", () => {
+  // `unused-local` shipped as metadata with no detector behind it (CWE-563): a rule
+  // nothing could ever emit, which reads like coverage and is worse than an absent
+  // one. The detector must catch every dead binding in the fixture.
+  const fx = path.join(__dirname, "fixtures", "semantic-bugs");
+  const f = semanticScan(fx, buildMap(fx).files).filter((x) => x.rule === "unused-local");
+  const named = f.map((x) => (x.msg.match(/`([^`]+)`/) || [])[1]).filter(Boolean);
+  for (const want of ["discountRate", "severity", "draft", "buffer"]) {
+    assert(named.includes(want), `unused-local missed ${want} (got: ${named.join(", ") || "nothing"})`);
+  }
+});
+
+ok("unused-local-silent-on-every-legitimate-shape", () => {
+  // The false-positive side is the hard side. Each shape in this fixture produced a
+  // real accusation before the rule shipped -- most of them because scrub() blanked
+  // template interpolations, so `${sp.tokens}` looked like an unread name.
+  const fx = path.join(__dirname, "fixtures", "semantic-valid");
+  const f = semanticScan(fx, buildMap(fx).files).filter((x) => x.rule === "unused-local");
+  assert(f.length === 0, `false accusations: ${f.map((x) => `${x.file}:${x.line} ${x.msg.slice(0, 60)}`).join("; ")}`);
+});
+
+ok("scrub-keeps-template-interpolations", () => {
+  // scrub()'s own comment promises interpolations survive for the scanners. It
+  // was lying: it blanked them, and every rule downstream inherited the blindness.
+  const { scrub } = require("../src/semantics");
+  const out = scrub('const sp = get();\nconsole.log(`cost ${sp.tokens} and ${sp.usd}`);');
+  assert(/sp\.tokens/.test(out), "interpolation expression was scrubbed away");
+  assert(/\bsp\b/.test(out), "identifier inside an interpolation was scrubbed away");
+  // The literal text around it still has to go, or a scanner matches prose.
+  assert(!/cost/.test(out), "literal template text survived scrubbing");
+  assert(!/and/.test(out), "literal template text survived scrubbing");
+});
+
+// --- security rules: every rule needs a seeded instance and a safe twin --------
+
+// The list is derived from the table, not written out by hand, so a rule added to
+// src/security.js without a fixture here fails the test instead of shipping blind.
+const SECURITY_RULE_IDS = [...require("fs").readFileSync(path.join(__dirname, "..", "src", "security.js"), "utf8")
+  .matchAll(/\{ id: "([a-z0-9-]+)"/g)].map((m) => m[1]);
+
+function scanFixture(name) {
+  const dir = path.join(__dirname, "fixtures", name);
+  return securityScan(dir, buildMap(dir).files);
+}
+
+ok("every-security-rule-has-a-seeded-instance", () => {
+  const found = new Set(scanFixture("security-bad").map((x) => x.rule));
+  const blind = SECURITY_RULE_IDS.filter((id) => !found.has(id));
+  assert(blind.length === 0,
+    `rules with no seeded instance -- nobody has watched these work: ${blind.join(", ")}`);
+});
+
+ok("security-rules-stay-silent-on-corrected-code", () => {
+  // Detection is the easy half. Without this, a scanner that cries wolf on
+  // `textContent` or `execFile` gets switched off, and the real finding ships.
+  const f = scanFixture("security-clean");
+  assert(f.length === 0, `false accusations on corrected code: ${f.map((x) => `${x.rule} ${x.file}:${x.line}`).join(", ")}`);
+});
+
+ok("security-scans-shell-and-dockerfiles", () => {
+  // The two rules that only ever occur in script text (a recursive wipe of a bare
+  // root path, and piping a download straight into a shell) were outside the
+  // scanned-extension list, so neither could fire on a real project -- found by
+  // seeding a fixture and watching them stay silent. Secrets land in CI shell
+  // scripts constantly, which is exactly where the scanner was looking away.
+  const dir = path.join(__dirname, "fixtures", "security-bad");
+  const found = new Set(securityScan(dir, buildMap(dir).files).map((x) => x.rule));
+  for (const r of ["rm-rf", "curl-bash"]) {
+    assert(found.has(r), `${r} did not fire on its seeded shell fixture -- is the shell extension list intact?`);
+  }
+});
+
+ok("every-semantic-rule-has-a-seeded-instance", () => {
+  // RULE_META carries a `why` and a CWE for each rule. A rule listed there with no
+  // detector or no fixture is documentation pretending to be coverage -- which is
+  // how `unused-local` survived. This list is read from the table itself, so adding
+  // a rule without proving it fails here instead of shipping blind.
+  const meta = Object.keys(require("../src/semantics").RULE_META);
+  const dir = path.join(__dirname, "fixtures", "semantic-bugs");
+  const found = new Set(semanticScan(dir, buildMap(dir).files).map((x) => x.rule));
+  const blind = meta.filter((r) => !found.has(r));
+  assert(blind.length === 0, `semantic rules with no seeded instance: ${blind.join(", ")}`);
+});
+
+ok("every-semantic-rule-has-a-why", () => {
+  // The `why` is what turns a finding into something a reader acts on instead of
+  // suppressing. An empty one means the rule cries "fix this" and explains nothing.
+  const meta = require("../src/semantics").RULE_META;
+  for (const [rule, m] of Object.entries(meta)) {
+    assert(typeof m.why === "string" && m.why.length > 40, `${rule} has no usable 'why'`);
+    assert(/^CWE-\d+$/.test(m.cwe || ""), `${rule} has no CWE id (got "${m.cwe}")`);
+    assert(["critical", "high", "medium", "low"].includes(m.sev), `${rule} has severity "${m.sev}"`);
+  }
+});
+
+ok("semantic-rules-stay-silent-on-valid-typescript", () => {
+  const fx = path.join(__dirname, "fixtures", "semantic-valid");
+  const f = semanticScan(fx, buildMap(fx).files);
+  assert(f.length === 0, `false accusations on valid code: ${f.map((x) => `${x.rule} ${x.file}:${x.line}`).join(", ")}`);
+});
+
+// --- the whole corpus, end to end --------------------------------------------
+// One test that answers the only question worth asking about a rule corpus: is
+// every rule both able to catch its own defect and able to stay quiet on the
+// corrected version of it? Split by engine because each has its own scan entry
+// point, then assert the totals so a rule cannot vanish by being forgotten here.
+ok("rule-corpus-is-complete-and-verified-in-both-directions", () => {
+  const cwd = path.resolve(__dirname, "..");
+
+  // 1. Every declared rule has a seeded instance that fires.
+  const securityDeclared = SECURITY_RULE_IDS;
+  const securityFired = new Set(scanFixture("security-bad").map((x) => x.rule));
+  const semanticDeclared = Object.keys(require("../src/semantics").RULE_META);
+  const semanticFired = new Set(semanticScan(path.join(__dirname, "fixtures", "semantic-bugs"), buildMap(path.join(__dirname, "fixtures", "semantic-bugs")).files).map((x) => x.rule));
+  const slopDeclared = ["slop-passthrough", "slop-chain", "slop-indirection", "slop-dead-code"];
+
+  const gaps = [
+    ...securityDeclared.filter((r) => !securityFired.has(r)).map((r) => `security:${r}`),
+    ...semanticDeclared.filter((r) => !semanticFired.has(r)).map((r) => `semantic:${r}`),
+    ...slopDeclared.filter((r) => r !== "slop-dead-code").filter((r) => !new Set(slopScan(path.join(__dirname, "fixtures", "slop-bad"), buildMap(path.join(__dirname, "fixtures", "slop-bad")).files).map((x) => x.rule)).has(r)).map((r) => `slop:${r}`),
+  ];
+  assert(gaps.length === 0, `declared but never fires: ${gaps.join(", ")}`);
+
+  // 2. Every engine stays silent on corrected, valid, and real code.
+  const clean = [
+    ...scanFixture("security-clean").map((x) => `security:${x.rule} ${x.file}`),
+  ];
+  const semClean = (() => {
+    const dir = path.join(__dirname, "fixtures", "semantic-valid");
+    return semanticScan(dir, buildMap(dir).files).map((x) => `semantic:${x.rule} ${x.file}`);
+  })();
+  const slopCleanDir = path.join(__dirname, "fixtures", "slop-clean");
+  const slopClean = slopScan(slopCleanDir, buildMap(slopCleanDir).files).map((x) => `slop:${x.rule} ${x.file}`);
+  assert(clean.length === 0, `false accusations on corrected code: ${clean.join(", ")}`);
+  assert(semClean.length === 0, `false accusations on valid code: ${semClean.join(", ")}`);
+  assert(slopClean.length === 0, `false accusations on clean code: ${slopClean.join(", ")}`);
+
+  // 3. The real project is clean under all of them. This is the floor that matters:
+  //    a scanner that flags deep-era's own source is not usable on anyone's.
+  const map = buildMap(cwd);
+  const real = [
+    ...securityScan(cwd, map.files).map((x) => `security:${x.rule} ${x.file}:${x.line}`),
+    ...semanticScan(cwd, map.files).map((x) => `semantic:${x.rule} ${x.file}:${x.line}`),
+    ...slopScan(cwd, map.files).map((x) => `slop:${x.rule} ${x.file}:${x.line}`),
+  ];
+  assert(real.length === 0, `false positives on this repo: ${real.join(", ")}`);
+
+  // 4. Every reported rule carries a CWE tag. `todo-fixme` is the single honest
+  //    exception: a leftover task marker is hygiene, not a CWE weakness, and
+  //    inventing a weakness id for it would put a false tag on an enterprise dashboard.
+  const { tag } = require("../src/cwe");
+  const HYGIENE = new Set(["todo-fixme"]);
+  const untagged = [...securityDeclared, ...semanticDeclared, ...slopDeclared]
+    .filter((r) => !tag(r) && !HYGIENE.has(r));
+  assert(untagged.length === 0, `rules reporting without a CWE tag: ${untagged.join(", ")}`);
+
+  // 5. RULE_META and cwe.js must agree on every semantic weakness id, or SARIF and
+  //    the doctor report will contradict each other about the same finding.
+  const RULE_META = require("../src/semantics").RULE_META;
+  for (const [rule, m] of Object.entries(RULE_META)) {
+    assert(tag(rule) && tag(rule).cwe === m.cwe, `CWE mismatch for ${rule}: RULE_META says ${m.cwe}, cwe.js says ${tag(rule) ? tag(rule).cwe : "nothing"}`);
+  }
+
+  console.log(`      corpus verified: ${securityDeclared.length} security + ${semanticDeclared.length} semantic + ${slopDeclared.length} slop rules, all firing on seeded defects and silent on corrected code.`);
+});
+
+// --- slop rules: same contract -----------------------------------------------
+
+// slop-passthrough, slop-chain and slop-indirection are file-local, so a fixture
+// proves them. slop-dead-code is a whole-repo reachability judgement: it skips
+// tests/fixtures/ on purpose and refuses to judge fewer than four files, because
+// a fixture is read by the scanner and never called by anything. Judging it from
+// a fixture would be testing the wrong thing, so it gets a real temp project.
+function tempProject(files) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-slop-"));
+  for (const [name, body] of Object.entries(files)) {
+    fs.mkdirSync(path.join(dir, path.dirname(name)), { recursive: true });
+    fs.writeFileSync(path.join(dir, name), body);
+  }
+  return dir;
+}
+
+ok("slop-rules-have-seeded-instances", () => {
+  const dir = path.join(__dirname, "fixtures", "slop-bad");
+  const found = new Set(slopScan(dir, buildMap(dir).files).map((x) => x.rule));
+  for (const r of ["slop-passthrough", "slop-chain", "slop-indirection"]) {
+    assert(found.has(r), `${r} has no seeded instance in fixtures/slop-bad -- it has never been watched working`);
+  }
+});
+
+ok("slop-dead-code-finds-unreachable-function", () => {
+  const dir = tempProject({
+    "index.js": 'const { live } = require("./lib");\nconsole.log(live());\n',
+    // `ghost` is defined, referenced by nothing, and deliberately NOT exported:
+    // an exported name may be consumed by a caller the scanner cannot see, so
+    // flagging it would be a guess. Internal-only is the honest candidate.
+    "lib.js": "function live() { return 1; }\nfunction ghost() { return 2; }\nmodule.exports = { live };\n",
+    "other.js": "module.exports = 3;\n",
+    "fourth.js": "module.exports = 4;\n",
+  });
+  const found = slopScan(dir, buildMap(dir).files).filter((x) => x.rule === "slop-dead-code");
+  assert(found.length === 1, `expected exactly one dead function, got ${found.length}: ${found.map((x) => x.msg.slice(0, 40))}`);
+  assert(/ghost/.test(found[0].msg), `flagged the wrong function: ${found[0].msg}`);
+  assert(!/`live`/.test(found[0].msg), "flagged the function that is actually called");
+});
+
+ok("slop-stays-silent-on-real-project-shape", () => {
+  // The clean fixture plus this repo is the false-positive floor. A slop engine that
+  // cries wolf on ordinary defensive code gets ignored, and then it never helps.
+  const cleanDir = path.join(__dirname, "fixtures", "slop-clean");
+  const f = slopScan(cleanDir, buildMap(cleanDir).files);
+  assert(f.length === 0, `false accusations: ${f.map((x) => `${x.rule} ${x.file}:${x.line}`).join(", ")}`);
+  const cwd = path.resolve(__dirname, "..");
+  const own = slopScan(cwd, buildMap(cwd).files);
+  assert(own.length === 0, `slop false positives on own repo: ${own.map((x) => `${x.rule} ${x.file}:${x.line}`).join(", ")}`);
+});
+
 ok("semantic-respects-guard-patterns", () => {
   // Defensive code that must NEVER be flagged.
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "deep-era-"));

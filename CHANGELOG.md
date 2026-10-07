@@ -3,6 +3,41 @@
 > The README shows only the latest version. Everything else lives here, newest first.
 > Older than this file: `git log --oneline`.
 
+## v0.58.4: every rule proven, and proving them found three real bugs
+
+**"Add 1000 rules" was refused.** A fabricated rule still advertises "I check for
+this" while catching nothing — the exact failure this project exists to prevent.
+Instead: every one of the 28 existing rules was seeded with a known-bad fixture and
+a corrected twin, and the result is that 14 security rules and 2 slop rules had
+never been observed working. Three real defects came out of it.
+
+**`unused-local` was a dead rule** (CWE-563). It had a severity, a CWE and a
+`why` in `RULE_META` since v0.51 — and no detector behind it, so it could never
+emit a finding. Metadata that reads like coverage. It has a real detector now,
+with the precision rules that shape makes necessary (exported names, destructuring
+and template-only uses are all exempt).
+
+**`scrub()` blanked template interpolations.** Its own comment promised `${...}`
+survives for the scanners; the line below the comment wiped it. Every rule
+downstream inherited the blindness, so a binding read only as `${sp.tokens}` looked
+unread — 22 false `unused-local` accusations on this repo, every one verified wrong
+by hand. Fixed at the root rather than patched around in the new detector.
+
+**Shell scripts and Dockerfiles were never scanned.** The extension list covered
+js/ts/py/json/yaml and stopped. So the two rules that can only ever occur in script
+text — a recursive wipe of a bare root path, and piping a download into a shell —
+could not fire on any real project. CI shell scripts are exactly where leaked
+secrets live.
+
+Also in this release: the two genuinely dead `fs` imports the new rule uncovered
+were deleted (`src/dashboard.js`, `src/guidance.js`), and the semantic and slop
+rules received CWE tags — every consumer (SARIF, doctor, MCP `audit_work`) reads
+`src/cwe.js`, so those findings were reporting with no weakness id at all.
+
+One test now holds the whole contract: every declared rule fires on its seeded
+defect, every engine is silent on corrected/valid/real code, and `RULE_META` and
+`cwe.js` agree on every weakness id. Mutation-checked in all three directions.
+
 ## v0.58.3: a broken README badge, a crash-detection race, and a test runner that lied
 
 **The Skills badge 404'd in front of a user, and two link checkers had called it healthy.**

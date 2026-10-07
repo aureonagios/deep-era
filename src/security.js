@@ -82,7 +82,11 @@ function securityScan(cwd, files) {
       findings.push({ file: f.file, rule: "leak-file", sev: "critical", msg: `Sensitive file committed: ${base} — add to .gitignore` });
       continue;
     }
-    if (!/\.(js|ts|tsx|jsx|py|json|env|yml|yaml|toml|example)$/.test(f.file)) continue;
+    // Shell and Dockerfile script were not scanned at all, so `rm-rf /` and
+    // `curl | bash` — the two rules in this table that only ever appear in script
+    // text — could not fire on a real project. Found by seeding a fixture and
+    // watching them stay silent. Secrets land in CI shell scripts constantly.
+    if (!/\.(js|ts|tsx|jsx|mjs|cjs|py|json|env|yml|yaml|toml|example|sh|bash|zsh|ps1|bat|cmd|Dockerfile|mk)$/.test(f.file) && !/(^|\/)(Dockerfile|Containerfile|Makefile)$/.test(f.file)) continue;
     if (f.size > 200000) continue;
     let txt = "";
     try { txt = fs.readFileSync(path.join(cwd, f.file), "utf8"); } catch { continue; }

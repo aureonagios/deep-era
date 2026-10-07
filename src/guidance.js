@@ -16,7 +16,6 @@
 //
 // Everything is derived from the real project: its file map, its import graph, its
 // memory, and its own conventions. No hardcoded framework assumptions.
-const fs = require("fs");
 const path = require("path");
 
 // --- task taxonomy -----------------------------------------------------------
