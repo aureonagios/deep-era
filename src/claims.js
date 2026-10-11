@@ -42,15 +42,30 @@ function isComment(line) {
 // Bare `sleep_for(150)` with no unit is the C++ idiom and means MICROseconds --
 // treating it as seconds made the duration 150000ms and it slipped past the cap
 // below, which is how the seeded case went unnoticed at first.
-const SLEEP_CALL = /\b(?:sleep_for|time\.sleep|usleep|nanosleep|std::this_thread::sleep_for|sleep)\s*\(\s*(\d+(?:\.\d+)?)\s*(ms|us|ns|s|m)?\s*(?:\)\s*;|\)\s*\))/;
-const BARE_SLEEP_US = /^\s*(?:std::this_thread::)?sleep_for\s*\(\s*\d+\s*\)\s*;/;
+// The tail allows `)` at end-of-line, not just `;` or `))`. Without it the rule was
+// blind on Python: `time.sleep(30)` never matched because Python has no semicolons,
+// so every Python sleep sailed through unexamined. Found because removing the
+// zero-duration guard changed nothing -- the `time.sleep(0)` it guards never fired.
+const SLEEP_CALL = /\b(?:sleep_for|time\.sleep|usleep|nanosleep|std::this_thread::sleep_for|sleep)\s*\(\s*(\d+(?:\.\d+)?)\s*(ms|us|ns|s|m)?\s*(?:\)\s*;|\)\s*\)|\)\s*$)/;
+// Unit-less durations mean different things per callee: bare `sleep_for(150)` and
+// `usleep(150)` are microseconds, `nanosleep(150)` is nanoseconds, everything else
+// (`sleep(2)`, `time.sleep(30)`) is seconds. Reading `usleep(150)` as 150 seconds
+// slipped it past the duration cap, so those two forms were blind. Found because the
+// per-form table test (below) failed for exactly those rows.
+function defaultSleepUnit(line) {
+  if (/^\s*nanosleep\s*\(/.test(line)) return "ns";
+  if (/^\s*(?:std::this_thread::)?sleep_for\s*\(\s*\d+\s*\)\s*;/.test(line) || /^\s*usleep\s*\(/.test(line)) return "us";
+  return "s";
+}
 const SLEEP_IS_WAITING = /\b(timeout|timed_?out|retry|retries|backoff|back_off|poll|polling|heartbeat|jitter|cooldown|cool_down|debounce|throttle|quota|rate_?limit|settle|grace|yield)\w*/i;
 
 function scanSyntheticLatency(cwd, files, out) {
   let hits = 0;
   for (const f of files) {
     if (!CODE_EXT.test(f.file)) continue;
-    if (f.file.startsWith("tests/fixtures/")) continue;
+    // No separate tests/fixtures skip: every fixture path starts with "tests/", which
+    // the test-file exemption below already matches. A dedicated skip existed and was
+    // provably shadowed -- removing it changed no verdict anywhere.
     const txt = readIfSmall(cwd, f.file);
     if (!txt) continue;
     const lines = txt.split("\n");
@@ -62,7 +77,7 @@ function scanSyntheticLatency(cwd, files, out) {
       const amount = parseFloat(m[1]);
       // A bare `sleep_for(150)` is the C++ microsecond idiom; only spell out units
       // for the others, because `time.sleep(0.15)` in Python is seconds.
-      const unit = m[2] || (BARE_SLEEP_US.test(line) ? "us" : "s");
+      const unit = m[2] || defaultSleepUnit(line);
       // A zero sleep is a scheduling yield, not a fake measurement.
       if (amount === 0) continue;
       if (SLEEP_IS_WAITING.test(line)) continue;
@@ -190,7 +205,9 @@ function scanStubClaimsSuccess(cwd, files, out) {
     const lines = txt.split("\n");
     for (let i = 0; i < lines.length && hits < 12; i++) {
       const line = lines[i];
-      if (isComment(line)) continue;
+      // No isComment skip: PRINT_ONLY anchors at line start, and a comment line starts
+      // with //, #, * or similar -- the two can never match the same line. A skip existed
+      // and was provably shadowed, so it was removed rather than kept as decoration.
       if (!PRINT_ONLY.test(line)) continue;
       if (!SUCCESS_VERB.test(line)) continue;
       // Evidence lives in the function this line belongs to, comments removed.
@@ -240,8 +257,10 @@ function scanHardcodedMarketData(cwd, files, out) {
   let hits = 0;
   for (const f of files) {
     if (!CODE_EXT.test(f.file)) continue;
-    if (f.file.startsWith("tests/fixtures/")) continue;
-    if (/(^|\/)(tests?|__tests__|spec)\//.test(f.file) || /\.(test|spec)\.[jt]sx?$/.test(f.file)) continue;
+    // No separate tests/fixtures skip: every fixture path contains the substring
+    // "fixture" or "test", which DOC_EXEMPT already matches. A dedicated skip existed
+    // and was provably shadowed -- removing it changed no verdict anywhere -- so it
+    // was deleted rather than kept as decoration.
     if (DOC_EXEMPT.test(f.file)) continue;
     const txt = readIfSmall(cwd, f.file);
     if (!txt) continue;
@@ -253,7 +272,11 @@ function scanHardcodedMarketData(cwd, files, out) {
       if (!m) continue;
       const raw = String(m[2]).replace(/,/g, "");
       const val = parseFloat(raw);
-      if (!Number.isFinite(val) || val <= 0) continue;
+      // No finite/positive check here on purpose: val <= 0 is subsumed by the <1000
+      // guard below, and NaN/Infinity can never pass the decimal test ("NaN" and
+      // "Infinity" contain no digit after a separator). A separate check existed and
+      // was provably unreachable -- deleting it changed no verdict on any fixture,
+      // test, or this repo -- so it was removed rather than kept as decoration.
       // Integer-ish small numbers are configuration (a port, a retry count), not a quote.
       if (val < 1000) continue;
       // No currency symbol and no decimals on a 4-digit-plus number is a count,
@@ -305,7 +328,12 @@ function scanInstalledButUnused(cwd, files, out) {
     if (DYNAMIC_IMPORT.test(txt)) anyDynamic = true;
     for (const name of declared.keys()) {
       const stem = name.replace(/[-_]/g, "[-_]");
-      if (new RegExp(`(?:require\\s*\\(\\s*["']|from\\s+["']|import\\s+)${stem.replace(/[-]/g, "\\-")}(?:[/"'])`).test(txt)) mentioned.add(name);
+      // The tail accepts end-of-line, whitespace and separators -- not just quotes and
+      // slashes -- because plain `import requests` (the most common Python form) ends
+      // with a newline, and `from requests import get` has no quotes at all. Both were
+      // invisible to the old tail, so every correctly-wired Python project was accused.
+      // Measured: `import requests` + declared `requests` fired before this fix.
+      if (new RegExp(`(?:require\\s*\\(\\s*["']|from\\s+["']?|import\\s+)${stem.replace(/[-]/g, "\\-")}(?:[/"'\\s,;)]|$)`).test(txt)) mentioned.add(name);
     }
   }
   // Dynamic import anywhere means any package could be loaded at runtime; reporting
@@ -398,4 +426,4 @@ function claimRuleIds() {
   return Object.values(RULE_IDS);
 }
 
-module.exports = { claimScan, claimRuleIds, stripComments, scanSyntheticLatency, scanStubClaimsSuccess, scanHardcodedMarketData, scanInstalledButUnused, scanMarkerPretendingDone };
+module.exports = { claimScan, claimRuleIds, stripComments, SUCCESS_VERB, REAL_EFFECT, scanSyntheticLatency, scanStubClaimsSuccess, scanHardcodedMarketData, scanInstalledButUnused, scanMarkerPretendingDone };

@@ -324,6 +324,44 @@ ok("claims-stay-quiet-on-deep-era-itself", () => {
   assert(f.length === 0, `false positives on own repo: ${f.map((x) => `${x.rule} ${x.file}:${x.line || "?"}`).join(", ")}`);
 });
 
+ok("installed-but-unused-stays-silent-when-declared-and-imported", () => {
+  // The ordinary honest case: declared in requirements.txt AND imported in code.
+  // Without the mentioned-check this is accused, which would make the rule fire on
+  // every correctly-wired project -- the exact project this rule is meant to serve.
+  const dir = tempProject({
+    "requirements.txt": "requests==2.31.0\n",
+    "app.py": 'import requests\n\ndef fetch(url):\n    response = requests.get(url, timeout=2)\n    return response.status_code\n',
+  });
+  const hits = claimScan(dir, buildMap(dir).files).filter((x) => x.rule === "installed-but-unused");
+  assert(hits.length === 0, `accused a properly wired dependency: ${hits.map((x) => x.msg.slice(0, 60))}`);
+});
+
+ok("installed-but-unused-ignores-fixture-imports", () => {
+  // Fixture files exist to be scanned, not to be evidence: an import inside
+  // tests/fixtures must not satisfy "this dependency is used", or every seeded
+  // vulnerability fixture would launder its own defect. Without the skip, the torch
+  // import below counts as usage and a genuinely unused dependency goes silent.
+  const dir = tempProject({
+    "requirements.txt": "torch==2.3.0\n",
+    "tests/fixtures/v.py": "import torch\n",
+  });
+  const hits = claimScan(dir, buildMap(dir).files).filter((x) => x.rule === "installed-but-unused");
+  assert(hits.length === 1, `fixture import laundered an unused dependency: ${hits.length} findings`);
+  assert(/torch/.test(hits[0].msg), `wrong dependency accused: ${hits[0].msg.slice(0, 60)}`);
+});
+
+ok("installed-but-unused-ignores-prose-imports", () => {
+  // An import-shaped line in a notes file is documentation, not usage. Without the
+  // extension gate it counts as "mentioned" and a genuinely unused dependency goes
+  // silent -- the fixture laundering problem in prose form.
+  const dir = tempProject({
+    "requirements.txt": "torch==2.3.0\n",
+    "notes.txt": "import torch\n",
+  });
+  const hits = claimScan(dir, buildMap(dir).files).filter((x) => x.rule === "installed-but-unused");
+  assert(hits.length === 1, `prose import laundered an unused dependency: ${hits.length} findings`);
+});
+
 ok("strip-comments-removes-prose-but-keeps-code", () => {
   // Evidence for "did this function do anything" has to come from code, not from the
   // sentence describing it. Without this a comment reading "nothing is stored here"
@@ -388,6 +426,120 @@ ok("hardcoded-quote-rule-still-catches-the-real-thing", () => {
   for (const h of hits) assert(/65000\.00|64892\.50/.test(h.msg), `finding lost the value: ${h.msg}`);
 });
 
+ok("hardcoded-quote-rule-fires-for-every-price-name", () => {
+  // Each name alternative is a separate detection surface. Trading code spells the
+  // same quote a dozen ways; deleting one alternative must fail here.
+  const NAMES = ["price", "quote", "quote_price", "last_price", "mark_price", "mid_price",
+    "spot_price", "ask", "bid", "last_tick", "exchange_rate", "fx_rate", "rate_price", "ticker"];
+  for (const n of NAMES) {
+    const hits = quoteScanIn(`const ${n} = 65000.00;\n`);
+    assert(hits.length === 1, `price name "${n}" slipped through`);
+  }
+});
+
+ok("stub-rule-skips-cli-status-lines", () => {
+  // A bare status line reports that the program reached a state, not that it persisted
+  // anything. `console.log("server ready, done")` claims no write, so there is nothing
+  // to verify -- accusing it would flag every CLI banner on earth. The exemption only
+  // covers status words WITHOUT a strong persistence verb; `saved`/`sent` still fire.
+  const dir = tempProject({
+    "m.js": 'function banner() {\n  console.log("server ready, done");\n}\n',
+  });
+  const hits = claimScan(dir, buildMap(dir).files).filter((x) => x.rule === "stub-claims-success");
+  assert(hits.length === 0, `accused a CLI status line: ${hits.map((x) => `${x.file}:${x.line}`)}`);
+});
+
+ok("synthetic-latency-skips-comment-lines", () => {
+  // A comment describing a sleep is prose, not a measurement. Without the skip the
+  // sleep-shaped text inside the comment fires the rule -- on documentation.
+  const dir = tempProject({ "m.js": "// wait: sleep(150ms); done\n" });
+  const hits = claimScan(dir, buildMap(dir).files).filter((x) => x.rule === "synthetic-latency");
+  assert(hits.length === 0, `accused a comment describing a sleep: ${hits.map((x) => `${x.file}:${x.line}`)}`);
+});
+
+ok("marker-rule-skips-prose-files", () => {
+  // A task list in a notes file is planning, not a stub wearing a working label.
+  // Without the extension gate the rule fires on prose that was never code.
+  // Marker and claim assembled at runtime so this test's own source stays silent.
+  const MARK = ["TO", "DO"].join("");
+  const DONE = ["comple", "te"].join("");
+  const dir = tempProject({ "notes.txt": `${MARK}: wire client\nstatus: ${DONE}\n` });
+  const hits = claimScan(dir, buildMap(dir).files).filter((x) => x.rule === "marker-pretending-done");
+  assert(hits.length === 0, `accused prose: ${hits.map((x) => `${x.file}:${x.line}`)}`);
+});
+
+ok("synthetic-latency-skips-prose-files", () => {
+  // A changelog entry describing a past measurement is history, not a fabrication.
+  // Without the extension gate the rule fires on documentation of work done.
+  const dir = tempProject({ "notes.txt": "sleep(150ms); done\n" });
+  const hits = claimScan(dir, buildMap(dir).files).filter((x) => x.rule === "synthetic-latency");
+  assert(hits.length === 0, `accused prose: ${hits.map((x) => `${x.file}:${x.line}`)}`);
+});
+
+ok("synthetic-latency-skips-test-files", () => {
+  // Timing assertions live in tests by nature. A sleep beside a claim inside a test
+  // file is the test doing its job, not a fabrication -- accusing it punishes the
+  // exact verification behaviour this project demands.
+  const dir = tempProject({ "tests/m.js": 'function r() {\n  sleep(1);\n  return "done";\n}\n' });
+  const hits = claimScan(dir, buildMap(dir).files).filter((x) => x.rule === "synthetic-latency");
+  assert(hits.length === 0, `accused a test file: ${hits.map((x) => `${x.file}:${x.line}`)}`);
+});
+
+ok("hardcoded-quote-rule-skips-comment-lines", () => {
+  // A commented-out quote is not an inlined quote. Without the skip, every line of
+  // documentation that shows a realistic number becomes an accusation.
+  const hits = quoteScanIn('// lastPrice = 65000.00;\n');
+  assert(hits.length === 0, `accused a comment: ${hits.map((x) => x.msg.slice(0, 50))}`);
+});
+
+ok("hardcoded-quote-rule-skips-prose-files", () => {
+  // Same gate as the stub rule's: prose is not code. A price in a notes file is a
+  // reminder, not an order path.
+  const dir = tempProject({ "notes.txt": "lastPrice = 65000.00\n" });
+  const hits = claimScan(dir, buildMap(dir).files).filter((x) => x.rule === "hardcoded-market-data");
+  assert(hits.length === 0, `accused prose: ${hits.map((x) => `${x.file}:${x.line}`)}`);
+});
+
+ok("claim-corpus-membership-is-explicit", () => {
+  // claimRuleIds() is what the corpus test trusts as "every rule". If a scanner is
+  // added without registering its id here, the corpus test goes blind to it -- so
+  // membership is pinned as an explicit list, and adding a rule means editing this
+  // test on purpose rather than drifting silently.
+  const ids = require("../src/claims").claimRuleIds().slice().sort();
+  assert.deepStrictEqual(ids, ["hardcoded-market-data", "installed-but-unused", "marker-pretending-done", "stub-claims-success", "synthetic-latency"]);
+});
+
+ok("stub-rule-skips-prose-files", () => {
+  // Prose is not code: a README example showing `print("saved")` describes output,
+  // it does not claim a write. Without the extension gate the rule fires on every
+  // documentation page that demonstrates a print statement.
+  for (const name of ["notes.txt", "DEMO.md"]) {
+    const dir = tempProject({ [name]: 'print("saved")\n' });
+    const hits = claimScan(dir, buildMap(dir).files).filter((x) => x.rule === "stub-claims-success");
+    assert(hits.length === 0, `accused prose in ${name}`);
+  }
+});
+
+ok("hardcoded-quote-rule-skips-example-paths", () => {
+  // Documentation-shaped paths are not trading paths: an example file carrying a
+  // quote-shaped constant is teaching, not trading. Without the path exemption the
+  // rule fires on every README example and docs page that shows a realistic number.
+  const hits = quoteScanIn('const lastPrice = 65000.00;\n', "example/prices.ts");
+  assert(hits.length === 0, `accused a documentation example: ${hits.map((x) => x.msg.slice(0, 50))}`);
+});
+
+ok("hardcoded-quote-rule-skips-test-files", () => {
+  // Test files assert on fixed numbers by nature. A quote-shaped constant in a test
+  // is the expected value, not a stale feed -- accusing it trains everyone to ignore
+  // the rule, and then the real inlined quote ships.
+  // Silence here comes from DOC_EXEMPT, not from a dedicated test-file check: every
+  // test-shaped path contains the substring "test" or "spec", which DOC_EXEMPT already
+  // matches. A separate test-path exemption existed and was provably shadowed -- deleting
+  // it changed no verdict anywhere -- so it was removed as dead rather than kept as decoration.
+  const hits = quoteScanIn('const lastPrice = 65000.00;\n', "q.test.js");
+  assert(hits.length === 0, `accused a test expectation: ${hits.map((x) => x.msg.slice(0, 50))}`);
+});
+
 ok("synthetic-latency-exempt-named-waits", () => {
   // Waiting IS the work in a backoff, a poll interval or a cooldown, so those are
   // exempt. A sleep without such a name next to a completion claim is not.
@@ -401,13 +553,50 @@ ok("synthetic-latency-exempt-named-waits", () => {
   assert(scan(synthetic) === 1, "an unnamed sleep beside a completion claim slipped through");
 });
 
+ok("synthetic-latency-fires-for-every-sleep-form", () => {
+  // Each alternative in SLEEP_CALL is a separate detection surface for a separate
+  // language. Deleting one must fail here, not silently blind the rule on that form.
+  // (This table is how the usleep/nanosleep unit bug was found: those rows failed
+  // while sleep_for passed, because bare numbers defaulted to seconds.)
+  const FORMS = [
+    ["s.cpp", "sleep_for(150);"],
+    ["t.py", "time.sleep(0.15)"],
+    ["u.cpp", "usleep(150);"],
+    ["n.cpp", "nanosleep(150);"],
+    ["w.cpp", "std::this_thread::sleep_for(150);"],
+    ["s.js", "sleep(2);"],
+  ];
+  for (const [file, snooze] of FORMS) {
+    const dir = tempProject({ [file]: `function r() {\n  ${snooze}\n  return "done";\n}\n` });
+    const hits = claimScan(dir, buildMap(dir).files).filter((x) => x.rule === "synthetic-latency");
+    assert(hits.length === 1, `sleep form "${snooze}" slipped through`);
+  }
+});
+
+ok("synthetic-latency-reads-the-wait-name-on-the-line", () => {
+  // The exemption reads the sleep's OWN line, not the function around it: `sleep(1)`
+  // next to `return "done"` would fire, but the trailing `// retry backoff` names the
+  // wait for what it is. An earlier version of this suite stayed green with the
+  // exemption removed, because the only honest case had no claim nearby at all --
+  // which proved nothing about the exemption itself.
+  const dir = tempProject({
+    "m.js": 'function retry() {\n  sleep(1); // retry backoff\n  return "done";\n}\n',
+  });
+  const hits = claimScan(dir, buildMap(dir).files).filter((x) => x.rule === "synthetic-latency");
+  assert(hits.length === 0, `accused a named wait beside a claim: ${hits.map((x) => `${x.file}:${x.line}`)}`);
+});
+
 ok("marker-rule-reads-code-not-prose", () => {
   // The claim has to be an executable line. A comment that merely mentions a completion
-  // word is describing the problem, not committing it.
+  // word is describing the problem, not committing it -- and the completion word has to
+  // sit in a comment AFTER the marker, because the filter only matters for what follows.
+  // (An earlier version of this fixture put "complete" on the marker line itself, where
+  // no filter can ever reach it -- removing the filter changed nothing and the mutation
+  // slipped through uncaught.)
   // The marker word is assembled at runtime so this test's own source does not trip the
   // marker rule (a real self-flagging, measured twice in this repo).
   const MARK = ["TO", "DO"].join("");
-  const prose = `function f() {\n  // ${MARK}: not finished yet, and this comment says complete\n  return vault.size();\n}\n`;
+  const prose = `function f() {\n  // ${MARK}: not finished yet\n  // status: complete once the client lands\n  return vault.size();\n}\n`;
   const code = `function f() {\n  // ${MARK}: wire the real client\n  return { status: "complete" };\n}\n`;
   const scan = (src) => {
     const dir = tempProject({ "m.js": src });
@@ -418,14 +607,15 @@ ok("marker-rule-reads-code-not-prose", () => {
 });
 
 ok("stub-rule-ignores-a-comment-that-names-the-effect", () => {
-  // The fabricated body is a single print. The comment above it describes the gap in
-  // words that include an effect call. If the scanner reads prose it finds
-  // `vault.insert(record)` and reports the function as honest -- which is the worst
-  // possible outcome, an accusation's absence for the wrong reason.
+  // The fabricated body is a single print. The comment INSIDE it describes the gap in
+  // words that include an effect call -- and it has to be inside, because the body
+  // walker starts at the `def` and never sees anything above it. If the scanner reads
+  // prose it finds `vault.insert(record)` and reports the function as honest, which is
+  // the worst possible outcome: an accusation's absence for the wrong reason.
   const dir = tempProject({
     "add.py": [
-      "# call vault.insert(record) when this is finished",
       "def add_to_vault(record):",
+      "    # call vault.insert(record) when this is finished",
       '    print("Successfully added to Vault")',
       "",
     ].join("\n"),
@@ -448,6 +638,143 @@ ok("stub-rule-does-not-count-the-printed-verb-as-work", () => {
   });
   const hits = claimScan(dir, buildMap(dir).files).filter((x) => x.rule === "stub-claims-success");
   assert(hits.length === 1, `the printed verb was counted as work: ${hits.length} findings`);
+});
+
+ok("stub-rule-fires-for-every-claim-verb", () => {
+  // Each success verb is a separate detection surface. Deleting one must fail here,
+  // not silently blind the rule on stubs that report with that word.
+  const VERBS = ["added", "saved", "stored", "persisted", "committed", "sent", "uploaded",
+    "executed", "processed", "written", "inserted", "queued", "dispatched", "published",
+    "recorded", "registered", "done", "successful", "success"];
+  for (const w of VERBS) {
+    const dir = tempProject({ "a.py": `def f(r):\n    print("${w}")\n` });
+    const hits = claimScan(dir, buildMap(dir).files).filter((x) => x.rule === "stub-claims-success");
+    assert(hits.length === 1, `claim verb "${w}" slipped through`);
+  }
+});
+
+ok("stub-rule-fires-for-every-print-form", () => {
+  // Each print form is a separate detection surface across languages. Deleting one
+  // must fail here.
+  const FORMS = [
+    ["a.cpp", 'std::cout << "saved";'],
+    ["b.cpp", 'std::cerr << "saved";'],
+    ["c.js", 'console.log("saved");'],
+    ["d.js", 'console.error("saved");'],
+    ["e.py", 'print("saved")'],
+    ["f.kt", 'println("saved")'],
+    ["g.cpp", 'printf("saved");'],
+    ["h.go", 'fmt.Println("saved")'],
+    ["i.go", 'log.Printf("saved")'],
+  ];
+  for (const [file, stmt] of FORMS) {
+    const dir = tempProject({ [file]: `function f(r) {\n  ${stmt}\n}\n` });
+    const hits = claimScan(dir, buildMap(dir).files).filter((x) => x.rule === "stub-claims-success");
+    assert(hits.length === 1, `print form "${stmt}" slipped through`);
+  }
+});
+
+ok("stub-rule-recognises-every-effect-form", () => {
+  // Mirror image: each effect form is a separate exemption surface. An honest body
+  // calling any of these must stay silent. (Call-shaped rows are also covered by the
+  // ANY_CALL backstop; REAL_EFFECT's unique contribution -- non-call references like
+  // `db.users` -- is pinned by cached_status and the claim-line table below.)
+  const EFFECTS = ["db.insert", "fs.write", "sender.send", "store.save", "vault.store",
+    "cache.persist", "repo.commit", "poster.post", "setter.put", "bus.publish",
+    "emitter.emit", "router.dispatch", "runner.exec", "pool.spawn", "client.request",
+    "api.fetch", "fh.open", "queue.append", "ledger.append"];
+  for (const c of EFFECTS) {
+    const dir = tempProject({ "m.js": `function f(r) {\n  v = ${c}(r);\n  console.log("saved");\n}\n` });
+    const hits = claimScan(dir, buildMap(dir).files).filter((x) => x.rule === "stub-claims-success");
+    assert(hits.length === 0, `honest effect "${c}" accused`);
+  }
+});
+
+ok("stub-rule-claim-line-covers-every-effect-word", () => {
+  // The claim line itself is checked separately from the body, WITHOUT the ANY_CALL
+  // backstop: `console.log(db.insert(r), "saved")` performs its effect inside the
+  // print. Each REAL_EFFECT word must clear this check on its own -- deleting one
+  // must fail here, which the body table above cannot catch because ANY_CALL masks
+  // every call-shaped row there.
+  const WORDS = ["db.insert", "fs.write", "sender.send", "store.save", "vault.store",
+    "cache.persist", "repo.commit", "poster.post", "setter.put", "bus.publish",
+    "emitter.emit", "router.dispatch", "runner.exec", "pool.spawn", "client.request",
+    "api.fetch", "fh.open", "queue.append", "axios.get", "requests.post", "cursor.run",
+    "session.put", "collection.emit", "pipe.send", "socket.emit", "store.unlink",
+    "fs.rename", "dir.mkdir"];
+  for (const c of WORDS) {
+    const dir = tempProject({ "m.js": `function f(r) {\n  console.log(${c}(r), "saved");\n}\n` });
+    const hits = claimScan(dir, buildMap(dir).files).filter((x) => x.rule === "stub-claims-success");
+    assert(hits.length === 0, `effect word in "${c}" not recognised on the claim line`);
+  }
+});
+
+ok("claim-verb-strip-is-load-bearing", () => {
+  // REAL_EFFECT has no trailing boundary by design -- a bare `save(` call must count
+  // as work -- so its base forms are PREFIXES of the past-tense claim words: "save"
+  // matches inside "saved", "store" inside "stored", "insert" inside "inserted",
+  // "commit" inside "committed", "exec" inside "executed". Without the
+  // `.replace(SUCCESS_VERB, "")` on the claim line, `print("saved")` would count its
+  // own verb as effect evidence and every such stub would go silent. This test locks
+  // both halves: the overlap exists (so the strip must stay), and the rule still
+  // fires through it.
+  const { SUCCESS_VERB, REAL_EFFECT } = require("../src/claims");
+  for (const w of ["saved", "stored", "inserted", "committed", "dispatched", "published", "persisted", "queued", "executed"]) {
+    assert(REAL_EFFECT.test(`print("${w}")`) === true,
+      `expected overlap: "${w}" should satisfy REAL_EFFECT via prefix -- if this fails someone added a trailing boundary, re-examine the strip`);
+  }
+  const dir = tempProject({
+    "backup.py": [
+      "def backup(folder):",
+      '    print("saved")',
+      "",
+    ].join("\n"),
+  });
+  const hits = claimScan(dir, buildMap(dir).files).filter((x) => x.rule === "stub-claims-success");
+  assert(hits.length === 1, `stub whose verb overlaps the effect list went silent: ${hits.length} findings`);
+});
+
+ok("stub-rule-skips-comments-when-finding-braces", () => {
+  // The body walker climbs from the claim to the enclosing brace. A column-zero
+  // comment on the way up is not a boundary -- but without the skip it ends the
+  // walk, the rule falls back to a blind 12-line lookback, and a real effect call
+  // sitting further up is missed. So this honest function needs three properties at
+  // once: the effect more than 12 lines above the claim, a column-zero comment
+  // between them, and no other calls in between. Remove the skip and the honest
+  // `vault.insert` drops out of view.
+  const filler = Array.from({ length: 15 }, (_, k) => `  step${k} = ${k} + 1;`).join("\n");
+  const dir = tempProject({
+    "m.js": [
+      "function save(record) {",
+      "  vault.insert(record);",
+      filler,
+      "// column-zero note: batch boundary below",
+      '  console.log("saved ok");',
+      "}",
+      "",
+    ].join("\n"),
+  });
+  const hits = claimScan(dir, buildMap(dir).files).filter((x) => x.rule === "stub-claims-success");
+  assert(hits.length === 0, `honest long function accused: ${hits.map((x) => `${x.file}:${x.line}`).join(", ")}`);
+});
+
+ok("stub-rule-skips-comments-when-finding-def", () => {
+  // Same shape in Python, where the boundary is the `def` rather than a brace: a
+  // column-zero comment between the claim and the `def` must not end the upward
+  // walk, or the effect call above it is lost and honest code gets accused.
+  const filler = Array.from({ length: 15 }, (_, k) => `    step${k} = ${k} + 1`).join("\n");
+  const dir = tempProject({
+    "s.py": [
+      "def save(record):",
+      "    vault.insert(record)",
+      filler,
+      "# column-zero note: batch boundary below",
+      '    print("saved ok")',
+      "",
+    ].join("\n"),
+  });
+  const hits = claimScan(dir, buildMap(dir).files).filter((x) => x.rule === "stub-claims-success");
+  assert(hits.length === 0, `honest long function accused: ${hits.map((x) => `${x.file}:${x.line}`).join(", ")}`);
 });
 
 ok("hardcoded-quote-rule-needs-quoted-decimals-not-integers", () => {

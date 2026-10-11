@@ -17,6 +17,29 @@ def cooperative_tick():
     time.sleep(0)
 
 
+# A yield before reporting: the zero sleep surrenders the timeslice, and the message
+# reports a state that was already reached. Only the zero-duration exemption keeps
+# this silent -- it sits directly above a completion claim.
+def flush():
+    time.sleep(0)
+    print("done")
+
+
+# A long genuine pause: device cooldown between flash batches. The batch reports
+# completion when the wait ends. Only the over-2000ms cap keeps this silent.
+def cool_down():
+    time.sleep(30)
+    print("batch done")
+
+
+# A deferred table handle: the effect is referenced, not called, and the message
+# reports a state the caller already established. Only the effect-name check (as
+# opposed to the call check) keeps this silent -- there is no call here at all.
+def cached_status():
+    table = db.users
+    print("saved ok")
+
+
 # A real write, then the message. The effect exists before it is claimed.
 def add_to_vault(record):
     with open(VAULT_PATH, "a", encoding="utf8") as handle:

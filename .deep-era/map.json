@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-10-07T18:13:29.879Z",
+  "generatedAt": "2026-10-11T10:06:27.418Z",
   "stack": {
     "kind": "node",
     "run": null,
@@ -148,7 +148,7 @@
     {
       "file": "CHANGELOG.md",
       "role": "doc",
-      "size": 24168,
+      "size": 29558,
       "imports": [],
       "importedBy": []
     },
@@ -244,7 +244,7 @@
     {
       "file": "README.md",
       "role": "doc",
-      "size": 15527,
+      "size": 18563,
       "imports": [],
       "importedBy": []
     },
@@ -272,7 +272,7 @@
     {
       "file": "src/claims.js",
       "role": "code-js",
-      "size": 21828,
+      "size": 24081,
       "imports": [
         "src/scannerSelf.js"
       ],
@@ -865,7 +865,7 @@
     {
       "file": "TEST-REPORT.md",
       "role": "doc",
-      "size": 7569,
+      "size": 8679,
       "imports": [],
       "importedBy": []
     },
@@ -948,7 +948,7 @@
     {
       "file": "tests/fixtures/claims-clean/honest.py",
       "role": "code-py",
-      "size": 1166,
+      "size": 1973,
       "imports": [],
       "importedBy": []
     },
@@ -1153,7 +1153,7 @@
     {
       "file": "tests/run.js",
       "role": "code-js",
-      "size": 116575,
+      "size": 135128,
       "imports": [
         "src/map.js",
         "src/security.js",

@@ -3,6 +3,39 @@
 > The README shows only the latest version. Everything else lives here, newest first.
 > Older than this file: `git log --oneline`.
 
+## v0.58.6: every guard proven, two real bugs found by the proving
+
+The v0.58.5 claim rules shipped with four guards no test isolated. This release proves
+every guard in `src/claims.js` — 40+ deterministic mutations, each reverted after the
+kill — and the proving found two more real bugs plus four dead guards:
+
+- **SLEEP_CALL was blind on Python.** Its tail demanded `;` or `))`, and Python has
+  neither. `time.sleep(30)` never matched, so every Python sleep sailed through
+  unexamined. Found because removing the zero-duration guard changed nothing — the
+  `time.sleep(0)` it guards never fired.
+- **The mentioned-check was blind on plain imports.** Its tail demanded quotes or
+  slashes, so `import requests` never counted as mentioned. Every correctly-wired
+  Python project was accused. Measured before the fix.
+- **`usleep`/`nanosleep` read as seconds.** Bare numbers defaulted to `"s"`, so
+  `usleep(150)` looked like a 150-second pause and slipped past the duration cap.
+  Now resolved per-callee (`usleep`→µs, `nanosleep`→ns), proven per-form by table.
+- **Four dead guards deleted**, each proven shadowed before removal: the quote
+  test-file line and fixtures-skip (DOC_EXEMPT subsumes both), the finite/positive
+  check (subsumed by `<1000` + the decimal test), the latency fixtures-skip
+  (subsumed by the test-file exemption), and the stub `isComment` skip (PRINT_ONLY
+  anchors at line start; the two can never coincide).
+
+Coverage is now per-guard AND per-vocabulary: table tests fire every sleep form (6),
+every price name (14), every claim verb (19), every print form (9), and every effect
+form twice (call-shaped bodies + claim-line checks, 19 + 28). Deleting any single
+alternative fails its table.
+
+232 tests green (177 unit + 36 CLI + 12 MCP + 7 superpowers), check PASS.
+
+Out of scope by decision, not by oversight: hit caps (`hits < 12`, `hits >= 10`) and
+`readIfSmall` size caps are load-shedding infrastructure, not detection logic. They
+are not mutation-tested; changing them changes volume, never verdicts.
+
 ## v0.58.5: five rules for code that reports work it never did
 
 Written against a real observed case: a demo that slept instead of measuring, printed
@@ -47,14 +80,14 @@ their own rules on the day they were written.
 **33 rules total**, each proven to fire on a seeded defect and silent on the corrected
 version of it, in 208 tests.
 
-### What was not proven
+### What was not proven (resolved in v0.58.6)
 
-Four of fourteen mutations were not caught by the suite and are reported as such
-rather than claimed: removing `stripComments` at the call site, the comment-skip in
-the body walker, the comment filter in the marker rule, and the claim-verb strip each
-left every existing test green. Those four are defensive depth whose primary guard
-lives elsewhere (the body walker, and `REAL_EFFECT` respectively), so no test
-currently isolates them. A future change to any of them would not be caught.
+Four of fourteen mutations were not caught at the time and were reported as such
+rather than claimed. All four are now proven with killer fixtures: the comment moved
+inside the stub body (stripComments), the completion word moved after the marker
+(marker filter). The remaining item from that session — vocabulary overlap — was
+settled by measurement, not by assumption: REAL_EFFECT has no trailing boundary, so
+its base forms ARE prefixes of the claim words, and the strip is load-bearing.
 
 ## v0.58.4: every rule proven, and proving them found three real bugs
 
